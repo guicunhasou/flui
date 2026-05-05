@@ -1,0 +1,163 @@
+Para esse projeto da Flui, eu sugiro uma árvore simples, organizada e fácil de manter, principalmente porque teremos várias telas com `tsx` e `styles.ts` separados.
+
+Versão Longa
+
+    flui-charge-map/
+    ├── assets/
+    │   ├── images/
+    │   │   ├── charging-station.jpg
+    │   │   └── map-placeholder.png
+    │   ├── logos/
+    │   │   └── flui-logo.png
+    │   └── icons/
+    │
+    ├── src/
+    │   ├── components/
+    │   │   ├── BottomTabBar/
+    │   │   │   ├── index.tsx
+    │   │   │   └── styles.ts
+    │   │   │
+    │   │   ├── FilterChip/
+    │   │   │   ├── index.tsx
+    │   │   │   └── styles.ts
+    │   │   │
+    │   │   ├── PointCard/
+    │   │   │   ├── index.tsx
+    │   │   │   └── styles.ts
+    │   │   │
+    │   │   ├── MapMarker/
+    │   │   │   ├── index.tsx
+    │   │   │   └── styles.ts
+    │   │   │
+    │   │   └── FluiBadge/
+    │   │       ├── index.tsx
+    │   │       └── styles.ts
+    │   │
+    │   ├── screens/
+    │   │   ├── HomeMapScreen/
+    │   │   │   ├── index.tsx
+    │   │   │   └── styles.ts
+    │   │   │
+    │   │   ├── PointDetailsScreen/
+    │   │   │   ├── index.tsx
+    │   │   │   └── styles.ts
+    │   │   │
+    │   │   ├── FiltersScreen/
+    │   │   │   ├── index.tsx
+    │   │   │   └── styles.ts
+    │   │   │
+    │   │   ├── ReviewScreen/
+    │   │   │   ├── index.tsx
+    │   │   │   └── styles.ts
+    │   │   │
+    │   │   ├── FavoritesScreen/
+    │   │   │   ├── index.tsx
+    │   │   │   └── styles.ts
+    │   │   │
+    │   │   ├── ActivitiesScreen/
+    │   │   │   ├── index.tsx
+    │   │   │   └── styles.ts
+    │   │   │
+    │   │   └── RouteOptionsScreen/
+    │   │       ├── index.tsx
+    │   │       └── styles.ts
+    │   │
+    │   ├── navigation/
+    │   │   ├── AppNavigator.tsx
+    │   │   └── types.ts
+    │   │
+    │   ├── data/
+    │   │   ├── chargingPoints.ts
+    │   │   ├── reviews.ts
+    │   │   └── activities.ts
+    │   │
+    │   ├── constants/
+    │   │   ├── colors.ts
+    │   │   ├── fonts.ts
+    │   │   ├── spacing.ts
+    │   │   └── radius.ts
+    │   │
+    │   ├── utils/
+    │   │   └── maps.ts
+    │   │
+    │   └── types/
+    │       ├── chargingPoint.ts
+    │       ├── review.ts
+    │       └── activity.ts
+    │
+    ├── App.tsx
+    ├── app.json
+    ├── package.json
+    ├── tsconfig.json
+    └── README.md
+
+
+    Explicando de forma simples
+
+        A pasta `screens` terá as telas principais do app:
+            HomeMapScreen
+            PointDetailsScreen
+            FiltersScreen
+            ReviewScreen
+            FavoritesScreen
+            ActivitiesScreen
+            RouteOptionsScreen
+
+        A pasta `components` terá partes reutilizáveis, como:
+            BottomTabBar
+            FilterChip
+            PointCard
+            MapMarker
+            FluiBadge
+
+        A pasta `data` vai guardar dados simulados, por exemplo:
+            chargingPoints.ts
+            reviews.ts
+            activities.ts
+        Isso evita deixar listas enormes dentro das telas.
+
+        A pasta `constants` vai guardar o sistema visual:
+            colors.ts
+            fonts.ts
+            spacing.ts
+            radius.ts
+        Assim, se vocês quiserem mudar o roxo principal da Flui, mudam em um lugar só.
+
+        A pasta `navigation` vai cuidar das rotas entre telas.
+        A pasta `utils` pode guardar funções como abrir rota no Google Maps ou Waze.
+
+Versão Curta
+
+    Para começar rápido, vocês podem criar só isso:
+
+    src/
+    ├── screens/
+    │   ├── HomeMapScreen/
+    │   │   ├── index.tsx
+    │   │   └── styles.ts
+    │   ├── PointDetailsScreen/
+    │   │   ├── index.tsx
+    │   │   └── styles.ts
+    │   ├── FiltersScreen/
+    │   │   ├── index.tsx
+    │   │   └── styles.ts
+    │   ├── ReviewScreen/
+    │   │   ├── index.tsx
+    │   │   └── styles.ts
+    │   ├── FavoritesScreen/
+    │   │   ├── index.tsx
+    │   │   └── styles.ts
+    │   └── ActivitiesScreen/
+    │       ├── index.tsx
+    │       └── styles.ts
+    │
+    ├── navigation/
+    │   └── AppNavigator.tsx
+    │
+    ├── data/
+    │   └── chargingPoints.ts
+    │
+    └── constants/
+        └── colors.ts
+
+    Eu começaria por essa versão enxuta. Depois vocês refatoram para `components` quando perceberem que cards, botões, filtros e tab bar estão se repetindo.
