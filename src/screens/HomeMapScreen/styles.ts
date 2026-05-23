@@ -1,507 +1,459 @@
-import { StyleSheet } from "react-native";
+import { Dimensions, Platform, StyleSheet } from "react-native";
 
-const COLORS = {
-  background: "#F8F8F6",
-  card: "#FFFFFF",
-  text: "#10172F",
-  muted: "#657084",
-  purple: "#36109A",
-  purpleDark: "#2A087C",
-  purpleSoft: "#EEE8FF",
-  border: "#E7E8EC",
-  success: "#22B86A",
-  warning: "#F4B322",
-  teal: "#075E6B",
+const { height } = Dimensions.get("window");
+
+export const colors = {
+  background: "#F7F4EC",
+  white: "#FFFFFF",
+  text: "#10162F",
+  textMuted: "#4F5878",
+  textLight: "#7C829A",
+  primary: "#2B0055",
+  primarySoft: "#EFE7FF",
+  primarySoftStrong: "#E0D1FF",
+  green: "#23B24B",
+  yellow: "#FFF4CC",
+  yellowDark: "#F3B512",
+  border: "#ECE8DF",
+  shadow: "#1E1230",
+};
+
+const shadow = {
+  shadowColor: colors.shadow,
+  shadowOffset: { width: 0, height: 10 },
+  shadowOpacity: 0.09,
+  shadowRadius: 20,
+  elevation: 7,
+};
+
+const softShadow = {
+  shadowColor: colors.shadow,
+  shadowOffset: { width: 0, height: 6 },
+  shadowOpacity: 0.07,
+  shadowRadius: 14,
+  elevation: 4,
 };
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
 
-  container: {
+  screen: {
     flex: 1,
-    backgroundColor: COLORS.background,
-    paddingHorizontal: 22,
-    paddingTop: 8,
+    backgroundColor: colors.background,
+  },
+
+  topArea: {
+    backgroundColor: colors.background,
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === "android" ? 18 : 8,
+    paddingBottom: 14,
+    zIndex: 10,
   },
 
   header: {
-    height: 72,
+    minHeight: 48,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
 
-  logo: {
-    fontSize: 44,
-    fontWeight: "800",
-    fontStyle: "italic",
-    color: COLORS.purple,
-    letterSpacing: -2,
-  },
-
   profileButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: COLORS.card,
+    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 6,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
+    borderColor: colors.border,
+    ...softShadow,
   },
 
   searchBar: {
-    height: 62,
+    height: 58,
+    marginTop: 14,
+    paddingLeft: 18,
+    paddingRight: 10,
+    borderRadius: 18,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 18,
-    borderRadius: 20,
-    backgroundColor: COLORS.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
-    shadowOpacity: 0.07,
-    shadowRadius: 16,
-    elevation: 4,
+    ...softShadow,
   },
 
-  searchPlaceholder: {
+  searchText: {
     flex: 1,
-    marginLeft: 14,
-    fontSize: 16,
-    color: COLORS.muted,
+    marginLeft: 13,
+    color: colors.textMuted,
+    fontSize: 15,
+    fontWeight: "500",
   },
 
   searchDivider: {
     width: 1,
-    height: 28,
-    marginRight: 14,
-    backgroundColor: COLORS.border,
+    height: 30,
+    marginHorizontal: 8,
+    backgroundColor: colors.border,
   },
 
-  filtersScroll: {
-    marginTop: 16,
-    marginBottom: 18,
-    marginHorizontal: -22,
-  },
-
-  filtersRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingHorizontal: 22,
-  },
-
-  filterChip: {
-    minHeight: 46,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 7,
-    paddingHorizontal: 14,
-    borderRadius: 23,
-    backgroundColor: COLORS.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-
-  filterChipActive: {
-    backgroundColor: COLORS.purple,
-    borderColor: COLORS.purple,
-  },
-
-  filterChipText: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: COLORS.text,
-  },
-
-  filterChipActiveText: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#FFFFFF",
-  },
-
-  mapCard: {
-    height: 430,
-    marginHorizontal: -22,
-    overflow: "hidden",
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    backgroundColor: "#EFF2F4",
-  },
-
-  mapBackground: {
-    flex: 1,
-    position: "relative",
-    backgroundColor: "#F1F3F5",
-    overflow: "hidden",
-  },
-
-  mapRoad: {
-    position: "absolute",
-    height: 12,
-    borderRadius: 99,
-    backgroundColor: "#FFFFFF",
-    opacity: 0.95,
-  },
-
-  mapRoadOne: {
-    width: 620,
-    top: 52,
-    left: -80,
-    transform: [{ rotate: "28deg" }],
-  },
-
-  mapRoadTwo: {
-    width: 660,
-    top: 148,
-    left: -120,
-    transform: [{ rotate: "-22deg" }],
-  },
-
-  mapRoadThree: {
-    width: 560,
-    top: 260,
-    left: -80,
-    transform: [{ rotate: "18deg" }],
-  },
-
-  mapRoadFour: {
-    width: 620,
-    top: 210,
-    left: -40,
-    transform: [{ rotate: "82deg" }],
-  },
-
-  mapRoadFive: {
-    width: 520,
-    top: 120,
-    right: -140,
-    transform: [{ rotate: "105deg" }],
-  },
-
-  mapPark: {
-    position: "absolute",
-    borderRadius: 28,
-    backgroundColor: "#DDF4E8",
-    opacity: 0.8,
-  },
-
-  mapParkOne: {
-    width: 140,
-    height: 170,
-    top: 0,
-    left: 210,
-    transform: [{ rotate: "18deg" }],
-  },
-
-  mapParkTwo: {
-    width: 180,
-    height: 140,
-    bottom: 50,
-    right: -20,
-    transform: [{ rotate: "-22deg" }],
-  },
-
-  mapRiver: {
-    position: "absolute",
-    width: 70,
-    height: 520,
-    left: 18,
-    top: -40,
-    borderRadius: 40,
-    backgroundColor: "#D8EEF8",
-    transform: [{ rotate: "16deg" }],
-  },
-
-  mapPin: {
-    position: "absolute",
-    width: 44,
-    height: 54,
-    marginLeft: -22,
-    marginTop: -27,
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
-    borderBottomLeftRadius: 22,
+  filterButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 15,
     alignItems: "center",
     justifyContent: "center",
-    transform: [{ rotate: "45deg" }],
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 6,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5,
   },
 
-  mapPinIcon: {
-    transform: [{ rotate: "-45deg" }],
+  filtersContent: {
+    paddingTop: 14,
+    paddingRight: 8,
   },
 
-  mapPinActive: {
-    backgroundColor: COLORS.purple,
+  chip: {
+    height: 42,
+    marginRight: 10,
+    paddingHorizontal: 15,
+    borderRadius: 22,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    ...softShadow,
   },
 
-  mapPinInactive: {
-    backgroundColor: "#FFFFFF",
+  chipActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
 
-  userLocationHalo: {
+  chipText: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: "700",
+  },
+
+  chipTextActive: {
+    color: colors.white,
+  },
+
+  mapArea: {
+    flex: 1,
+    position: "relative",
+    overflow: "hidden",
+    backgroundColor: "#EEF2F3",
+  },
+
+  mapCanvas: {
     position: "absolute",
-    top: "50%",
+    top: 0,
+    left: 0,
+  },
+
+  mapImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+
+  mapMarker: {
+    position: "absolute",
+    width: 44,
+    height: 56,
+    alignItems: "center",
+    transform: [{ translateX: -22 }, { translateY: -48 }],
+  },
+
+  plugMarkerPosition: {
+    width: 38,
+    height: 38,
+    transform: [{ translateX: -19 }, { translateY: -19 }],
+  },
+
+  pinBody: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.primary,
+    ...shadow,
+  },
+
+  pinTip: {
+    width: 15,
+    height: 15,
+    marginTop: -8,
+    borderRadius: 3,
+    backgroundColor: colors.primary,
+    transform: [{ rotate: "45deg" }],
+  },
+
+  plugMarker: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...softShadow,
+  },
+
+  currentLocation: {
+    position: "absolute",
+    top: "45%",
     left: "50%",
     width: 82,
     height: 82,
     marginLeft: -41,
     marginTop: -41,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  currentLocationHalo: {
+    position: "absolute",
+    width: 82,
+    height: 82,
     borderRadius: 41,
+    backgroundColor: "rgba(155, 53, 245, 0.14)",
+  },
+
+  currentLocationDot: {
+    width: 23,
+    height: 23,
+    borderRadius: 12,
+    backgroundColor: colors.primary,
+    borderWidth: 5,
+    borderColor: colors.white,
+  },
+
+  fixedMapControls: {
+    position: "absolute",
+    right: 18,
+    top: height < 760 ? "23%" : "32%",
+    gap: 14,
+    zIndex: 5,
+  },
+
+  mapControlButton: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(54, 16, 154, 0.12)",
-  },
-
-  userLocationDot: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: COLORS.purple,
-    borderWidth: 6,
-    borderColor: "#FFFFFF",
-  },
-
-  mapActions: {
-    position: "absolute",
-    right: 24,
-    bottom: 32,
-    gap: 12,
-  },
-
-  mapActionButton: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: COLORS.card,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
-    shadowOpacity: 0.14,
-    shadowRadius: 12,
-    elevation: 5,
-  },
-
-  recommendationsCard: {
-    position: "absolute",
-    left: 22,
-    right: 22,
-    bottom: 96,
-    padding: 20,
-    borderRadius: 28,
-    backgroundColor: COLORS.card,
+    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 14,
-    },
-    shadowOpacity: 0.12,
-    shadowRadius: 24,
+    borderColor: colors.border,
+    ...shadow,
+  },
+
+  bottomSheet: {
+    position: "absolute",
+    left: 16,
+    right: 16,
+    bottom: 0,
+    paddingHorizontal: 18,
+    paddingTop: 18,
+    paddingBottom: 20,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    backgroundColor: "rgba(247, 244, 236, 0.92)",
+    borderTopWidth: 1,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: "rgba(236, 232, 223, 0.72)",
+    zIndex: 8,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
     elevation: 8,
   },
 
-  recommendationsHeader: {
+  sheetHeader: {
+    marginBottom: 8,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 16,
   },
 
-  recommendationsTitle: {
+  sheetTitle: {
     flex: 1,
-    fontSize: 23,
-    lineHeight: 29,
+    color: colors.text,
+    fontSize: 21,
     fontWeight: "800",
-    color: COLORS.text,
+    letterSpacing: -0.35,
   },
 
   starBadge: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 44,
+    height: 44,
+    marginLeft: 14,
+    borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#FFF4D5",
+    backgroundColor: colors.yellow,
   },
 
-  recommendationsList: {
-    gap: 10,
+  emptyCard: {
+    marginTop: 10,
+    padding: 16,
+    borderRadius: 20,
+    backgroundColor: colors.primarySoft,
+    borderWidth: 1,
+    borderColor: colors.primarySoftStrong,
   },
 
-  recommendationItem: {
-    minHeight: 82,
+  emptyTitle: {
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: "800",
+    lineHeight: 20,
+  },
+
+  emptyText: {
+    marginTop: 6,
+    color: colors.textMuted,
+    fontSize: 13,
+    fontWeight: "500",
+    lineHeight: 18,
+  },
+
+  emptyButton: {
+    height: 40,
+    marginTop: 12,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    alignSelf: "flex-start",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.primary,
+  },
+
+  emptyButtonText: {
+    color: colors.white,
+    fontSize: 13,
+    fontWeight: "800",
+  },
+
+  pointCard: {
+    minHeight: 74,
+    marginTop: 10,
+    paddingVertical: 11,
+    paddingLeft: 12,
+    paddingRight: 9,
+    borderRadius: 18,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 18,
-    backgroundColor: COLORS.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 5,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
+    ...softShadow,
   },
 
-  recommendationIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+  pointIconCircle: {
+    width: 48,
+    height: 48,
+    marginRight: 12,
+    borderRadius: 24,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 14,
-    backgroundColor: COLORS.purpleSoft,
+    backgroundColor: colors.primarySoft,
   },
 
-  recommendationContent: {
+  pointInfo: {
     flex: 1,
+    minWidth: 0,
   },
 
-  recommendationTitle: {
-    fontSize: 16,
+  pointTitle: {
+    color: colors.text,
+    fontSize: 15,
     fontWeight: "800",
-    color: COLORS.text,
+    letterSpacing: -0.15,
   },
 
-  recommendationAddress: {
+  pointAddress: {
     marginTop: 2,
-    fontSize: 13,
-    color: COLORS.muted,
+    color: colors.textMuted,
+    fontSize: 12.5,
+    fontWeight: "500",
   },
 
   statusRow: {
+    marginTop: 4,
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 4,
-    gap: 6,
-  },
-
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: COLORS.success,
-  },
-
-  statusText: {
-    fontSize: 12,
-    color: COLORS.muted,
-  },
-
-  recommendationMeta: {
-    width: 92,
-    alignItems: "flex-start",
     gap: 5,
   },
 
-  inlineMeta: {
+  statusDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: colors.green,
+  },
+
+  statusText: {
+    color: colors.textMuted,
+    fontSize: 12.5,
+    fontWeight: "500",
+  },
+
+  pointMeta: {
+    width: 92,
+    marginLeft: 8,
+    gap: 8,
+  },
+
+  metaRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
   },
 
   metaText: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: COLORS.muted,
+    color: colors.textMuted,
+    fontSize: 12.5,
+    fontWeight: "700",
   },
 
-  tabBar: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: 92,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-around",
-    paddingHorizontal: 18,
-    paddingBottom: 14,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    backgroundColor: COLORS.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: -8,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 10,
-  },
-
-  tabItem: {
-    width: 74,
-    height: 64,
+  feedbackToastOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 30,
     alignItems: "center",
     justifyContent: "center",
+    paddingHorizontal: 24,
   },
 
-  activeIndicator: {
-    position: "absolute",
-    top: 0,
-    width: 34,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: COLORS.purple,
+  feedbackToastCard: {
+    minHeight: 52,
+    paddingHorizontal: 16,
+    borderRadius: 999,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 9,
+    ...shadow,
   },
 
-  tabText: {
-    marginTop: 4,
-    fontSize: 12,
-    color: COLORS.muted,
-  },
-
-  tabTextActive: {
-    marginTop: 4,
-    fontSize: 12,
+  feedbackToastText: {
+    color: colors.text,
+    fontSize: 14,
     fontWeight: "800",
-    color: COLORS.purple,
+    letterSpacing: -0.1,
   },
 });
 
