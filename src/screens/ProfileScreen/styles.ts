@@ -1,425 +1,447 @@
 import { StyleSheet } from "react-native";
 
-export const colors = {
-  background: "#F7F4EC",
-  white: "#FFFFFF",
-  text: "#10162F",
-  textMuted: "#4F5878",
-  textLight: "#7C829A",
-  primary: "#2B0055",
-  primarySoft: "#EFE7FF",
-  primarySoftStrong: "#E0D1FF",
-  yellow: "#FFF4CC",
-  yellowDark: "#F3B512",
-  border: "#ECE8DF",
-  shadow: "#1E1230",
-  dangerSoft: "#FFF0F0",
-  success: "#23B24B",
-  successSoft: "#EAF8EF",
-};
+import type { AppTheme } from "../../theme/appTheme";
+import { scaleFontSize } from "../../theme/appTheme";
 
-const shadow = {
-  shadowColor: colors.shadow,
-  shadowOffset: { width: 0, height: 10 },
-  shadowOpacity: 0.08,
-  shadowRadius: 20,
-  elevation: 6,
-};
+export function createProfileStyles(colors: AppTheme, fontScale: number) {
+  const s = (size: number) => scaleFontSize(size, fontScale);
 
-const softShadow = {
-  shadowColor: colors.shadow,
-  shadowOffset: { width: 0, height: 6 },
-  shadowOpacity: 0.06,
-  shadowRadius: 14,
-  elevation: 4,
-};
+  const shadow = {
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 6,
+  };
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
+  const softShadow = {
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    elevation: 4,
+  };
 
-  screen: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
+  return StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-  header: {
-    minHeight: 58,
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
+    screen: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-  backButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.border,
-    ...softShadow,
-  },
+    header: {
+      minHeight: 58,
+      paddingHorizontal: 20,
+      paddingTop: 8,
+      paddingBottom: 8,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
 
-  headerTitle: {
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: "800",
-    letterSpacing: -0.25,
-  },
+    backButton: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.white,
+      borderWidth: 1,
+      borderColor: colors.border,
+      ...softShadow,
+    },
 
-  headerSpacer: {
-    width: 44,
-    height: 44,
-  },
+    headerTitle: {
+      color: colors.text,
+      fontSize: s(18),
+      fontWeight: "800",
+      letterSpacing: -0.25,
+    },
 
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 30,
-  },
+    headerSpacer: {
+      width: 44,
+      height: 44,
+    },
 
-  profileCard: {
-    padding: 18,
-    borderRadius: 28,
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.border,
-    flexDirection: "row",
-    alignItems: "center",
-    ...shadow,
-  },
+    content: {
+      paddingHorizontal: 20,
+      paddingTop: 8,
+      paddingBottom: 30,
+      alignItems: "stretch",
+    },
 
-  avatarCircle: {
-    width: 66,
-    height: 66,
-    borderRadius: 33,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.primarySoft,
-  },
+    profileActionsRow: {
+      width: "100%",
+      alignSelf: "center",
+      marginTop: 8,
+      marginBottom: 14,
+      flexDirection: "row",
+      gap: 10,
+    },
 
-  profileInfo: {
-    flex: 1,
-    marginLeft: 14,
-  },
+    profileActionText: {
+      color: colors.primary,
+      fontSize: s(13),
+      fontWeight: "800",
+    },
 
-  profileName: {
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: "800",
-    letterSpacing: -0.25,
-  },
+    settingsButton: {
+      flex: 1,
+      width: 195,
+      height: 54,
+      paddingHorizontal: 12,
+      borderRadius: 18,
+      borderWidth: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      alignSelf: "stretch",
+      padding: 18,
+      gap: 8,
+      backgroundColor: colors.primarySoft,
+      borderColor: colors.primarySoftStrong,
+      ...softShadow,
+    },
 
-  profileText: {
-    marginTop: 5,
-    color: colors.textMuted,
-    fontSize: 13.5,
-    fontWeight: "500",
-    lineHeight: 19,
-  },
+    logoutButton: {
+      flex: 1,
+      width: 195,
+      height: 54,
+      paddingHorizontal: 12,
+      borderRadius: 18,
+      borderWidth: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      alignSelf: "stretch",
+      padding: 18,
+      gap: 8,
+      backgroundColor: colors.dangerSoft,
+      borderColor: colors.dangerBorder,
+      ...softShadow,
+    },
 
-  statsRow: {
-    marginTop: 14,
-    flexDirection: "row",
-    gap: 10,
-  },
+    profileCard: {
+      width: "100%",
+      alignSelf: "stretch",
+      padding: 18,
+      borderRadius: 28,
+      backgroundColor: colors.white,
+      borderWidth: 1,
+      borderColor: colors.border,
+      flexDirection: "row",
+      alignItems: "center",
+      ...shadow,
+    },
 
-  statCard: {
-    flex: 1,
-    minHeight: 78,
-    borderRadius: 22,
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: "center",
-    justifyContent: "center",
-    ...softShadow,
-  },
+    avatarCircle: {
+      width: 66,
+      height: 66,
+      borderRadius: 33,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.primarySoft,
+    },
 
-  statNumber: {
-    color: colors.primary,
-    fontSize: 22,
-    fontWeight: "800",
-    letterSpacing: -0.3,
-  },
+    profileInfo: {
+      flex: 1,
+      marginLeft: 14,
+    },
 
-  statLabel: {
-    marginTop: 3,
-    color: colors.textMuted,
-    fontSize: 12,
-    fontWeight: "700",
-  },
+    profileName: {
+      color: colors.text,
+      fontSize: s(18),
+      fontWeight: "800",
+      letterSpacing: -0.25,
+    },
 
-  segmentedControl: {
-    marginTop: 18,
-    padding: 5,
-    borderRadius: 22,
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.border,
-    flexDirection: "row",
-    ...softShadow,
-  },
+    profileText: {
+      marginTop: 5,
+      color: colors.textMuted,
+      fontSize: s(13.5),
+      fontWeight: "500",
+      lineHeight: s(19),
+    },
 
-  segmentButton: {
-    flex: 1,
-    minHeight: 44,
-    borderRadius: 17,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-  },
+    statsRow: {
+      marginTop: 14,
+      flexDirection: "row",
+      gap: 10,
+    },
 
-  segmentButtonActive: {
-    backgroundColor: colors.primary,
-  },
+    statCard: {
+      flex: 1,
+      minHeight: 78,
+      borderRadius: 22,
+      backgroundColor: colors.white,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: "center",
+      justifyContent: "center",
+      ...softShadow,
+    },
 
-  segmentText: {
-    color: colors.primary,
-    fontSize: 13.5,
-    fontWeight: "800",
-  },
+    statNumber: {
+      color: colors.primary,
+      fontSize: s(22),
+      fontWeight: "800",
+      letterSpacing: -0.3,
+    },
 
-  segmentTextActive: {
-    color: colors.white,
-  },
+    statLabel: {
+      marginTop: 3,
+      color: colors.textMuted,
+      fontSize: s(12),
+      fontWeight: "700",
+    },
 
-  section: {
-    marginTop: 20,
-  },
+    segmentedControl: {
+      marginTop: 18,
+      padding: 5,
+      borderRadius: 22,
+      backgroundColor: colors.white,
+      borderWidth: 1,
+      borderColor: colors.border,
+      flexDirection: "row",
+      ...softShadow,
+    },
 
-  sectionTitle: {
-    color: colors.text,
-    fontSize: 20,
-    fontWeight: "800",
-    letterSpacing: -0.35,
-  },
+    segmentButton: {
+      flex: 1,
+      minHeight: 44,
+      borderRadius: 17,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+    },
 
-  sectionText: {
-    marginTop: 6,
-    color: colors.textMuted,
-    fontSize: 13.5,
-    fontWeight: "500",
-    lineHeight: 20,
-  },
+    segmentButtonActive: {
+      backgroundColor: colors.primary,
+    },
 
-  cardsList: {
-    marginTop: 12,
-    gap: 10,
-  },
+    segmentText: {
+      color: colors.primary,
+      fontSize: s(13.5),
+      fontWeight: "800",
+    },
 
-  stationCard: {
-    minHeight: 92,
-    padding: 13,
-    borderRadius: 22,
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.border,
-    flexDirection: "row",
-    alignItems: "center",
-    ...softShadow,
-  },
+    segmentTextActive: {
+      color: colors.white,
+    },
 
-  stationIconBox: {
-    width: 48,
-    height: 48,
-    marginRight: 12,
-    borderRadius: 24,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.primarySoft,
-  },
+    section: {
+      marginTop: 20,
+    },
 
-  stationInfo: {
-    flex: 1,
-    minWidth: 0,
-  },
+    sectionTitle: {
+      color: colors.text,
+      fontSize: s(20),
+      fontWeight: "800",
+      letterSpacing: -0.35,
+    },
 
-  stationName: {
-    color: colors.text,
-    fontSize: 15,
-    fontWeight: "800",
-    letterSpacing: -0.15,
-  },
+    sectionText: {
+      marginTop: 6,
+      color: colors.textMuted,
+      fontSize: s(13.5),
+      fontWeight: "500",
+      lineHeight: s(20),
+    },
 
-  stationAddressRow: {
-    marginTop: 5,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
+    cardsList: {
+      marginTop: 12,
+      gap: 10,
+    },
 
-  stationAddress: {
-    flex: 1,
-    color: colors.textMuted,
-    fontSize: 12.5,
-    fontWeight: "500",
-  },
+    stationCard: {
+      minHeight: 92,
+      padding: 13,
+      borderRadius: 22,
+      backgroundColor: colors.white,
+      borderWidth: 1,
+      borderColor: colors.border,
+      flexDirection: "row",
+      alignItems: "center",
+      ...softShadow,
+    },
 
-  stationMetaRow: {
-    marginTop: 9,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
+    stationIconBox: {
+      width: 48,
+      height: 48,
+      marginRight: 12,
+      borderRadius: 24,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.primarySoft,
+    },
 
-  metaPill: {
-    height: 28,
-    paddingHorizontal: 9,
-    borderRadius: 14,
-    backgroundColor: colors.primarySoft,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-  },
+    stationInfo: {
+      flex: 1,
+      minWidth: 0,
+    },
 
-  metaPillText: {
-    color: colors.primary,
-    fontSize: 12,
-    fontWeight: "800",
-  },
+    stationName: {
+      color: colors.text,
+      fontSize: s(15),
+      fontWeight: "800",
+      letterSpacing: -0.15,
+    },
 
-  reviewsHeader: {
-    marginTop: 24,
-  },
+    stationAddressRow: {
+      marginTop: 5,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+    },
 
-  reviewCard: {
-    minHeight: 74,
-    padding: 13,
-    borderRadius: 20,
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.border,
-    flexDirection: "row",
-    alignItems: "center",
-    ...softShadow,
-  },
+    stationAddress: {
+      flex: 1,
+      color: colors.textMuted,
+      fontSize: s(12.5),
+      fontWeight: "500",
+    },
 
-  reviewIconBox: {
-    width: 44,
-    height: 44,
-    marginRight: 12,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.yellow,
-  },
+    stationMetaRow: {
+      marginTop: 9,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
 
-  reviewInfo: {
-    flex: 1,
-    minWidth: 0,
-  },
+    metaPill: {
+      height: 28,
+      paddingHorizontal: 9,
+      borderRadius: 14,
+      backgroundColor: colors.primarySoft,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 5,
+    },
 
-  reviewStation: {
-    color: colors.text,
-    fontSize: 14.5,
-    fontWeight: "800",
-    letterSpacing: -0.1,
-  },
+    metaPillText: {
+      color: colors.primary,
+      fontSize: s(12),
+      fontWeight: "800",
+    },
 
-  reviewText: {
-    marginTop: 4,
-    color: colors.textMuted,
-    fontSize: 12.5,
-    fontWeight: "600",
-  },
+    reviewsHeader: {
+      marginTop: 24,
+    },
 
-  logoutButton: {
-    height: 56,
-    marginTop: 22,
-    borderRadius: 20,
-    backgroundColor: colors.dangerSoft,
-    borderWidth: 1,
-    borderColor: "#F5D5D5",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 9,
-  },
+    reviewCard: {
+      minHeight: 74,
+      padding: 13,
+      borderRadius: 20,
+      backgroundColor: colors.white,
+      borderWidth: 1,
+      borderColor: colors.border,
+      flexDirection: "row",
+      alignItems: "center",
+      ...softShadow,
+    },
 
-  logoutText: {
-    color: colors.primary,
-    fontSize: 14,
-    fontWeight: "800",
-  },
+    reviewIconBox: {
+      width: 44,
+      height: 44,
+      marginRight: 12,
+      borderRadius: 22,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.yellow,
+    },
 
-  easterEgg: {
-    marginTop: 42,
-    marginBottom: 28,
-    alignItems: "center",
-    opacity: 0.72,
-  },
+    reviewInfo: {
+      flex: 1,
+      minWidth: 0,
+    },
 
-  easterEggText: {
-    color: colors.textMuted,
-    fontSize: 13,
-    fontWeight: "700",
-    lineHeight: 20,
-    textAlign: "center",
-  },
+    reviewStation: {
+      color: colors.text,
+      fontSize: s(14.5),
+      fontWeight: "800",
+      letterSpacing: -0.1,
+    },
 
-  easterEggHighlight: {
-    color: colors.primary,
-    fontWeight: "900",
-  },
+    reviewText: {
+      marginTop: 4,
+      color: colors.textMuted,
+      fontSize: s(12.5),
+      fontWeight: "600",
+    },
 
-  easterEggSubtext: {
-    color: colors.textLight,
-    fontSize: 12.5,
-    fontWeight: "600",
-    lineHeight: 19,
-    textAlign: "center",
-    paddingTop: 4,
-  },
+    easterEgg: {
+      marginTop: 300,
+      marginBottom: 38,
+      alignItems: "center",
+      opacity: 0.55,
+    },
 
-  feedbackToastOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 30,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 24,
-  },
+    easterEggText: {
+      color: colors.textMuted,
+      fontSize: s(13),
+      fontWeight: "700",
+      lineHeight: s(20),
+      textAlign: "center",
+    },
 
-  feedbackToastCard: {
-    minHeight: 52,
-    paddingHorizontal: 16,
-    borderRadius: 999,
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.border,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 9,
-    ...shadow,
-  },
+    easterEggHighlight: {
+      color: colors.primary,
+      fontWeight: "900",
+    },
 
-  feedbackToastIcon: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    overflow: "hidden",
-    backgroundColor: colors.primarySoft,
-    color: colors.primary,
-    fontSize: 14,
-    fontWeight: "900",
-    lineHeight: 22,
-    textAlign: "center",
-  },
+    easterEggSubtext: {
+      color: colors.textLight,
+      fontSize: s(12.5),
+      fontWeight: "600",
+      lineHeight: s(19),
+      textAlign: "center",
+      paddingTop: 4,
+    },
 
-  feedbackToastText: {
-    color: colors.text,
-    fontSize: 14,
-    fontWeight: "800",
-    letterSpacing: -0.1,
-  },
-});
+    feedbackToastOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      zIndex: 30,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 24,
+    },
 
-export default styles;
+    feedbackToastCard: {
+      minHeight: 52,
+      paddingHorizontal: 16,
+      borderRadius: 999,
+      backgroundColor: colors.white,
+      borderWidth: 1,
+      borderColor: colors.border,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 9,
+      ...shadow,
+    },
+
+    feedbackToastIcon: {
+      width: 22,
+      height: 22,
+      borderRadius: 11,
+      overflow: "hidden",
+      backgroundColor: colors.primarySoft,
+      color: colors.primary,
+      fontSize: s(14),
+      fontWeight: "900",
+      lineHeight: s(22),
+      textAlign: "center",
+    },
+
+    feedbackToastText: {
+      color: colors.text,
+      fontSize: s(14),
+      fontWeight: "800",
+      letterSpacing: -0.1,
+    },
+  });
+}

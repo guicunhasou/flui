@@ -6,6 +6,8 @@ import {
   LocalSentReview,
   RecentHistoryItem,
   UserPreferences,
+  AppearanceMode,
+  FontSizePreference,
 } from "../types";
 import { getJsonItem, removeStorageItems, setJsonItem } from "./jsonStorage";
 
@@ -17,6 +19,14 @@ export const fluiStorageKeys = {
 } as const;
 
 const maxRecentHistoryItems = 20;
+
+function isAppearanceMode(value: unknown): value is AppearanceMode {
+  return value === "light" || value === "dark";
+}
+
+function isFontSizePreference(value: unknown): value is FontSizePreference {
+  return value === "small" || value === "default" || value === "large";
+}
 
 function createLocalId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -41,6 +51,8 @@ function createDefaultUserPreferences(): UserPreferences {
       onlyOpenNow: defaultFilters.onlyOpenNow,
     },
     hasSeenSplash: false,
+    appearanceMode: "light",
+    fontSize: "default",
   };
 }
 
@@ -85,6 +97,12 @@ function normalizeUserPreferences(
       preferences.preferredConnectors ?? base.preferredConnectors,
     preferredAmenities:
       preferences.preferredAmenities ?? base.preferredAmenities,
+    appearanceMode: isAppearanceMode(preferences.appearanceMode)
+      ? preferences.appearanceMode
+      : base.appearanceMode,
+    fontSize: isFontSizePreference(preferences.fontSize)
+      ? preferences.fontSize
+      : base.fontSize,
     savedFilters: {
       ...base.savedFilters,
       ...(savedFilters ?? {}),

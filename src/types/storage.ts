@@ -1,13 +1,15 @@
-import { SentReview } from './activity';
-import { Amenity, ConnectorType } from './chargingStation';
-import { StationFilters } from './filters';
+import { SentReview } from "./activity";
+import { Amenity, ConnectorType } from "./chargingStation";
+import { StationFilters } from "./filters";
 
-export type PreferredRouteApp = 'google' | 'waze';
+export type PreferredRouteApp = "google" | "waze";
+export type AppearanceMode = "light" | "dark";
+export type FontSizePreference = "small" | "default" | "large";
 
 export type RecentHistoryAction =
-  | 'viewed_station'
-  | 'started_route'
-  | 'sent_review';
+  | "viewed_station"
+  | "started_route"
+  | "sent_review";
 
 export type LocalSentReview = SentReview & {
   updatedAt?: string;
@@ -29,6 +31,8 @@ export type UserPreferences = {
   preferredRouteApp: PreferredRouteApp;
   savedFilters: StationFilters;
   hasSeenSplash: boolean;
+  appearanceMode: AppearanceMode;
+  fontSize: FontSizePreference;
 };
 
 export type FluiStorageSnapshot = {
@@ -40,12 +44,12 @@ export type FluiStorageSnapshot = {
 
 export type CreateLocalReviewInput = Omit<
   LocalSentReview,
-  'id' | 'createdAt'
+  "id" | "createdAt"
 > &
-  Partial<Pick<LocalSentReview, 'id' | 'createdAt'>>;
+  Partial<Pick<LocalSentReview, "id" | "createdAt">>;
 
 export type CreateRecentHistoryInput = Omit<
   RecentHistoryItem,
-  'id' | 'createdAt'
+  "id" | "createdAt"
 > &
-  Partial<Pick<RecentHistoryItem, 'id' | 'createdAt'>>;
+  Partial<Pick<RecentHistoryItem, "id" | "createdAt">>;

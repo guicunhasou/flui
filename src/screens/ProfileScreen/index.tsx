@@ -16,6 +16,7 @@ import {
   History,
   LogOut,
   MapPin,
+  Settings as SettingsIcon,
   Star,
   User,
   Zap,
@@ -28,7 +29,8 @@ import {
   ScreenTransition,
 } from "../../components";
 import { useFluiStorage } from "../../hooks/useFluiStorage";
-import styles, { colors } from "./styles";
+import { useAppPreferences } from "../../context/PreferencesContext";
+import { createProfileStyles } from "./styles";
 
 type ProfileTab = "favorites" | "history";
 type Station = (typeof chargingStations)[number];
@@ -112,6 +114,15 @@ const normalizeParam = (value?: string | string[]) => {
 };
 
 export default function ProfileScreen() {
+  const { theme, fontScale, appearanceMode } = useAppPreferences();
+
+  const styles = useMemo(
+    () => createProfileStyles(theme, fontScale),
+    [theme, fontScale],
+  );
+
+  const isDarkMode = appearanceMode === "dark";
+
   const [activeTab, setActiveTab] = useState<ProfileTab>("favorites");
 
   const [profileFeedbackMessage, setProfileFeedbackMessage] = useState<
@@ -139,6 +150,12 @@ export default function ProfileScreen() {
     };
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      void reloadStorage();
+    }, [reloadStorage]),
+  );
+
   const stationsById = useMemo(() => {
     return new Map(chargingStations.map((station) => [station.id, station]));
   }, []);
@@ -156,6 +173,10 @@ export default function ProfileScreen() {
   }, [recentHistory, stationsById]);
 
   const reviewedStations = sentReviews;
+
+  const openSettingsScreen = () => {
+    router.push("/settings" as Href);
+  };
 
   const openStationDetails = (stationId: string) => {
     const route = {
@@ -218,12 +239,12 @@ export default function ProfileScreen() {
           {variant === "favorite" ? (
             <Heart
               size={21}
-              color={colors.primary}
-              fill={colors.primarySoftStrong}
+              color={theme.primary}
+              fill={theme.primarySoftStrong}
               strokeWidth={2.1}
             />
           ) : (
-            <CalendarClock size={21} color={colors.primary} strokeWidth={2.1} />
+            <CalendarClock size={21} color={theme.primary} strokeWidth={2.1} />
           )}
         </View>
 
@@ -231,7 +252,7 @@ export default function ProfileScreen() {
           <Text style={styles.stationName}>{stationName}</Text>
 
           <View style={styles.stationAddressRow}>
-            <MapPin size={13} color={colors.textMuted} strokeWidth={2} />
+            <MapPin size={13} color={theme.textMuted} strokeWidth={2} />
             <Text style={styles.stationAddress} numberOfLines={1}>
               {stationAddress}
             </Text>
@@ -241,8 +262,8 @@ export default function ProfileScreen() {
             <View style={styles.metaPill}>
               <Star
                 size={13}
-                color={colors.yellowDark}
-                fill={colors.yellowDark}
+                color={theme.yellowDark}
+                fill={theme.yellowDark}
                 strokeWidth={2}
               />
               <Text style={styles.metaPillText}>{rating}</Text>
@@ -251,8 +272,8 @@ export default function ProfileScreen() {
             <View style={styles.metaPill}>
               <Zap
                 size={13}
-                color={colors.primary}
-                fill={colors.primary}
+                color={theme.primary}
+                fill={theme.primary}
                 strokeWidth={2}
               />
               <Text style={styles.metaPillText}>{power}</Text>
@@ -260,14 +281,14 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        <ChevronRight size={22} color={colors.primary} strokeWidth={2.2} />
+        <ChevronRight size={22} color={theme.primary} strokeWidth={2.2} />
       </PressableScale>
     );
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
 
       <ScreenTransition style={styles.screen}>
         <View style={styles.header}>
@@ -275,7 +296,7 @@ export default function ProfileScreen() {
             style={styles.backButton}
             onPress={() => router.back()}
           >
-            <ArrowLeft size={22} color={colors.primary} strokeWidth={2.2} />
+            <ArrowLeft size={22} color={theme.primary} strokeWidth={2.2} />
           </PressableScale>
 
           <Text style={styles.headerTitle}>Perfil</Text>
@@ -287,9 +308,28 @@ export default function ProfileScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.content}
         >
+
+          <View style={styles.profileActionsRow}>
+            <PressableScale
+              style={styles.settingsButton}
+              onPress={openSettingsScreen}
+            >
+              <SettingsIcon size={19} color={theme.primary} strokeWidth={2.1} />
+              <Text style={styles.profileActionText}>Configurações</Text>
+            </PressableScale>
+
+            <PressableScale
+              style={styles.logoutButton}
+              onPress={() => showProfileFeedback("Logout apenas visual")}
+            >
+              <LogOut size={19} color={theme.primary} strokeWidth={2.1} />
+              <Text style={styles.profileActionText}>Sair da conta</Text>
+            </PressableScale>
+          </View>
+          
           <View style={styles.profileCard}>
             <View style={styles.avatarCircle}>
-              <User size={30} color={colors.primary} strokeWidth={2.2} />
+              <User size={30} color={theme.primary} strokeWidth={2.2} />
             </View>
 
             <View style={styles.profileInfo}>
@@ -303,7 +343,7 @@ export default function ProfileScreen() {
           {storageError ? (
             <View style={styles.section}>
               {renderEmptyCard(
-                <History size={21} color={colors.primary} strokeWidth={2.1} />,
+                <History size={21} color={theme.primary} strokeWidth={2.1} />,
                 "Dados locais indisponíveis",
                 storageError,
               )}
@@ -343,9 +383,7 @@ export default function ProfileScreen() {
             >
               <Heart
                 size={17}
-                color={
-                  activeTab === "favorites" ? colors.white : colors.primary
-                }
+                color={activeTab === "favorites" ? theme.white : theme.primary}
                 strokeWidth={2.1}
               />
               <Text
@@ -367,7 +405,7 @@ export default function ProfileScreen() {
             >
               <History
                 size={17}
-                color={activeTab === "history" ? colors.white : colors.primary}
+                color={activeTab === "history" ? theme.white : theme.primary}
                 strokeWidth={2.1}
               />
               <Text
@@ -396,7 +434,7 @@ export default function ProfileScreen() {
                   : renderEmptyCard(
                       <Heart
                         size={21}
-                        color={colors.primary}
+                        color={theme.primary}
                         strokeWidth={2.1}
                       />,
                       "Nenhum favorito salvo ainda",
@@ -420,7 +458,7 @@ export default function ProfileScreen() {
                   : renderEmptyCard(
                       <CalendarClock
                         size={21}
-                        color={colors.primary}
+                        color={theme.primary}
                         strokeWidth={2.1}
                       />,
                       "Histórico ainda vazio",
@@ -457,8 +495,8 @@ export default function ProfileScreen() {
                           <View style={styles.reviewIconBox}>
                             <Star
                               size={20}
-                              color={colors.yellowDark}
-                              fill={colors.yellowDark}
+                              color={theme.yellowDark}
+                              fill={theme.yellowDark}
                               strokeWidth={2}
                             />
                           </View>
@@ -474,7 +512,7 @@ export default function ProfileScreen() {
 
                           <ChevronRight
                             size={22}
-                            color={colors.primary}
+                            color={theme.primary}
                             strokeWidth={2.2}
                           />
                         </PressableScale>
@@ -483,8 +521,8 @@ export default function ProfileScreen() {
                   : renderEmptyCard(
                       <Star
                         size={21}
-                        color={colors.yellowDark}
-                        fill={colors.yellowDark}
+                        color={theme.yellowDark}
+                        fill={theme.yellowDark}
                         strokeWidth={2}
                       />,
                       "Nenhuma avaliação enviada",
@@ -493,14 +531,6 @@ export default function ProfileScreen() {
               </View>
             </View>
           )}
-
-          <PressableScale
-            style={styles.logoutButton}
-            onPress={() => showProfileFeedback("Logout apenas visual")}
-          >
-            <LogOut size={20} color={colors.primary} strokeWidth={2.1} />
-            <Text style={styles.logoutText}>Sair da conta</Text>
-          </PressableScale>
 
           <View style={styles.easterEgg}>
             <Text style={styles.easterEggText}>

@@ -1,15 +1,30 @@
-import { Stack } from 'expo-router';
+import { Stack } from "expo-router";
 
-export default function Layout() {
+import {
+  PreferencesProvider,
+  useAppPreferences,
+} from "../src/context/PreferencesContext";
+
+function RootStack() {
+  const { theme } = useAppPreferences();
+
   return (
     <Stack
       screenOptions={{
         headerShown: false,
-        animation: 'slide_from_right',
+        animation: "slide_from_right",
         contentStyle: {
-          backgroundColor: '#F7F4EC',
+          backgroundColor: theme.background,
         },
       }}
     />
+  );
+}
+
+export default function Layout() {
+  return (
+    <PreferencesProvider>
+      <RootStack />
+    </PreferencesProvider>
   );
 }
