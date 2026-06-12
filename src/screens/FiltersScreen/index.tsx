@@ -185,6 +185,10 @@ function montarTextoDeStatus(status: StationStatus) {
 function Chip({ label, icon, selected, onPress, size = "medium" }: ChipProps) {
   return (
     <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${label}${selected ? ", selecionado" : ""}`}
+      accessibilityHint="Toque para ajustar este critério de busca."
+      accessibilityState={{ selected }}
       style={({ pressed }) => [
         styles.chip,
         styles[`${size}Chip`],
@@ -328,6 +332,8 @@ export default function FiltersScreen() {
           </View>
 
           <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Fechar busca e voltar ao mapa"
             style={styles.closeButton}
             onPress={() => router.replace("/map" as Href)}
           >
@@ -343,6 +349,8 @@ export default function FiltersScreen() {
             <View style={styles.searchInputBox}>
               <Text style={styles.searchIcon}>⌕</Text>
               <TextInput
+                accessibilityLabel="Campo de busca de pontos de recarga"
+                accessibilityHint="Digite bairro, estação, potência ou tipo de conector."
                 value={termoBusca}
                 onChangeText={setTermoBusca}
                 placeholder="Buscar por bairro, estação ou conector"
@@ -353,6 +361,8 @@ export default function FiltersScreen() {
 
               {termoBusca.length > 0 ? (
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Limpar campo de busca"
                   style={styles.searchClearButton}
                   onPress={() => setTermoBusca("")}
                 >
@@ -366,6 +376,9 @@ export default function FiltersScreen() {
               {sugestoesRapidas.map((sugestao) => (
                 <Pressable
                   key={sugestao}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Buscar por ${sugestao}`}
+                  accessibilityState={{ selected: termoBusca === sugestao }}
                   style={({ pressed }) => [
                     styles.quickSearchChip,
                     termoBusca === sugestao
@@ -523,6 +536,9 @@ export default function FiltersScreen() {
               pontosEncontrados.map((ponto) => (
                 <Pressable
                   key={ponto.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${ponto.name}. ${ponto.neighborhood}, ${ponto.distanceKm} km, ${ponto.powerKw} kW. ${montarTextoDeStatus(ponto.status)}.`}
+                  accessibilityHint="Abre a ficha detalhada deste ponto de recarga."
                   style={({ pressed }) => [
                     styles.resultItem,
                     pressed ? styles.resultItemPressed : null,
@@ -560,6 +576,8 @@ export default function FiltersScreen() {
 
         <SafeAreaView edges={["bottom"]} style={styles.footer}>
           <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Limpar busca e filtros"
             style={({ pressed }) => [
               styles.clearButton,
               pressed ? styles.buttonPressed : null,
@@ -571,6 +589,9 @@ export default function FiltersScreen() {
           </Pressable>
 
           <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Ver pontos encontrados no mapa"
+            accessibilityState={{ disabled: isApplying }}
             style={({ pressed }) => [
               styles.applyButton,
               pressed ? styles.primaryButtonPressed : null,

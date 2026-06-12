@@ -191,6 +191,14 @@ const getStationName = (station: Station) => {
   return readString(station, "name", readString(station, "title", "Ponto"));
 };
 
+const getStationNameById = (stationId: string) => {
+  const station = chargingStations.find((item, index) => {
+    return getStationId(item, index) === stationId;
+  });
+
+  return station ? getStationName(station) : "ponto de recarga";
+};
+
 const getStationAddress = (station: Station) => {
   return readString(
     station,
@@ -652,7 +660,12 @@ export default function HomeMapScreen() {
           <View style={styles.header}>
             <SvgXml xml={logoFluiXml} width={76} height={36} />
 
-            <PressableScale style={styles.profileButton} onPress={openProfile}>
+            <PressableScale
+              accessibilityRole="button"
+              accessibilityLabel="Abrir perfil"
+              style={styles.profileButton}
+              onPress={openProfile}
+            >
               <User size={22} color={colors.primary} strokeWidth={2} />
             </PressableScale>
           </View>
@@ -661,6 +674,8 @@ export default function HomeMapScreen() {
             <Search size={21} color={colors.textMuted} strokeWidth={2} />
 
             <TextInput
+              accessibilityLabel="Buscar no mapa"
+              accessibilityHint="Digite endereço, bairro ou nome do ponto de recarga."
               value={searchTerm}
               onChangeText={setSearchTerm}
               placeholder="Buscar endereço, bairro ou ponto"
@@ -671,7 +686,12 @@ export default function HomeMapScreen() {
 
             <View style={styles.searchDivider} />
 
-            <PressableScale style={styles.filterButton} onPress={abrirBusca}>
+            <PressableScale
+              accessibilityRole="button"
+              accessibilityLabel="Abrir busca e filtros"
+              style={styles.filterButton}
+              onPress={abrirBusca}
+            >
               <SlidersHorizontal
                 size={21}
                 color={colors.primary}
@@ -691,6 +711,10 @@ export default function HomeMapScreen() {
               return (
                 <Pressable
                   key={filter.label}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${filter.label}${filter.active ? ", filtro ativo" : ""}`}
+                  accessibilityHint="Abre a tela de busca e filtros."
+                  accessibilityState={{ selected: filter.active }}
                   style={[
                     styles.chip,
                     filter.active ? styles.chipActive : null,
@@ -732,13 +756,20 @@ export default function HomeMapScreen() {
               },
             ]}
           >
-            <Image source={mapaFlui} style={styles.mapImage} />
+            <Image
+              source={mapaFlui}
+              style={styles.mapImage}
+              accessible={false}
+            />
 
             {visibleMarkers.map((marker) => {
               if (marker.type === "plug") {
                 return (
                   <Pressable
                     key={marker.id}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Abrir ficha de ${getStationNameById(marker.stationId)}`}
+                    accessibilityHint="Mostra detalhes, disponibilidade e comodidades do ponto."
                     onPress={() => openStationDetails(marker.stationId)}
                     style={[
                       styles.mapMarker,
@@ -760,6 +791,9 @@ export default function HomeMapScreen() {
               return (
                 <Pressable
                   key={marker.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Abrir ficha de ${getStationNameById(marker.stationId)}`}
+                  accessibilityHint="Mostra detalhes, disponibilidade e comodidades do ponto."
                   onPress={() => openStationDetails(marker.stationId)}
                   style={[
                     styles.mapMarker,
@@ -780,7 +814,7 @@ export default function HomeMapScreen() {
               );
             })}
 
-            <View style={styles.currentLocation}>
+            <View style={styles.currentLocation} accessible={false}>
               <View style={styles.currentLocationHalo} />
               <View style={styles.currentLocationDot} />
             </View>
@@ -788,6 +822,9 @@ export default function HomeMapScreen() {
 
           <View pointerEvents="box-none" style={styles.fixedMapControls}>
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Centralizar localização"
+              accessibilityHint="Mostra um aviso de recurso em preparação."
               style={styles.mapControlButton}
               onPress={showLocationFeedback}
             >
@@ -795,6 +832,9 @@ export default function HomeMapScreen() {
             </Pressable>
 
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Abrir rota a partir da localização atual"
+              accessibilityHint="Mostra um aviso de recurso em preparação."
               style={styles.mapControlButton}
               onPress={showLocationFeedback}
             >
@@ -832,6 +872,8 @@ export default function HomeMapScreen() {
                 </Text>
 
                 <PressableScale
+                  accessibilityRole="button"
+                  accessibilityLabel="Ajustar busca"
                   style={styles.emptyButton}
                   onPress={abrirBusca}
                 >
@@ -847,6 +889,9 @@ export default function HomeMapScreen() {
                 return (
                   <PressableScale
                     key={`${point.id}-${point.stationId}`}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${point.title}. ${point.address}. ${point.status}. ${point.power}.`}
+                    accessibilityHint="Abre a ficha detalhada do ponto de recarga."
                     style={styles.pointCard}
                     onPress={() => openStationDetails(point.stationId)}
                   >

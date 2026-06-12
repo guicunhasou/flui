@@ -322,6 +322,8 @@ export default function PointDetailsScreen() {
           </Text>
 
           <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Voltar para o mapa"
             style={styles.primaryFallbackButton}
             onPress={voltarAoMapa}
           >
@@ -331,6 +333,8 @@ export default function PointDetailsScreen() {
           </Pressable>
 
           <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Voltar ao mapa"
             style={styles.secondaryFallbackButton}
             onPress={voltarAoMapa}
           >
@@ -423,11 +427,22 @@ export default function PointDetailsScreen() {
           </View>
 
           <SafeAreaView edges={["top"]} style={styles.heroActions}>
-            <Pressable style={styles.iconButton} onPress={voltarAoMapa}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Voltar ao mapa"
+              style={styles.iconButton}
+              onPress={voltarAoMapa}
+            >
               <Text style={styles.iconButtonText}>←</Text>
             </Pressable>
 
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+              accessibilityState={{
+                selected: isFavorite,
+                disabled: isLoadingAction || isLoadingStorage,
+              }}
               style={styles.iconButton}
               disabled={isLoadingAction || isLoadingStorage}
               onPress={handleToggleFavorite}
@@ -459,6 +474,7 @@ export default function PointDetailsScreen() {
 
             <View style={styles.statusGroup}>
               <View
+                accessible={false}
                 style={[
                   styles.statusDot,
                   { backgroundColor: statusInfo.color },
@@ -637,7 +653,12 @@ export default function PointDetailsScreen() {
             <View style={styles.reviewHeader}>
               <Text style={styles.sectionTitle}>Avaliações de usuários</Text>
 
-              <Pressable onPress={handleOpenReview}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Avaliar este ponto"
+                accessibilityHint="Abre a tela de avaliação do ponto de recarga."
+                onPress={handleOpenReview}
+              >
                 <Text style={styles.seeAllText}>Avaliar</Text>
               </Pressable>
             </View>
@@ -735,6 +756,9 @@ export default function PointDetailsScreen() {
 
       <SafeAreaView edges={["bottom"]} style={styles.bottomActions}>
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Ver mapa"
+          accessibilityState={{ disabled: isLoadingAction }}
           style={({ pressed }) => [
             styles.secondaryActionButton,
             pressed ? styles.buttonPressed : null,
@@ -746,6 +770,10 @@ export default function PointDetailsScreen() {
         </Pressable>
 
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Iniciar rota para ${station.name}`}
+          accessibilityHint="Permite escolher Google Maps ou Waze."
+          accessibilityState={{ disabled: isLoadingAction }}
           style={({ pressed }) => [
             styles.primaryActionButton,
             pressed ? styles.primaryButtonPressed : null,

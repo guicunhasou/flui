@@ -17,7 +17,14 @@ export default function LoadingOverlay({
   }
 
   return (
-    <View style={styles.overlay} pointerEvents="auto">
+    <View
+      accessibilityRole="alert"
+      accessibilityLabel={message}
+      accessibilityLiveRegion="polite"
+      accessibilityViewIsModal
+      style={styles.overlay}
+      pointerEvents="auto"
+    >
       <View style={styles.card}>
         <ActivityIndicator size="small" color={overlayColors.primary} />
 
