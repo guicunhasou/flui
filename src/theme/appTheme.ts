@@ -2,59 +2,59 @@ import type { AppearanceMode, FontSizePreference } from "../types";
 
 export const appThemes = {
   light: {
-    background: "#F7F4EC",
-    surface: "#FFFFFF",
-    white: "#FFFFFF",
+    background: "#F3F8F4",
+    surface: "#FCFEFA",
+    white: "#FCFEFA",
 
-    text: "#10162F",
-    textMuted: "#4F5878",
-    textLight: "#7C829A",
+    text: "#10221E",
+    textMuted: "#3F554F",
+    textLight: "#63766F",
 
     primary: "#2B0055",
-    primarySoft: "#EFE7FF",
-    primarySoftStrong: "#E0D1FF",
-    selectedCard: "#EFE7FF",
-    onPrimary: "#FFFFFF",
+    primarySoft: "#EEF7F1",
+    primarySoftStrong: "#CFE8D9",
+    selectedCard: "#E8F5EE",
+    onPrimary: "#FCFEFA",
 
-    yellow: "#FFF4CC",
-    yellowDark: "#F3B512",
+    yellow: "#FFF2C7",
+    yellowDark: "#F4B942",
 
-    border: "#ECE8DF",
-    shadow: "#1E1230",
+    border: "#DDE8E3",
+    shadow: "#12302A",
 
-    dangerSoft: "#FFF0F0",
-    dangerBorder: "#F5D5D5",
+    dangerSoft: "#FBE5E2",
+    dangerBorder: "#E9BAB5",
 
-    success: "#23B24B",
-    successSoft: "#EAF8EF",
+    success: "#1FA971",
+    successSoft: "#DDF6E8",
   },
 
   dark: {
-    background: "#100D1D",
-    surface: "#1B1730",
-    white: "#1B1730",
+    background: "#0E1320",
+    surface: "#171D2E",
+    white: "#171D2E",
 
-    text: "#FFFDF8",
-    textMuted: "#C6BEDA",
-    textLight: "#958BAD",
+    text: "#F7FBF8",
+    textMuted: "#C2D0CB",
+    textLight: "#8FA19B",
 
     primary: "#D8C7FF",
-    primarySoft: "#302452",
-    primarySoftStrong: "#43306F",
-    selectedCard: "#2A2147",
-    onPrimary: "#100D1D",
+    primarySoft: "#20332B",
+    primarySoftStrong: "#2D4A3D",
+    selectedCard: "#1F352C",
+    onPrimary: "#0E1320",
 
-    yellow: "#4A3B18",
+    yellow: "#4A3D18",
     yellowDark: "#FFD35A",
 
-    border: "#3A3158",
-    shadow: "#000000",
+    border: "#2E403A",
+    shadow: "#080A12",
 
-    dangerSoft: "#351C2A",
-    dangerBorder: "#5A2A3E",
+    dangerSoft: "#381F24",
+    dangerBorder: "#66383A",
 
-    success: "#6DE08E",
-    successSoft: "#203D2D",
+    success: "#7AE0A4",
+    successSoft: "#203D32",
   },
 } as const;
 

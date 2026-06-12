@@ -1,31 +1,31 @@
 export const colors = {
-  background: "#F6F1E8",
-  surface: "#FFFFFF",
+  background: "#F3F8F4",
+  surface: "#FCFEFA",
 
-  primary: "#36109A",
-  primaryDark: "#27106E",
-  primaryLight: "#E8DFFF",
+  primary: "#2B0055",
+  primaryDark: "#230044",
+  primaryLight: "#EAF1FF",
 
-  secondary: "#FFB84D",
-  secondaryLight: "#FFF1D8",
+  secondary: "#F4B942",
+  secondaryLight: "#FFF2C7",
 
-  text: "#1F1B2D",
-  textMuted: "#7A7485",
-  textLight: "#FFFFFF",
+  text: "#10221E",
+  textMuted: "#63766F",
+  textLight: "#FCFEFA",
 
-  border: "#E5DED3",
+  border: "#DDE8E3",
 
-  success: "#28A745",
-  successLight: "#DFF7E8",
+  success: "#1FA971",
+  successLight: "#DDF6E8",
 
-  warning: "#F5A623",
-  warningLight: "#FFF3D8",
+  warning: "#F4B942",
+  warningLight: "#FFF2C7",
 
-  danger: "#D9534F",
-  dangerLight: "#FCE1DF",
+  danger: "#C94D45",
+  dangerLight: "#FBE5E2",
 
-  mapBackground: "#EFE7DA",
-  mapStreet: "#D8CCBD",
+  mapBackground: "#E8F1EB",
+  mapStreet: "#C9D8D1",
 
-  tabBar: "#2A174F",
+  tabBar: "#230044",
 };

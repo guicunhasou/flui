@@ -3,7 +3,7 @@ import { StyleSheet } from "react-native";
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F7F4EC",
+    backgroundColor: "#F3F8F4",
   },
 
   scrollContent: {
@@ -12,13 +12,13 @@ export const styles = StyleSheet.create({
 
   hero: {
     height: 290,
-    backgroundColor: "#161B2E",
+    backgroundColor: "#10221E",
     overflow: "hidden",
   },
 
   heroSky: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "#1D2738",
+    backgroundColor: "#17342E",
   },
 
   heroCanopy: {
@@ -50,14 +50,14 @@ export const styles = StyleSheet.create({
     height: 116,
     borderRadius: 12,
     padding: 10,
-    backgroundColor: "#123B37",
+    backgroundColor: "#0F4A3A",
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.25)",
+    borderColor: "rgba(252, 254, 250, 0.28)",
     justifyContent: "space-between",
   },
 
   chargerLogo: {
-    color: "#FFFFFF",
+    color: "#FCFEFA",
     fontSize: 16,
     fontWeight: "700",
   },
@@ -97,10 +97,10 @@ export const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FCFEFA",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000000",
+    shadowColor: "#080A12",
     shadowOpacity: 0.14,
     shadowRadius: 12,
     shadowOffset: {
@@ -111,7 +111,7 @@ export const styles = StyleSheet.create({
   },
 
   iconButtonText: {
-    color: "#111427",
+    color: "#10221E",
     fontSize: 25,
     fontWeight: "600",
     lineHeight: 28,
@@ -124,11 +124,11 @@ export const styles = StyleSheet.create({
     paddingBottom: 24,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
-    backgroundColor: "#FDFBF6",
+    backgroundColor: "#FCFEFA",
   },
 
   stationName: {
-    color: "#121526",
+    color: "#10221E",
     fontSize: 29,
     fontWeight: "800",
     letterSpacing: -0.8,
@@ -136,7 +136,7 @@ export const styles = StyleSheet.create({
   },
 
   address: {
-    color: "#585A72",
+    color: "#3F554F",
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 14,
@@ -156,20 +156,20 @@ export const styles = StyleSheet.create({
   },
 
   star: {
-    color: "#F2B719",
+    color: "#F4B942",
     fontSize: 20,
     marginRight: 7,
   },
 
   ratingValue: {
-    color: "#10162F",
+    color: "#10221E",
     fontSize: 16,
     fontWeight: "700",
     marginRight: 5,
   },
 
   reviewCount: {
-    color: "#54566F",
+    color: "#63766F",
     fontSize: 14,
   },
 
@@ -186,7 +186,7 @@ export const styles = StyleSheet.create({
   },
 
   statusText: {
-    color: "#17924E",
+    color: "#1FA971",
     fontSize: 14,
     fontWeight: "700",
   },
@@ -201,20 +201,20 @@ export const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#F0EAFB",
+    backgroundColor: "#E8F5EE",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 10,
   },
 
   availableIcon: {
-    color: "#3A0EC6",
+    color: "#2166F3",
     fontSize: 17,
     fontWeight: "700",
   },
 
   availableText: {
-    color: "#343653",
+    color: "#3F554F",
     fontSize: 16,
     fontWeight: "700",
   },
@@ -231,9 +231,9 @@ export const styles = StyleSheet.create({
     minHeight: 118,
     borderRadius: 18,
     padding: 14,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FCFEFA",
     borderWidth: 1,
-    borderColor: "#ECE8DF",
+    borderColor: "#DDE8E3",
     flexDirection: "row",
     alignItems: "flex-start",
   },
@@ -242,14 +242,14 @@ export const styles = StyleSheet.create({
     width: 46,
     height: 46,
     borderRadius: 23,
-    backgroundColor: "#EFE7FF",
+    backgroundColor: "#EAF1FF",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
   },
 
   infoIcon: {
-    color: "#3A0EC6",
+    color: "#2166F3",
     fontSize: 22,
     fontWeight: "700",
   },
@@ -259,14 +259,14 @@ export const styles = StyleSheet.create({
   },
 
   infoLabel: {
-    color: "#4F5878",
+    color: "#3F554F",
     fontSize: 12,
     fontWeight: "600",
     marginBottom: 5,
   },
 
   infoValue: {
-    color: "#10162F",
+    color: "#10221E",
     fontSize: 17,
     fontWeight: "800",
     lineHeight: 22,
@@ -274,7 +274,7 @@ export const styles = StyleSheet.create({
   },
 
   infoDescription: {
-    color: "#4F5878",
+    color: "#3F554F",
     fontSize: 12,
     lineHeight: 16,
   },
@@ -283,9 +283,9 @@ export const styles = StyleSheet.create({
     minHeight: 90,
     borderRadius: 18,
     padding: 14,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FCFEFA",
     borderWidth: 1,
-    borderColor: "#ECE8DF",
+    borderColor: "#DDE8E3",
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 10,
@@ -295,14 +295,14 @@ export const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: "#FFF7E1",
+    backgroundColor: "#FFF2C7",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 13,
   },
 
   highlightIcon: {
-    color: "#E6A713",
+    color: "#D99A10",
     fontSize: 26,
   },
 
@@ -311,26 +311,26 @@ export const styles = StyleSheet.create({
   },
 
   highlightLabel: {
-    color: "#4F5878",
+    color: "#3F554F",
     fontSize: 13,
     fontWeight: "600",
     marginBottom: 3,
   },
 
   highlightValue: {
-    color: "#10162F",
+    color: "#10221E",
     fontSize: 17,
     fontWeight: "800",
     marginBottom: 3,
   },
 
   highlightDescription: {
-    color: "#4F5878",
+    color: "#3F554F",
     fontSize: 13,
   },
 
   highlightArrow: {
-    color: "#4F5878",
+    color: "#3F554F",
     fontSize: 32,
     marginLeft: 8,
   },
@@ -338,14 +338,14 @@ export const styles = StyleSheet.create({
   section: {
     borderRadius: 18,
     padding: 16,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FCFEFA",
     borderWidth: 1,
-    borderColor: "#ECE8DF",
+    borderColor: "#DDE8E3",
     marginTop: 10,
   },
 
   sectionTitle: {
-    color: "#10162F",
+    color: "#10221E",
     fontSize: 16,
     fontWeight: "800",
     marginBottom: 14,
@@ -361,14 +361,14 @@ export const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: "#EFE7FF",
+    backgroundColor: "#EAF1FF",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
   },
 
   connectorIcon: {
-    color: "#3A0EC6",
+    color: "#2166F3",
     fontSize: 18,
     fontWeight: "700",
   },
@@ -378,14 +378,14 @@ export const styles = StyleSheet.create({
   },
 
   connectorName: {
-    color: "#10162F",
+    color: "#10221E",
     fontSize: 15,
     fontWeight: "800",
     marginBottom: 3,
   },
 
   connectorDescription: {
-    color: "#4F5878",
+    color: "#3F554F",
     fontSize: 13,
   },
 
@@ -404,7 +404,7 @@ export const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: "#EFE7FF",
+    backgroundColor: "#EAF1FF",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 7,
@@ -417,7 +417,7 @@ export const styles = StyleSheet.create({
   },
 
   amenityLabel: {
-    color: "#42455F",
+    color: "#3F554F",
     fontSize: 11,
     fontWeight: "700",
     textAlign: "center",
@@ -430,7 +430,7 @@ export const styles = StyleSheet.create({
   },
 
   seeAllText: {
-    color: "#3A0EC6",
+    color: "#2166F3",
     fontSize: 13,
     fontWeight: "800",
     marginBottom: 14,
@@ -448,21 +448,21 @@ export const styles = StyleSheet.create({
   },
 
   bigRating: {
-    color: "#10162F",
+    color: "#10221E",
     fontSize: 42,
     fontWeight: "800",
     lineHeight: 48,
   },
 
   ratingStars: {
-    color: "#F2B719",
+    color: "#F4B942",
     fontSize: 14,
     marginTop: 3,
     marginBottom: 6,
   },
 
   totalReviews: {
-    color: "#4F5878",
+    color: "#3F554F",
     fontSize: 12,
   },
 
@@ -478,7 +478,7 @@ export const styles = StyleSheet.create({
 
   ratingLineLabel: {
     width: 32,
-    color: "#4F5878",
+    color: "#3F554F",
     fontSize: 11,
     fontWeight: "700",
   },
@@ -487,7 +487,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     height: 5,
     borderRadius: 3,
-    backgroundColor: "#E8E6EC",
+    backgroundColor: "#DDE8E3",
     marginHorizontal: 8,
     overflow: "hidden",
   },
@@ -522,7 +522,7 @@ export const styles = StyleSheet.create({
 
   ratingPercent: {
     width: 28,
-    color: "#4F5878",
+    color: "#3F554F",
     fontSize: 11,
     fontWeight: "700",
     textAlign: "right",
@@ -532,16 +532,16 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     borderRadius: 16,
     padding: 14,
-    backgroundColor: "#FCFAF4",
+    backgroundColor: "#F7FBF8",
     borderWidth: 1,
-    borderColor: "#ECE8DF",
+    borderColor: "#DDE8E3",
   },
 
   avatar: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#EFE7FF",
+    backgroundColor: "#EAF1FF",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
@@ -558,20 +558,20 @@ export const styles = StyleSheet.create({
   },
 
   userName: {
-    color: "#10162F",
+    color: "#10221E",
     fontSize: 14,
     fontWeight: "800",
     marginBottom: 2,
   },
 
   userStars: {
-    color: "#F2B719",
+    color: "#F4B942",
     fontSize: 12,
     marginBottom: 5,
   },
 
   userComment: {
-    color: "#4F5878",
+    color: "#3F554F",
     fontSize: 13,
     lineHeight: 18,
   },
@@ -579,20 +579,20 @@ export const styles = StyleSheet.create({
   emptyReviewCard: {
     borderRadius: 16,
     padding: 14,
-    backgroundColor: "#FCFAF4",
+    backgroundColor: "#F7FBF8",
     borderWidth: 1,
-    borderColor: "#ECE8DF",
+    borderColor: "#DDE8E3",
   },
 
   emptyReviewTitle: {
-    color: "#10162F",
+    color: "#10221E",
     fontSize: 14,
     fontWeight: "800",
     marginBottom: 4,
   },
 
   emptyReviewText: {
-    color: "#4F5878",
+    color: "#3F554F",
     fontSize: 13,
     lineHeight: 18,
   },
@@ -605,9 +605,9 @@ export const styles = StyleSheet.create({
     paddingTop: 12,
     paddingHorizontal: 22,
     paddingBottom: 10,
-    backgroundColor: "#FDFBF6",
+    backgroundColor: "#FCFEFA",
     borderTopWidth: 1,
-    borderTopColor: "#ECE8DF",
+    borderTopColor: "#DDE8E3",
     flexDirection: "row",
     gap: 12,
   },
@@ -620,7 +620,7 @@ export const styles = StyleSheet.create({
     borderColor: "#2B0055",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FCFEFA",
   },
 
   secondaryActionText: {
@@ -639,7 +639,7 @@ export const styles = StyleSheet.create({
   },
 
   primaryActionText: {
-    color: "#FFFFFF",
+    color: "#FCFEFA",
     fontSize: 15,
     fontWeight: "800",
   },
@@ -647,7 +647,7 @@ export const styles = StyleSheet.create({
   fallbackContainer: {
     flex: 1,
     padding: 24,
-    backgroundColor: "#F7F4EC",
+    backgroundColor: "#F3F8F4",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -656,9 +656,9 @@ export const styles = StyleSheet.create({
     width: "100%",
     borderRadius: 28,
     padding: 24,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FCFEFA",
     borderWidth: 1,
-    borderColor: "#ECE8DF",
+    borderColor: "#DDE8E3",
     alignItems: "center",
   },
 
@@ -666,7 +666,7 @@ export const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: "#EFE7FF",
+    backgroundColor: "#EAF1FF",
     color: "#2B0055",
     fontSize: 28,
     fontWeight: "800",
@@ -676,7 +676,7 @@ export const styles = StyleSheet.create({
   },
 
   fallbackTitle: {
-    color: "#10162F",
+    color: "#10221E",
     fontSize: 24,
     fontWeight: "800",
     textAlign: "center",
@@ -684,7 +684,7 @@ export const styles = StyleSheet.create({
   },
 
   fallbackDescription: {
-    color: "#4F5878",
+    color: "#3F554F",
     fontSize: 15,
     lineHeight: 22,
     textAlign: "center",
@@ -702,7 +702,7 @@ export const styles = StyleSheet.create({
   },
 
   primaryFallbackButtonText: {
-    color: "#FFFFFF",
+    color: "#FCFEFA",
     fontSize: 15,
     fontWeight: "800",
   },
@@ -712,13 +712,13 @@ export const styles = StyleSheet.create({
     height: 52,
     borderRadius: 18,
     borderWidth: 1.5,
-    borderColor: "#D8D1C3",
+    borderColor: "#BBD0C7",
     alignItems: "center",
     justifyContent: "center",
   },
 
   secondaryFallbackButtonText: {
-    color: "#10162F",
+    color: "#10221E",
     fontSize: 15,
     fontWeight: "800",
   },
@@ -738,8 +738,8 @@ export const styles = StyleSheet.create({
   },
 
   iconButtonSelected: {
-    backgroundColor: "#EFE7FF",
+    backgroundColor: "#EAF1FF",
     borderWidth: 1.5,
-    borderColor: "#3A0EC6",
+    borderColor: "#2166F3",
   },
 });

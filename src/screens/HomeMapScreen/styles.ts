@@ -3,19 +3,19 @@ import { Dimensions, Platform, StyleSheet } from "react-native";
 const { height } = Dimensions.get("window");
 
 export const colors = {
-  background: "#F7F4EC",
-  white: "#FFFFFF",
-  text: "#10162F",
-  textMuted: "#4F5878",
-  textLight: "#7C829A",
+  background: "#F3F8F4",
+  white: "#FCFEFA",
+  text: "#10221E",
+  textMuted: "#3F554F",
+  textLight: "#63766F",
   primary: "#2B0055",
-  primarySoft: "#EFE7FF",
-  primarySoftStrong: "#E0D1FF",
-  green: "#23B24B",
-  yellow: "#FFF4CC",
-  yellowDark: "#F3B512",
-  border: "#ECE8DF",
-  shadow: "#1E1230",
+  primarySoft: "#EAF1FF",
+  primarySoftStrong: "#CFE8D9",
+  green: "#1FA971",
+  yellow: "#FFF2C7",
+  yellowDark: "#F4B942",
+  border: "#DDE8E3",
+  shadow: "#12302A",
 };
 
 const shadow = {
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     flex: 1,
     position: "relative",
     overflow: "hidden",
-    backgroundColor: "#EEF2F3",
+    backgroundColor: "#E8F1EB",
   },
 
   mapCanvas: {
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
     width: 82,
     height: 82,
     borderRadius: 41,
-    backgroundColor: "rgba(155, 53, 245, 0.14)",
+    backgroundColor: "rgba(31, 169, 113, 0.16)",
   },
 
   currentLocationDot: {
@@ -267,11 +267,11 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
-    backgroundColor: "rgba(247, 244, 236, 0.92)",
+    backgroundColor: "rgba(243, 248, 244, 0.94)",
     borderTopWidth: 1,
     borderLeftWidth: 1,
     borderRightWidth: 1,
-    borderColor: "rgba(236, 232, 223, 0.72)",
+    borderColor: "rgba(221, 232, 227, 0.82)",
     zIndex: 8,
     shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: -8 },
