@@ -219,6 +219,69 @@ export const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
+  resumoMotoristaCard: {
+    borderRadius: 22,
+    padding: 16,
+    backgroundColor: "#EEF7F1",
+    borderWidth: 1,
+    borderColor: "#CFE8D9",
+    marginBottom: 12,
+  },
+
+  resumoEyebrow: {
+    color: "#2166F3",
+    fontSize: 12,
+    fontWeight: "800",
+    letterSpacing: 1.2,
+    marginBottom: 6,
+    textTransform: "uppercase",
+  },
+
+  resumoTitle: {
+    color: "#10221E",
+    fontSize: 20,
+    fontWeight: "800",
+    lineHeight: 25,
+    marginBottom: 6,
+  },
+
+  resumoDescription: {
+    color: "#3F554F",
+    fontSize: 13,
+    lineHeight: 19,
+    marginBottom: 14,
+  },
+
+  resumoInfoGrid: {
+    flexDirection: "row",
+    gap: 8,
+  },
+
+  resumoInfoItem: {
+    flex: 1,
+    minHeight: 74,
+    borderRadius: 16,
+    padding: 10,
+    backgroundColor: "#FCFEFA",
+    borderWidth: 1,
+    borderColor: "#DDE8E3",
+    justifyContent: "center",
+  },
+
+  resumoInfoLabel: {
+    color: "#63766F",
+    fontSize: 11,
+    fontWeight: "700",
+    marginBottom: 5,
+  },
+
+  resumoInfoValue: {
+    color: "#10221E",
+    fontSize: 13,
+    fontWeight: "800",
+    lineHeight: 17,
+  },
+
   infoGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -349,6 +412,45 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "800",
     marginBottom: 14,
+  },
+
+  informacaoUtilRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    paddingVertical: 10,
+  },
+
+  informacaoUtilIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: "#E8F5EE",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+
+  informacaoUtilIcon: {
+    color: "#1FA971",
+    fontSize: 17,
+    fontWeight: "800",
+  },
+
+  informacaoUtilContent: {
+    flex: 1,
+  },
+
+  informacaoUtilTitle: {
+    color: "#10221E",
+    fontSize: 14,
+    fontWeight: "800",
+    marginBottom: 3,
+  },
+
+  informacaoUtilDescription: {
+    color: "#3F554F",
+    fontSize: 13,
+    lineHeight: 18,
   },
 
   connectorRow: {

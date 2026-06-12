@@ -120,6 +120,68 @@ function getRouteUrl(station: Station, provider: RouteProvider) {
   return `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&travelmode=driving`;
 }
 
+function calcularTempoEstimadoCarga(powerKw: number) {
+  if (powerKw >= 120) {
+    return "20 a 35 min";
+  }
+
+  if (powerKw >= 50) {
+    return "40 a 60 min";
+  }
+
+  return "1h30 ou mais";
+}
+
+function montarTextoDeRecomendacao(
+  station: Station,
+  carregadoresDisponiveis: number,
+) {
+  if (station.status === "maintenance") {
+    return "Evite este ponto por enquanto";
+  }
+
+  if (carregadoresDisponiveis > 0 && station.powerKw >= 120) {
+    return "Boa escolha para uma parada rápida";
+  }
+
+  if (carregadoresDisponiveis > 0) {
+    return "Boa opção para recarregar com conforto";
+  }
+
+  return "Verifique a fila antes de ir";
+}
+
+function montarOrientacaoDeEspera(
+  status: Station["status"],
+  carregadoresDisponiveis: number,
+) {
+  if (status === "maintenance") {
+    return "Indisponível";
+  }
+
+  if (carregadoresDisponiveis > 1) {
+    return "Baixa";
+  }
+
+  if (carregadoresDisponiveis === 1) {
+    return "Moderada";
+  }
+
+  return "Alta";
+}
+
+function montarPerfilDoPonto(station: Station) {
+  if (station.powerKw >= 120) {
+    return "Carga rápida";
+  }
+
+  if (station.amenities.length >= 4) {
+    return "Parada confortável";
+  }
+
+  return "Recarga essencial";
+}
+
 export default function PointDetailsScreen() {
   const { stationId } = useLocalSearchParams<{
     stationId?: string | string[];
@@ -300,6 +362,44 @@ export default function PointDetailsScreen() {
       ? station.lessBusyPeriods.join(" ou ")
       : "Sem previsão de menor movimento";
 
+  const tempoEstimadoCarga = calcularTempoEstimadoCarga(station.powerKw);
+  const recomendacaoDoPonto = montarTextoDeRecomendacao(
+    station,
+    availableChargers,
+  );
+  const orientacaoDeEspera = montarOrientacaoDeEspera(
+    station.status,
+    availableChargers,
+  );
+  const perfilDoPonto = montarPerfilDoPonto(station);
+  const comodidadesResumo = station.amenities
+    .slice(0, 3)
+    .map(getAmenityLabel)
+    .join(", ");
+
+  const informacoesUteis = [
+    {
+      id: "chegada",
+      icon: "⌖",
+      title: "Chegada",
+      description: `${station.distanceKm} km de distância, com rota externa disponível pelo app de mapas.`,
+    },
+    {
+      id: "espera",
+      icon: "◷",
+      title: "Espera estimada",
+      description: `${orientacaoDeEspera}. Melhor horário: ${lessBusyText}.`,
+    },
+    {
+      id: "conforto",
+      icon: "☕",
+      title: "Conforto no local",
+      description: comodidadesResumo
+        ? `Comodidades próximas: ${comodidadesResumo}.`
+        : "Sem comodidades cadastradas no momento.",
+    },
+  ];
+
   const mainReview = station.reviews?.[0] ?? null;
 
   return (
@@ -379,6 +479,32 @@ export default function PointDetailsScreen() {
             </Text>
           </View>
 
+          <View style={styles.resumoMotoristaCard}>
+            <Text style={styles.resumoEyebrow}>Guia do ponto</Text>
+            <Text style={styles.resumoTitle}>{recomendacaoDoPonto}</Text>
+            <Text style={styles.resumoDescription}>
+              Compare disponibilidade, potência e conforto antes de escolher onde
+              recarregar.
+            </Text>
+
+            <View style={styles.resumoInfoGrid}>
+              <View style={styles.resumoInfoItem}>
+                <Text style={styles.resumoInfoLabel}>Espera</Text>
+                <Text style={styles.resumoInfoValue}>{orientacaoDeEspera}</Text>
+              </View>
+
+              <View style={styles.resumoInfoItem}>
+                <Text style={styles.resumoInfoLabel}>Tempo</Text>
+                <Text style={styles.resumoInfoValue}>{tempoEstimadoCarga}</Text>
+              </View>
+
+              <View style={styles.resumoInfoItem}>
+                <Text style={styles.resumoInfoLabel}>Perfil</Text>
+                <Text style={styles.resumoInfoValue}>{perfilDoPonto}</Text>
+              </View>
+            </View>
+          </View>
+
           <View style={styles.infoGrid}>
             <View style={styles.infoCard}>
               <View style={styles.infoIconBox}>
@@ -445,6 +571,25 @@ export default function PointDetailsScreen() {
             </View>
 
             <Text style={styles.highlightArrow}>›</Text>
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Informações úteis ao motorista</Text>
+
+            {informacoesUteis.map((info) => (
+              <View key={info.id} style={styles.informacaoUtilRow}>
+                <View style={styles.informacaoUtilIconBox}>
+                  <Text style={styles.informacaoUtilIcon}>{info.icon}</Text>
+                </View>
+
+                <View style={styles.informacaoUtilContent}>
+                  <Text style={styles.informacaoUtilTitle}>{info.title}</Text>
+                  <Text style={styles.informacaoUtilDescription}>
+                    {info.description}
+                  </Text>
+                </View>
+              </View>
+            ))}
           </View>
 
           <View style={styles.section}>
