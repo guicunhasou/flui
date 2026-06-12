@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { router, type Href } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -17,6 +17,7 @@ import {
 } from "../../types";
 import { styles } from "./styles";
 import { LoadingOverlay, ScreenTransition } from "../../components";
+import { colors } from "../../theme/colors";
 
 type ChipProps = {
   label: string;
@@ -79,7 +80,12 @@ const visibleAmenityOptions = amenityOptions
 const powerOptions = [50, 100, 150, 250];
 const ratingOptions = [4, 4.5];
 const distanceOptions = [0.5, 1, 5];
-const pontosSugeridos = chargingStations.slice(0, 3);
+const sugestoesRapidas = [
+  "Shopping",
+  "Recife Antigo",
+  "Boa Viagem",
+  "Carga rápida",
+];
 
 function toggleArrayValue<TValue extends string>(
   currentValues: TValue[],
@@ -128,6 +134,54 @@ function formatDistanceLabel(distance: number) {
   return `${distance} km`;
 }
 
+function normalizarTexto(texto: string) {
+  return texto
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function buscarPontos(termo: string) {
+  const termoNormalizado = normalizarTexto(termo);
+
+  if (!termoNormalizado) {
+    return chargingStations.slice(0, 3);
+  }
+
+  return chargingStations.filter((ponto) => {
+    const textoDoPonto = normalizarTexto(
+      [
+        ponto.name,
+        ponto.address,
+        ponto.neighborhood,
+        ponto.city,
+        ponto.state,
+        `${ponto.powerKw} kW`,
+        ponto.connectors.map((connector) => connector.label).join(" "),
+      ].join(" "),
+    );
+
+    return textoDoPonto.includes(termoNormalizado);
+  });
+}
+
+function montarTextoDeStatus(status: StationStatus) {
+  if (status === "available") {
+    return "Disponível agora";
+  }
+
+  if (status === "busy") {
+    return "Alta procura";
+  }
+
+  if (status === "maintenance") {
+    return "Em manutenção";
+  }
+
+  return "Indisponível";
+}
+
 function Chip({ label, icon, selected, onPress, size = "medium" }: ChipProps) {
   return (
     <Pressable
@@ -158,7 +212,14 @@ function Chip({ label, icon, selected, onPress, size = "medium" }: ChipProps) {
 
 export default function FiltersScreen() {
   const [filters, setFilters] = useState<StationFilters>(initialFilters);
+  const [termoBusca, setTermoBusca] = useState("");
   const [isApplying, setIsApplying] = useState(false);
+
+  const pontosEncontrados = buscarPontos(termoBusca);
+  const textoContagem =
+    pontosEncontrados.length === 1
+      ? "1 ponto"
+      : `${pontosEncontrados.length} pontos`;
 
   function handleToggleConnector(connectorType: ConnectorType) {
     setFilters((currentFilters) => ({
@@ -222,6 +283,11 @@ export default function FiltersScreen() {
 
   function handleClearFilters() {
     setFilters(defaultFilters);
+    setTermoBusca("");
+  }
+
+  function selecionarSugestao(sugestao: string) {
+    setTermoBusca(sugestao);
   }
 
   function abrirMapaComBusca() {
@@ -273,6 +339,57 @@ export default function FiltersScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
+          <View style={styles.searchCard}>
+            <View style={styles.searchInputBox}>
+              <Text style={styles.searchIcon}>⌕</Text>
+              <TextInput
+                value={termoBusca}
+                onChangeText={setTermoBusca}
+                placeholder="Buscar por bairro, estação ou conector"
+                placeholderTextColor={colors.textMuted}
+                returnKeyType="search"
+                style={styles.searchInput}
+              />
+
+              {termoBusca.length > 0 ? (
+                <Pressable
+                  style={styles.searchClearButton}
+                  onPress={() => setTermoBusca("")}
+                >
+                  <Text style={styles.searchClearText}>×</Text>
+                </Pressable>
+              ) : null}
+            </View>
+
+            <Text style={styles.quickSearchLabel}>Sugestões rápidas</Text>
+            <View style={styles.quickSearchRow}>
+              {sugestoesRapidas.map((sugestao) => (
+                <Pressable
+                  key={sugestao}
+                  style={({ pressed }) => [
+                    styles.quickSearchChip,
+                    termoBusca === sugestao
+                      ? styles.quickSearchChipSelected
+                      : null,
+                    pressed ? styles.pressedChip : null,
+                  ]}
+                  onPress={() => selecionarSugestao(sugestao)}
+                >
+                  <Text
+                    style={[
+                      styles.quickSearchChipText,
+                      termoBusca === sugestao
+                        ? styles.quickSearchChipTextSelected
+                        : null,
+                    ]}
+                  >
+                    {sugestao}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+
           <View style={styles.filterCard}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionIcon}>⌁</Text>
@@ -399,39 +516,45 @@ export default function FiltersScreen() {
                 <Text style={styles.resultsTitle}>Pontos recomendados</Text>
               </View>
 
-              <Text style={styles.resultsCount}>3 pontos</Text>
+              <Text style={styles.resultsCount}>{textoContagem}</Text>
             </View>
 
-            {pontosSugeridos.map((ponto) => (
-              <Pressable
-                key={ponto.id}
-                style={({ pressed }) => [
-                  styles.resultItem,
-                  pressed ? styles.resultItemPressed : null,
-                ]}
-                onPress={() => abrirFichaDoPonto(ponto.id)}
-              >
-                <View style={styles.resultIconBox}>
-                  <Text style={styles.resultIcon}>⚡</Text>
-                </View>
+            {pontosEncontrados.length > 0 ? (
+              pontosEncontrados.map((ponto) => (
+                <Pressable
+                  key={ponto.id}
+                  style={({ pressed }) => [
+                    styles.resultItem,
+                    pressed ? styles.resultItemPressed : null,
+                  ]}
+                  onPress={() => abrirFichaDoPonto(ponto.id)}
+                >
+                  <View style={styles.resultIconBox}>
+                    <Text style={styles.resultIcon}>⚡</Text>
+                  </View>
 
-                <View style={styles.resultContent}>
-                  <Text style={styles.resultName}>{ponto.name}</Text>
-                  <Text style={styles.resultAddress}>
-                    {ponto.neighborhood} · {ponto.distanceKm} km · {ponto.powerKw} kW
-                  </Text>
-                  <Text style={styles.resultStatus}>
-                    {ponto.status === "available"
-                      ? "Disponível agora"
-                      : ponto.status === "busy"
-                        ? "Alta procura"
-                        : "Ver status"}
-                  </Text>
-                </View>
+                  <View style={styles.resultContent}>
+                    <Text style={styles.resultName}>{ponto.name}</Text>
+                    <Text style={styles.resultAddress}>
+                      {ponto.neighborhood} · {ponto.distanceKm} km · {ponto.powerKw} kW
+                    </Text>
+                    <Text style={styles.resultStatus}>
+                      {montarTextoDeStatus(ponto.status)}
+                    </Text>
+                  </View>
 
-                <Text style={styles.resultArrow}>›</Text>
-              </Pressable>
-            ))}
+                  <Text style={styles.resultArrow}>›</Text>
+                </Pressable>
+              ))
+            ) : (
+              <View style={styles.emptyResultsCard}>
+                <Text style={styles.emptyResultsTitle}>Nenhum ponto encontrado</Text>
+                <Text style={styles.emptyResultsText}>
+                  Tente buscar por bairro, shopping, potência ou tipo de
+                  conector.
+                </Text>
+              </View>
+            )}
           </View>
         </ScrollView>
 

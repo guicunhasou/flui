@@ -78,6 +78,99 @@ export const styles = StyleSheet.create({
     paddingBottom: 112,
   },
 
+  searchCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.md,
+    ...shadows.soft,
+  },
+
+  searchInputBox: {
+    minHeight: 56,
+    borderRadius: radius.lg,
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: spacing.md,
+  },
+
+  searchIcon: {
+    color: colors.primaryDark,
+    fontSize: 24,
+    fontWeight: typography.weights.bold,
+    marginRight: spacing.sm,
+  },
+
+  searchInput: {
+    flex: 1,
+    color: colors.text,
+    fontSize: typography.sizes.md,
+    fontWeight: typography.weights.semibold,
+    paddingVertical: spacing.sm,
+  },
+
+  searchClearButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.primaryLight,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: spacing.sm,
+  },
+
+  searchClearText: {
+    color: colors.primaryDark,
+    fontSize: 22,
+    lineHeight: 24,
+    fontWeight: typography.weights.medium,
+  },
+
+  quickSearchLabel: {
+    color: colors.textMuted,
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.bold,
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
+  },
+
+  quickSearchRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+  },
+
+  quickSearchChip: {
+    minHeight: 40,
+    borderRadius: radius.md,
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: spacing.md,
+  },
+
+  quickSearchChipSelected: {
+    backgroundColor: colors.primaryDark,
+    borderColor: colors.primaryDark,
+  },
+
+  quickSearchChipText: {
+    color: colors.text,
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.semibold,
+  },
+
+  quickSearchChipTextSelected: {
+    color: colors.white,
+  },
+
   filterCard: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
@@ -268,6 +361,28 @@ export const styles = StyleSheet.create({
     fontSize: 30,
     lineHeight: 32,
     marginLeft: spacing.sm,
+  },
+
+  emptyResultsCard: {
+    borderRadius: radius.md,
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.lg,
+    marginTop: spacing.sm,
+  },
+
+  emptyResultsTitle: {
+    color: colors.text,
+    fontSize: typography.sizes.md,
+    fontWeight: typography.weights.bold,
+    marginBottom: spacing.xs,
+  },
+
+  emptyResultsText: {
+    color: colors.textMuted,
+    fontSize: typography.sizes.sm,
+    lineHeight: 19,
   },
 
   footer: {
