@@ -224,7 +224,7 @@ export default function FiltersScreen() {
 
   function handleApplyFilters() {
     const route = {
-      pathname: "/",
+      pathname: "/map",
       params: {
         filters: JSON.stringify(filters),
       },
@@ -241,7 +241,13 @@ export default function FiltersScreen() {
     <SafeAreaView style={styles.container}>
       <ScreenTransition style={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.title}>Filtros</Text>
+          <View style={styles.titleGroup}>
+            <Text style={styles.eyebrow}>Busca</Text>
+            <Text style={styles.title}>Busca e filtros</Text>
+            <Text style={styles.subtitle}>
+              Encontre pontos por conector, potência, distância e conforto.
+            </Text>
+          </View>
 
           <Pressable style={styles.closeButton} onPress={() => router.back()}>
             <Text style={styles.closeButtonText}>×</Text>
@@ -381,7 +387,7 @@ export default function FiltersScreen() {
             onPress={handleClearFilters}
           >
             <Text style={styles.clearButtonIcon}>⟳</Text>
-            <Text style={styles.clearButtonText}>Limpar filtros</Text>
+            <Text style={styles.clearButtonText}>Limpar busca</Text>
           </Pressable>
 
           <Pressable
@@ -392,10 +398,10 @@ export default function FiltersScreen() {
             disabled={isApplying}
             onPress={handleApplyFilters}
           >
-            <Text style={styles.applyButtonText}>Aplicar filtros</Text>
+            <Text style={styles.applyButtonText}>Ver no mapa</Text>
           </Pressable>
         </SafeAreaView>
-        <LoadingOverlay visible={isApplying} message="Aplicando filtros..." />
+        <LoadingOverlay visible={isApplying} message="Buscando pontos..." />
       </ScreenTransition>
     </SafeAreaView>
   );

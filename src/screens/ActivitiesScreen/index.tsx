@@ -35,7 +35,7 @@ const connectorLabels = {
 };
 
 function openMap() {
-  router.push("/" as Href);
+  router.push("/map" as Href);
 }
 
 function openFavorites() {

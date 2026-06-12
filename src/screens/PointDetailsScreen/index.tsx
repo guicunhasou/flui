@@ -243,7 +243,7 @@ export default function PointDetailsScreen() {
   }
 
   function handleGoHome() {
-    router.push("/" as Href);
+    router.push("/map" as Href);
   }
 
   if (!station) {

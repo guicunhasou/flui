@@ -64,7 +64,7 @@ function getStationDetailsRoute(stationId: string) {
 }
 
 function openMap() {
-  router.push("/" as Href);
+  router.push("/map" as Href);
 }
 
 function openActivities() {

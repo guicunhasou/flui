@@ -623,8 +623,8 @@ export default function HomeMapScreen() {
     }, 280);
   };
 
-  const openFilters = () => {
-    router.push("/filters" as Href);
+  const abrirBusca = () => {
+    router.push("/search" as Href);
   };
 
   const openProfile = () => {
@@ -663,7 +663,7 @@ export default function HomeMapScreen() {
             <TextInput
               value={searchTerm}
               onChangeText={setSearchTerm}
-              placeholder="Buscar endereço ou lugar"
+              placeholder="Buscar endereço, bairro ou ponto"
               placeholderTextColor={colors.textMuted}
               style={styles.searchText}
               returnKeyType="search"
@@ -671,7 +671,7 @@ export default function HomeMapScreen() {
 
             <View style={styles.searchDivider} />
 
-            <PressableScale style={styles.filterButton} onPress={openFilters}>
+            <PressableScale style={styles.filterButton} onPress={abrirBusca}>
               <SlidersHorizontal
                 size={21}
                 color={colors.primary}
@@ -695,7 +695,7 @@ export default function HomeMapScreen() {
                     styles.chip,
                     filter.active ? styles.chipActive : null,
                   ]}
-                  onPress={openFilters}
+                  onPress={abrirBusca}
                 >
                   <Icon
                     size={17}
@@ -833,9 +833,9 @@ export default function HomeMapScreen() {
 
                 <PressableScale
                   style={styles.emptyButton}
-                  onPress={openFilters}
+                  onPress={abrirBusca}
                 >
-                  <Text style={styles.emptyButtonText}>Alterar filtros</Text>
+                  <Text style={styles.emptyButtonText}>Ajustar busca</Text>
                 </PressableScale>
               </View>
             ) : (
@@ -918,10 +918,6 @@ export default function HomeMapScreen() {
             )}
           </View>
         </View>
-        <LoadingOverlay
-          visible={isOpeningDetails}
-          message="Abrindo detalhes..."
-        />
         <LoadingOverlay
           visible={isOpeningDetails}
           message="Abrindo detalhes..."

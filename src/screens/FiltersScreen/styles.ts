@@ -25,12 +25,33 @@ export const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
 
+  titleGroup: {
+    flex: 1,
+    paddingRight: spacing.lg,
+  },
+
+  eyebrow: {
+    color: colors.primary,
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.bold,
+    letterSpacing: 1.4,
+    marginBottom: spacing.xs,
+    textTransform: "uppercase",
+  },
+
   title: {
     ...typography.title,
     color: colors.primaryDark,
-    fontSize: 42,
-    lineHeight: 48,
-    letterSpacing: 1,
+    fontSize: 36,
+    lineHeight: 40,
+    letterSpacing: 0.6,
+  },
+
+  subtitle: {
+    color: colors.textMuted,
+    fontSize: typography.sizes.md,
+    lineHeight: 21,
+    marginTop: spacing.xs,
   },
 
   closeButton: {
