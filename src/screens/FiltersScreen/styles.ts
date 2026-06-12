@@ -168,6 +168,108 @@ export const styles = StyleSheet.create({
     color: colors.white,
   },
 
+  resultsCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.md,
+    ...shadows.soft,
+  },
+
+  resultsHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    marginBottom: spacing.md,
+  },
+
+  resultsEyebrow: {
+    color: colors.primary,
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.bold,
+    letterSpacing: 1.1,
+    marginBottom: spacing.xs,
+    textTransform: "uppercase",
+  },
+
+  resultsTitle: {
+    color: colors.text,
+    fontSize: typography.sizes.lg,
+    fontWeight: typography.weights.bold,
+  },
+
+  resultsCount: {
+    color: colors.textMuted,
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.semibold,
+  },
+
+  resultItem: {
+    minHeight: 82,
+    borderRadius: radius.md,
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+    flexDirection: "row",
+    alignItems: "center",
+    padding: spacing.md,
+    marginTop: spacing.sm,
+  },
+
+  resultItemPressed: {
+    opacity: 0.82,
+    transform: [{ scale: 0.99 }],
+  },
+
+  resultIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.md,
+    backgroundColor: colors.primaryLight,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: spacing.md,
+  },
+
+  resultIcon: {
+    color: colors.primaryDark,
+    fontSize: 22,
+    fontWeight: typography.weights.bold,
+  },
+
+  resultContent: {
+    flex: 1,
+  },
+
+  resultName: {
+    color: colors.text,
+    fontSize: typography.sizes.md,
+    fontWeight: typography.weights.bold,
+    marginBottom: 3,
+  },
+
+  resultAddress: {
+    color: colors.textMuted,
+    fontSize: typography.sizes.sm,
+    lineHeight: 18,
+  },
+
+  resultStatus: {
+    color: colors.primaryDark,
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.semibold,
+    marginTop: 3,
+  },
+
+  resultArrow: {
+    color: colors.primaryDark,
+    fontSize: 30,
+    lineHeight: 32,
+    marginLeft: spacing.sm,
+  },
+
   footer: {
     position: "absolute",
     left: 0,

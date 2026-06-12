@@ -3,6 +3,7 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { router, type Href } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { chargingStations } from "../../data/chargingStations";
 import {
   amenityOptions,
   connectorOptions,
@@ -78,6 +79,7 @@ const visibleAmenityOptions = amenityOptions
 const powerOptions = [50, 100, 150, 250];
 const ratingOptions = [4, 4.5];
 const distanceOptions = [0.5, 1, 5];
+const pontosSugeridos = chargingStations.slice(0, 3);
 
 function toggleArrayValue<TValue extends string>(
   currentValues: TValue[],
@@ -222,7 +224,7 @@ export default function FiltersScreen() {
     setFilters(defaultFilters);
   }
 
-  function handleApplyFilters() {
+  function abrirMapaComBusca() {
     const route = {
       pathname: "/map",
       params: {
@@ -233,8 +235,18 @@ export default function FiltersScreen() {
     setIsApplying(true);
 
     setTimeout(() => {
-      router.push(route);
+      setIsApplying(false);
+      router.replace(route);
     }, 420);
+  }
+
+  function abrirFichaDoPonto(stationId: string) {
+    const route = {
+      pathname: "/point-details",
+      params: { stationId },
+    } as Href;
+
+    router.push(route);
   }
 
   return (
@@ -249,7 +261,10 @@ export default function FiltersScreen() {
             </Text>
           </View>
 
-          <Pressable style={styles.closeButton} onPress={() => router.back()}>
+          <Pressable
+            style={styles.closeButton}
+            onPress={() => router.replace("/map" as Href)}
+          >
             <Text style={styles.closeButtonText}>×</Text>
           </Pressable>
         </View>
@@ -376,6 +391,48 @@ export default function FiltersScreen() {
               ))}
             </View>
           </View>
+
+          <View style={styles.resultsCard}>
+            <View style={styles.resultsHeader}>
+              <View>
+                <Text style={styles.resultsEyebrow}>Resultados simulados</Text>
+                <Text style={styles.resultsTitle}>Pontos recomendados</Text>
+              </View>
+
+              <Text style={styles.resultsCount}>3 pontos</Text>
+            </View>
+
+            {pontosSugeridos.map((ponto) => (
+              <Pressable
+                key={ponto.id}
+                style={({ pressed }) => [
+                  styles.resultItem,
+                  pressed ? styles.resultItemPressed : null,
+                ]}
+                onPress={() => abrirFichaDoPonto(ponto.id)}
+              >
+                <View style={styles.resultIconBox}>
+                  <Text style={styles.resultIcon}>⚡</Text>
+                </View>
+
+                <View style={styles.resultContent}>
+                  <Text style={styles.resultName}>{ponto.name}</Text>
+                  <Text style={styles.resultAddress}>
+                    {ponto.neighborhood} · {ponto.distanceKm} km · {ponto.powerKw} kW
+                  </Text>
+                  <Text style={styles.resultStatus}>
+                    {ponto.status === "available"
+                      ? "Disponível agora"
+                      : ponto.status === "busy"
+                        ? "Alta procura"
+                        : "Ver status"}
+                  </Text>
+                </View>
+
+                <Text style={styles.resultArrow}>›</Text>
+              </Pressable>
+            ))}
+          </View>
         </ScrollView>
 
         <SafeAreaView edges={["bottom"]} style={styles.footer}>
@@ -396,7 +453,7 @@ export default function FiltersScreen() {
               pressed ? styles.primaryButtonPressed : null,
             ]}
             disabled={isApplying}
-            onPress={handleApplyFilters}
+            onPress={abrirMapaComBusca}
           >
             <Text style={styles.applyButtonText}>Ver no mapa</Text>
           </Pressable>

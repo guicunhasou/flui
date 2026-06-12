@@ -242,8 +242,8 @@ export default function PointDetailsScreen() {
     );
   }
 
-  function handleGoHome() {
-    router.push("/map" as Href);
+  function voltarAoMapa() {
+    router.replace("/map" as Href);
   }
 
   if (!station) {
@@ -261,7 +261,7 @@ export default function PointDetailsScreen() {
 
           <Pressable
             style={styles.primaryFallbackButton}
-            onPress={handleGoHome}
+            onPress={voltarAoMapa}
           >
             <Text style={styles.primaryFallbackButtonText}>
               Voltar para o mapa
@@ -270,9 +270,9 @@ export default function PointDetailsScreen() {
 
           <Pressable
             style={styles.secondaryFallbackButton}
-            onPress={() => router.back()}
+            onPress={voltarAoMapa}
           >
-            <Text style={styles.secondaryFallbackButtonText}>Voltar</Text>
+            <Text style={styles.secondaryFallbackButtonText}>Voltar ao mapa</Text>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -323,7 +323,7 @@ export default function PointDetailsScreen() {
           </View>
 
           <SafeAreaView edges={["top"]} style={styles.heroActions}>
-            <Pressable style={styles.iconButton} onPress={() => router.back()}>
+            <Pressable style={styles.iconButton} onPress={voltarAoMapa}>
               <Text style={styles.iconButtonText}>←</Text>
             </Pressable>
 
@@ -595,9 +595,9 @@ export default function PointDetailsScreen() {
             pressed ? styles.buttonPressed : null,
           ]}
           disabled={isLoadingAction}
-          onPress={handleOpenReview}
+          onPress={voltarAoMapa}
         >
-          <Text style={styles.secondaryActionText}>Avaliar</Text>
+          <Text style={styles.secondaryActionText}>Ver mapa</Text>
         </Pressable>
 
         <Pressable
