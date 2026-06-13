@@ -125,7 +125,7 @@ Esses recursos ajudam a tornar o protótipo mais compreensível, previsível e u
 
 ## Link do repositório público
 
-[https://github.com/guicunhasou/flui-charge-map]
+https://github.com/guicunhasou/flui-charge-map
 
 ## Considerações finais
 
