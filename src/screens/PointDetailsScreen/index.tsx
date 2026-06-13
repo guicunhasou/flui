@@ -12,7 +12,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { chargingStations } from "../../data/chargingStations";
 import { styles } from "./styles";
-import { LoadingOverlay, ScreenTransition } from "../../components";
+import {
+  LoadingOverlay,
+  ScreenTransition,
+  StationVisualCover,
+} from "../../components";
 import { useFluiStorage } from "../../hooks/useFluiStorage";
 
 type Station = (typeof chargingStations)[number];
@@ -416,6 +420,15 @@ export default function PointDetailsScreen() {
           <View style={styles.heroSky} />
           <View style={styles.heroCanopy} />
           <View style={styles.heroGround} />
+          <StationVisualCover
+            variant="hero"
+            nome={station.name}
+            bairro={station.neighborhood}
+            potenciaKw={station.powerKw}
+            status={station.status}
+            comodidades={station.amenities}
+          />
+
 
           <View style={styles.chargerLarge}>
             <Text style={styles.chargerLogo}>Flui</Text>
