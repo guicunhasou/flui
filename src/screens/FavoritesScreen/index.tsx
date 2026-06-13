@@ -15,7 +15,6 @@ import {
   Clock,
   Coffee,
   Heart,
-  History,
   Map as MapIcon,
   MoreHorizontal,
   Pencil,
@@ -43,16 +42,6 @@ const statusLabels = {
   maintenance: "Em manutenção",
 };
 
-const amenityLabels = {
-  restaurant: "Restaurante",
-  coffee: "Café",
-  restroom: "Banheiro",
-  parking: "Estacionamento",
-  coveredArea: "Coberto",
-  market: "Mercado",
-  wifi: "Wi-Fi",
-  security: "Segurança",
-};
 
 function getStationDetailsRoute(stationId: string) {
   return {

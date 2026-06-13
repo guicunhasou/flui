@@ -18,7 +18,6 @@ import {
   Check,
   Clock3,
   Coffee,
-  Send,
   Sparkles,
   Star,
   ThumbsUp,
@@ -29,7 +28,7 @@ import {
 import { chargingStations } from "../../data";
 import { LoadingOverlay, ScreenTransition } from "../../components";
 import { useFluiStorage } from "../../hooks/useFluiStorage";
-import styles, { colors } from "./styles";
+import { styles, colors } from "./styles";
 
 type CriteriaKey = "quality" | "cleaning" | "availability" | "amenities";
 

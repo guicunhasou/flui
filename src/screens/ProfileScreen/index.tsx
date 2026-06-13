@@ -105,13 +105,6 @@ const isStation = (station?: Station): station is Station => {
   return Boolean(station);
 };
 
-const normalizeParam = (value?: string | string[]) => {
-  if (Array.isArray(value)) {
-    return value[0];
-  }
-
-  return value;
-};
 
 export default function ProfileScreen() {
   const { theme, fontScale, appearanceMode } = useAppPreferences();
