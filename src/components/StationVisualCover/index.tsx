@@ -142,48 +142,42 @@ export default function StationVisualCover({
         </>
       ) : null}
 
-      <View
-        style={[
-          styles.conteudo,
-          isHero ? styles.conteudoHero : styles.conteudoCard,
-        ]}
-      >
-        <View style={styles.topo}>
-          <View style={styles.tipoPill}>
-            <Text style={styles.tipoTexto}>{perfil.tipo}</Text>
+      {!isHero ? (
+        <View style={[styles.conteudo, styles.conteudoCard]}>
+          <View style={styles.topo}>
+            <View style={styles.tipoPill}>
+              <Text style={styles.tipoTexto}>{perfil.tipo}</Text>
+            </View>
+
+            <View style={styles.statusPill}>
+              <View
+                style={[
+                  styles.statusDot,
+                  { backgroundColor: obterCorStatus(status) },
+                ]}
+              />
+              <Text style={styles.statusTexto}>{obterTextoStatus(status)}</Text>
+            </View>
           </View>
 
-          <View style={styles.statusPill}>
-            <View
-              style={[
-                styles.statusDot,
-                { backgroundColor: obterCorStatus(status) },
-              ]}
-            />
-            <Text style={styles.statusTexto}>{obterTextoStatus(status)}</Text>
-          </View>
-        </View>
+          <View style={styles.rodape}>
+            <View style={styles.tituloArea}>
+              <Text numberOfLines={1} style={styles.nome}>
+                {nomeCurto}
+              </Text>
 
-        <View style={styles.rodape}>
-          <View style={styles.tituloArea}>
-            <Text
-              numberOfLines={isHero ? 2 : 1}
-              style={[styles.nome, isHero ? styles.nomeHero : null]}
-            >
-              {nomeCurto}
-            </Text>
+              <Text numberOfLines={1} style={styles.legenda}>
+                {perfil.legenda}
+              </Text>
+            </View>
 
-            <Text numberOfLines={1} style={styles.legenda}>
-              {perfil.legenda}
-            </Text>
-          </View>
-
-          <View style={styles.potenciaBadge}>
-            <Text style={styles.potenciaValor}>{potenciaKw}</Text>
-            <Text style={styles.potenciaUnidade}>kW</Text>
+            <View style={styles.potenciaBadge}>
+              <Text style={styles.potenciaValor}>{potenciaKw}</Text>
+              <Text style={styles.potenciaUnidade}>kW</Text>
+            </View>
           </View>
         </View>
-      </View>
+      ) : null}
     </>
   );
 

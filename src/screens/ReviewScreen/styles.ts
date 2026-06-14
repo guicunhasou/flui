@@ -63,6 +63,37 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
+  screenTitle: {
+    fontSize: 27,
+    lineHeight: 33,
+    fontWeight: "800",
+    color: colors.text,
+    letterSpacing: -0.7,
+  },
+  closeButton: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...softShadow,
+  },
+  logoMarca: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 9,
+  },
+  logoIconCircle: {
+    width: 35,
+    height: 35,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.primary,
+  },
   logo: {
     fontSize: 31,
     lineHeight: 36,
@@ -189,11 +220,11 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
     color: colors.textMuted,
   },
-  bookmarkButton: {
+  heartButton: {
     width: 42,
     height: 42,
     marginLeft: 8,
-    borderRadius: 16,
+    borderRadius: 24,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.card,
@@ -358,8 +389,7 @@ export const styles = StyleSheet.create({
   },
   toggleGrid: {
     marginTop: 18,
-    flexDirection: "row",
-    gap: 10,
+    gap: 12,
   },
   toggleCard: {
     flex: 1,
@@ -411,6 +441,41 @@ export const styles = StyleSheet.create({
     color: colors.primary,
   },
   togglePillTextSelected: {
+    color: colors.white,
+  },
+  toggleQuestionCard: {
+    padding: 14,
+    borderRadius: 20,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...softShadow,
+  },
+  toggleChoiceRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  toggleChoiceButton: {
+    flex: 1,
+    height: 42,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    backgroundColor: colors.card,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 7,
+  },
+  toggleChoiceButtonSelected: {
+    backgroundColor: colors.primary,
+  },
+  toggleChoiceButtonText: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  toggleChoiceButtonTextSelected: {
     color: colors.white,
   },
   summaryCard: {

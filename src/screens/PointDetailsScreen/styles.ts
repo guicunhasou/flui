@@ -161,6 +161,10 @@ export const styles = StyleSheet.create({
     marginRight: 7,
   },
 
+  starIcon: {
+    marginRight: 7,
+  },
+
   ratingValue: {
     color: "#10221E",
     fontSize: 16,

@@ -10,6 +10,21 @@ import {
 } from "react-native";
 import { router, type Href, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  ArrowLeft,
+  Car,
+  Clock3,
+  Coffee,
+  Heart,
+  MapPin,
+  ShieldCheck,
+  Star,
+  Toilet,
+  Umbrella,
+  Utensils,
+  Wifi,
+  Zap,
+} from "lucide-react-native";
 
 import { chargingStations } from "../../data/chargingStations";
 import { styles as baseStyles } from "./styles";
@@ -94,18 +109,18 @@ function getAmenityLabel(amenity: string) {
 }
 
 function getAmenityIcon(amenity: string) {
-  const icons: Record<string, string> = {
-    restaurant: "⌂",
-    coffee: "☕",
-    restroom: "♙",
-    parking: "P",
-    security: "◇",
-    wifi: "⌁",
-    coveredArea: "⌃",
-    market: "□",
+  const icons: Record<string, React.ElementType> = {
+    restaurant: Utensils,
+    coffee: Coffee,
+    restroom: Toilet,
+    parking: Car,
+    security: ShieldCheck,
+    wifi: Wifi,
+    coveredArea: Umbrella,
+    market: MapPin,
   };
 
-  return icons[amenity] ?? "•";
+  return icons[amenity] ?? MapPin;
 }
 
 function getRatingStars(rating: number) {
@@ -385,34 +400,6 @@ export default function PointDetailsScreen() {
     availableChargers,
   );
   const perfilDoPonto = montarPerfilDoPonto(station);
-  const comodidadesResumo = station.amenities
-    .slice(0, 3)
-    .map(getAmenityLabel)
-    .join(", ");
-
-  const informacoesUteis = [
-    {
-      id: "chegada",
-      icon: "⌖",
-      title: "Chegada",
-      description: `${station.distanceKm} km de distância, com rota externa disponível pelo app de mapas.`,
-    },
-    {
-      id: "espera",
-      icon: "◷",
-      title: "Espera estimada",
-      description: `${orientacaoDeEspera}. Melhor horário: ${lessBusyText}.`,
-    },
-    {
-      id: "conforto",
-      icon: "☕",
-      title: "Conforto no local",
-      description: comodidadesResumo
-        ? `Comodidades próximas: ${comodidadesResumo}.`
-        : "Sem comodidades cadastradas no momento.",
-    },
-  ];
-
   const mainReview = station.reviews?.[0] ?? null;
   const statusColor =
     station.status === "available"
@@ -442,14 +429,14 @@ export default function PointDetailsScreen() {
 
             imageUrl={station.imageUrl}
           />
-<SafeAreaView edges={["top"]} style={styles.heroActions}>
+          <SafeAreaView edges={["top"]} style={styles.heroActions}>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Voltar ao mapa"
               style={styles.iconButton}
               onPress={voltarAoMapa}
             >
-              <Text style={styles.iconButtonText}>←</Text>
+              <ArrowLeft size={24} color="#10221E" strokeWidth={2.4} />
             </Pressable>
 
             <Pressable
@@ -459,13 +446,19 @@ export default function PointDetailsScreen() {
                 selected: isFavorite,
                 disabled: isLoadingAction || isLoadingStorage,
               }}
-              style={styles.iconButton}
+              style={[
+                styles.iconButton,
+                isFavorite ? styles.iconButtonSelected : null,
+              ]}
               disabled={isLoadingAction || isLoadingStorage}
               onPress={handleToggleFavorite}
             >
-              <Text style={styles.iconButtonText}>
-                {isFavorite ? "♥" : "♡"}
-              </Text>
+              <Heart
+                size={23}
+                color="#2B0055"
+                fill={isFavorite ? "#2B0055" : "transparent"}
+                strokeWidth={2.2}
+              />
             </Pressable>
           </SafeAreaView>
         </View>
@@ -477,7 +470,13 @@ export default function PointDetailsScreen() {
 
           <View style={styles.summaryRow}>
             <View style={styles.ratingGroup}>
-              <Text style={styles.star}>★</Text>
+              <Star
+                size={19}
+                color="#F4B942"
+                fill="#F4B942"
+                strokeWidth={2}
+                style={styles.starIcon}
+              />
 
               <Text style={styles.ratingValue}>
                 {station.rating.toFixed(1)}
@@ -503,7 +502,7 @@ export default function PointDetailsScreen() {
 
           <View style={styles.availableRow}>
             <View style={styles.availableIconBox}>
-              <Text style={styles.availableIcon}>⚡</Text>
+              <Zap size={17} color="#2166F3" fill="#2166F3" strokeWidth={2.2} />
             </View>
 
             <Text style={styles.availableText}>
@@ -540,7 +539,7 @@ export default function PointDetailsScreen() {
           <View style={styles.infoGrid}>
             <View style={styles.infoCard}>
               <View style={styles.infoIconBox}>
-                <Text style={styles.infoIcon}>⚡</Text>
+                <Zap size={22} color="#2166F3" strokeWidth={2.2} />
               </View>
 
               <View style={styles.infoTextBox}>
@@ -552,7 +551,7 @@ export default function PointDetailsScreen() {
 
             <View style={styles.infoCard}>
               <View style={styles.infoIconBox}>
-                <Text style={styles.infoIcon}>⌁</Text>
+                <Zap size={22} color="#2166F3" strokeWidth={2.2} />
               </View>
 
               <View style={styles.infoTextBox}>
@@ -564,7 +563,7 @@ export default function PointDetailsScreen() {
 
             <View style={styles.infoCard}>
               <View style={styles.infoIconBox}>
-                <Text style={styles.infoIcon}>◷</Text>
+                <Clock3 size={22} color="#2166F3" strokeWidth={2.2} />
               </View>
 
               <View style={styles.infoTextBox}>
@@ -578,7 +577,7 @@ export default function PointDetailsScreen() {
 
             <View style={styles.infoCard}>
               <View style={styles.infoIconBox}>
-                <Text style={styles.infoIcon}>⌖</Text>
+                <MapPin size={22} color="#2166F3" strokeWidth={2.2} />
               </View>
 
               <View style={styles.infoTextBox}>
@@ -591,7 +590,7 @@ export default function PointDetailsScreen() {
 
           <View style={styles.highlightCard}>
             <View style={styles.highlightIconBox}>
-              <Text style={styles.highlightIcon}>☼</Text>
+              <Clock3 size={24} color="#D99A10" strokeWidth={2.2} />
             </View>
 
             <View style={styles.highlightContent}>
@@ -601,27 +600,6 @@ export default function PointDetailsScreen() {
                 Período com menor movimento e espera
               </Text>
             </View>
-
-            <Text style={styles.highlightArrow}>›</Text>
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Informações úteis ao motorista</Text>
-
-            {informacoesUteis.map((info) => (
-              <View key={info.id} style={styles.informacaoUtilRow}>
-                <View style={styles.informacaoUtilIconBox}>
-                  <Text style={styles.informacaoUtilIcon}>{info.icon}</Text>
-                </View>
-
-                <View style={styles.informacaoUtilContent}>
-                  <Text style={styles.informacaoUtilTitle}>{info.title}</Text>
-                  <Text style={styles.informacaoUtilDescription}>
-                    {info.description}
-                  </Text>
-                </View>
-              </View>
-            ))}
           </View>
 
           <View style={styles.section}>
@@ -630,7 +608,7 @@ export default function PointDetailsScreen() {
             {station.connectors.map((connector) => (
               <View key={connector.id} style={styles.connectorRow}>
                 <View style={styles.connectorIconBox}>
-                  <Text style={styles.connectorIcon}>⌁</Text>
+                  <Zap size={18} color="#2166F3" strokeWidth={2.2} />
                 </View>
 
                 <View style={styles.connectorInfo}>
@@ -649,19 +627,25 @@ export default function PointDetailsScreen() {
             <Text style={styles.sectionTitle}>Comodidades próximas</Text>
 
             <View style={styles.amenitiesGrid}>
-              {station.amenities.map((amenity) => (
-                <View key={amenity} style={styles.amenityItem}>
-                  <View style={styles.amenityIconBox}>
-                    <Text style={styles.amenityIcon}>
-                      {getAmenityIcon(amenity)}
+              {station.amenities.map((amenity) => {
+                const IconeComodidade = getAmenityIcon(amenity);
+
+                return (
+                  <View key={amenity} style={styles.amenityItem}>
+                    <View style={styles.amenityIconBox}>
+                      <IconeComodidade
+                        size={18}
+                        color="#2B0055"
+                        strokeWidth={2.1}
+                      />
+                    </View>
+
+                    <Text style={styles.amenityLabel}>
+                      {getAmenityLabel(amenity)}
                     </Text>
                   </View>
-
-                  <Text style={styles.amenityLabel}>
-                    {getAmenityLabel(amenity)}
-                  </Text>
-                </View>
-              ))}
+                );
+              })}
             </View>
           </View>
 

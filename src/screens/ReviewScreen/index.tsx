@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -13,15 +14,15 @@ import {
 import { router, type Href, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
-  ArrowLeft,
-  Bookmark,
+  Heart,
   Check,
   Clock3,
   Coffee,
   Sparkles,
   Star,
+  ThumbsDown,
   ThumbsUp,
-  User,
+  X,
   Zap,
 } from "lucide-react-native";
 
@@ -30,6 +31,7 @@ import { LoadingOverlay, ScreenTransition } from "../../components";
 import { useFluiStorage } from "../../hooks/useFluiStorage";
 import { styles as baseStyles, colors as baseColors } from "./styles";
 import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
+import { getStationImageSource } from "../../assets/stations";
 
 type CriteriaKey = "quality" | "cleaning" | "availability" | "amenities";
 
@@ -395,6 +397,14 @@ export default function ReviewScreen() {
 
   const commentLength = comment.length;
   const maxCommentLength = 200;
+  const statusColor =
+    station.status === "available"
+      ? colors.success
+      : station.status === "busy"
+        ? "#D99721"
+        : station.status === "maintenance"
+          ? "#D94343"
+          : colors.textMuted;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -411,34 +421,26 @@ export default function ReviewScreen() {
             contentContainerStyle={styles.scrollContent}
           >
             <View style={styles.header}>
-              <Text style={styles.logo}>flui</Text>
+              <Text style={styles.screenTitle}>Avaliação</Text>
 
               <Pressable
-                style={styles.profileButton}
-                onPress={() => router.push("/profile" as Href)}
+                accessibilityRole="button"
+                accessibilityLabel="Fechar avaliação"
+                style={({ pressed }) => [
+                  styles.closeButton,
+                  pressed ? styles.buttonPressed : null,
+                ]}
+                onPress={() => router.back()}
               >
-                <User size={22} color={colors.primary} strokeWidth={2} />
+                <X size={22} color={colors.text} strokeWidth={2.3} />
               </Pressable>
             </View>
 
             <View style={styles.stationCard}>
-              <Pressable
-                style={styles.backButton}
-                onPress={() => router.back()}
-              >
-                <ArrowLeft size={22} color={colors.text} strokeWidth={2.2} />
-              </Pressable>
-
-              <View style={styles.stationImage}>
-                <View style={styles.stationImageSky} />
-
-                <View style={styles.chargerMock}>
-                  <Text style={styles.chargerMockText}>Flui</Text>
-                  <Zap size={22} color={colors.white} fill={colors.white} />
-                </View>
-
-                <View style={styles.stationImageGround} />
-              </View>
+              <Image
+                source={getStationImageSource(station.imageKey)}
+                style={styles.stationImage}
+              />
 
               <View style={styles.stationInfo}>
                 <View style={styles.badgesRow}>
@@ -460,7 +462,12 @@ export default function ReviewScreen() {
                 </Text>
 
                 <View style={styles.statusRow}>
-                  <View style={styles.statusDot} />
+                  <View
+                    style={[
+                      styles.statusDot,
+                      { backgroundColor: statusColor },
+                    ]}
+                  />
 
                   <Text style={styles.statusText}>
                     {getStatusLabel(station.status)}
@@ -469,11 +476,14 @@ export default function ReviewScreen() {
               </View>
 
               <Pressable
-                style={styles.bookmarkButton}
+                style={({ pressed }) => [
+                  styles.heartButton,
+                  pressed ? styles.buttonPressed : null,
+                ]}
                 disabled={isFavoriteLoading || isLoadingStorage}
                 onPress={handleToggleFavorite}
               >
-                <Bookmark
+                <Heart
                   size={22}
                   color={colors.primary}
                   fill={isFavorite ? colors.primary : "transparent"}
@@ -547,8 +557,8 @@ export default function ReviewScreen() {
                       </View>
 
                       <StarRatingInput
-                  styles={styles}
-                  colors={colors}
+                        styles={styles}
+                        colors={colors}
                         value={criteriaRatings[criterion.key]}
                         onChange={(rating) =>
                           updateCriterionRating(criterion.key, rating)
@@ -585,13 +595,7 @@ export default function ReviewScreen() {
               </View>
 
               <View style={styles.toggleGrid}>
-                <Pressable
-                  style={[
-                    styles.toggleCard,
-                    wouldReturn ? styles.toggleCardSelected : null,
-                  ]}
-                  onPress={() => setWouldReturn((current) => !current)}
-                >
+                <View style={styles.toggleQuestionCard}>
                   <View style={styles.toggleTextArea}>
                     <Text style={styles.toggleTitle}>Voltaria aqui</Text>
 
@@ -600,36 +604,64 @@ export default function ReviewScreen() {
                     </Text>
                   </View>
 
-                  <View
-                    style={[
-                      styles.togglePill,
-                      wouldReturn ? styles.togglePillSelected : null,
-                    ]}
-                  >
-                    <ThumbsUp
-                      size={17}
-                      color={wouldReturn ? colors.white : colors.primary}
-                      strokeWidth={2}
-                    />
-
-                    <Text
+                  <View style={styles.toggleChoiceRow}>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: wouldReturn }}
                       style={[
-                        styles.togglePillText,
-                        wouldReturn ? styles.togglePillTextSelected : null,
+                        styles.toggleChoiceButton,
+                        wouldReturn ? styles.toggleChoiceButtonSelected : null,
                       ]}
+                      onPress={() => setWouldReturn(true)}
                     >
-                      {wouldReturn ? "Sim" : "Não"}
-                    </Text>
-                  </View>
-                </Pressable>
+                      <ThumbsUp
+                        size={17}
+                        color={wouldReturn ? colors.white : colors.primary}
+                        strokeWidth={2.1}
+                      />
 
-                <Pressable
-                  style={[
-                    styles.toggleCard,
-                    recommend ? styles.toggleCardSelected : null,
-                  ]}
-                  onPress={() => setRecommend((current) => !current)}
-                >
+                      <Text
+                        style={[
+                          styles.toggleChoiceButtonText,
+                          wouldReturn
+                            ? styles.toggleChoiceButtonTextSelected
+                            : null,
+                        ]}
+                      >
+                        Sim
+                      </Text>
+                    </Pressable>
+
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: !wouldReturn }}
+                      style={[
+                        styles.toggleChoiceButton,
+                        !wouldReturn ? styles.toggleChoiceButtonSelected : null,
+                      ]}
+                      onPress={() => setWouldReturn(false)}
+                    >
+                      <ThumbsDown
+                        size={17}
+                        color={!wouldReturn ? colors.white : colors.primary}
+                        strokeWidth={2.1}
+                      />
+
+                      <Text
+                        style={[
+                          styles.toggleChoiceButtonText,
+                          !wouldReturn
+                            ? styles.toggleChoiceButtonTextSelected
+                            : null,
+                        ]}
+                      >
+                        Não
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
+
+                <View style={styles.toggleQuestionCard}>
                   <View style={styles.toggleTextArea}>
                     <Text style={styles.toggleTitle}>Recomendo</Text>
 
@@ -638,28 +670,60 @@ export default function ReviewScreen() {
                     </Text>
                   </View>
 
-                  <View
-                    style={[
-                      styles.togglePill,
-                      recommend ? styles.togglePillSelected : null,
-                    ]}
-                  >
-                    <Check
-                      size={17}
-                      color={recommend ? colors.white : colors.primary}
-                      strokeWidth={2.2}
-                    />
-
-                    <Text
+                  <View style={styles.toggleChoiceRow}>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: recommend }}
                       style={[
-                        styles.togglePillText,
-                        recommend ? styles.togglePillTextSelected : null,
+                        styles.toggleChoiceButton,
+                        recommend ? styles.toggleChoiceButtonSelected : null,
                       ]}
+                      onPress={() => setRecommend(true)}
                     >
-                      {recommend ? "Sim" : "Não"}
-                    </Text>
+                      <ThumbsUp
+                        size={17}
+                        color={recommend ? colors.white : colors.primary}
+                        strokeWidth={2.1}
+                      />
+
+                      <Text
+                        style={[
+                          styles.toggleChoiceButtonText,
+                          recommend ? styles.toggleChoiceButtonTextSelected : null,
+                        ]}
+                      >
+                        Sim
+                      </Text>
+                    </Pressable>
+
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: !recommend }}
+                      style={[
+                        styles.toggleChoiceButton,
+                        !recommend ? styles.toggleChoiceButtonSelected : null,
+                      ]}
+                      onPress={() => setRecommend(false)}
+                    >
+                      <ThumbsDown
+                        size={17}
+                        color={!recommend ? colors.white : colors.primary}
+                        strokeWidth={2.1}
+                      />
+
+                      <Text
+                        style={[
+                          styles.toggleChoiceButtonText,
+                          !recommend
+                            ? styles.toggleChoiceButtonTextSelected
+                            : null,
+                        ]}
+                      >
+                        Não
+                      </Text>
+                    </Pressable>
                   </View>
-                </Pressable>
+                </View>
               </View>
             </View>
 
