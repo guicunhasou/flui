@@ -298,14 +298,16 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 16,
     top: 18,
+    width: 52,
+    alignItems: "center",
     gap: 10,
     zIndex: 12,
   },
 
   mapControlButton: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.white,
@@ -319,9 +321,9 @@ const styles = StyleSheet.create({
   },
 
   zoomControlButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
   },
 
   mapControlText: {
@@ -353,6 +355,22 @@ const styles = StyleSheet.create({
     shadowRadius: 18,
     elevation: 8,
   },
+
+  sheetHandleArea: {
+    minHeight: 14,
+    marginTop: -2,
+    marginBottom: 6,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  sheetHandle: {
+    width: 46,
+    height: 5,
+    borderRadius: 999,
+    backgroundColor: colors.border,
+  },
+
 
   sheetHeader: {
     marginBottom: 8,

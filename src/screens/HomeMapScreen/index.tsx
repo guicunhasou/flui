@@ -1,5 +1,13 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
+  PanResponder,
+  Animated,
   Pressable,
   ScrollView,
   StatusBar,
@@ -38,6 +46,7 @@ import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
 
 
 const FEEDBACK_DURATION = 1500;
+const SHEET_VISIBLE_HANDLE = 30;
 
 const logoFluiXml = `
 <svg width="1115" height="516" viewBox="0 0 1115 516" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -474,9 +483,13 @@ export default function HomeMapScreen() {
   const queryParam = routeParams.query;
   const mapRef = useRef<MapView | null>(null);
   const currentMapRegionRef = useRef<Region | null>(null);
+  const sheetTranslateY = useRef(new Animated.Value(0)).current;
+  const sheetPositionRef = useRef(0);
   const [localizacaoUsuario, setLocalizacaoUsuario] =
-    useState<UserLocation | null>(null);
+    useState<UserLocation | null>(LOCALIZACAO_DEMO_FIAP);
   const [isLocatingUser, setIsLocatingUser] = useState(false);
+  const [isSheetCollapsed, setIsSheetCollapsed] = useState(false);
+  const [sheetHeight, setSheetHeight] = useState(0);
   const [searchTerm, setSearchTerm] = useState(() =>
     getRouteParamAsString(queryParam),
   );
@@ -492,6 +505,10 @@ export default function HomeMapScreen() {
   const routeSearchTerm = useMemo(() => {
     return getRouteParamAsString(queryParam);
   }, [queryParam]);
+
+  const sheetCollapsedTranslateY = useMemo(() => {
+    return Math.max(sheetHeight - SHEET_VISIBLE_HANDLE, 280);
+  }, [sheetHeight]);
 
   useEffect(() => {
     setSearchTerm(routeSearchTerm);
@@ -615,6 +632,69 @@ export default function HomeMapScreen() {
       : "Melhores pontos perto de você";
 
 
+  const alternarModalDePontos = useCallback(
+    (shouldCollapse: boolean) => {
+      const nextValue = shouldCollapse ? sheetCollapsedTranslateY : 0;
+
+      setIsSheetCollapsed(shouldCollapse);
+      sheetPositionRef.current = nextValue;
+
+      Animated.spring(sheetTranslateY, {
+        toValue: nextValue,
+        useNativeDriver: true,
+        friction: 8,
+        tension: 58,
+      }).start();
+    },
+    [sheetCollapsedTranslateY, sheetTranslateY],
+  );
+
+  const sheetPanResponder = useMemo(() => {
+    return PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, gesture) => {
+        return (
+          Math.abs(gesture.dy) > 8 &&
+          Math.abs(gesture.dy) > Math.abs(gesture.dx)
+        );
+      },
+      onPanResponderGrant: () => {
+        sheetTranslateY.stopAnimation((value) => {
+          sheetPositionRef.current = value;
+        });
+      },
+      onPanResponderMove: (_, gesture) => {
+        const nextValue = limitarValor(
+          sheetPositionRef.current + gesture.dy,
+          0,
+          sheetCollapsedTranslateY,
+        );
+
+        sheetTranslateY.setValue(nextValue);
+      },
+      onPanResponderRelease: (_, gesture) => {
+        const nextValue = sheetPositionRef.current + gesture.dy;
+        const shouldCollapse =
+          gesture.vy > 0.5 || nextValue > sheetCollapsedTranslateY * 0.38;
+
+        alternarModalDePontos(shouldCollapse);
+      },
+      onPanResponderTerminate: (_, gesture) => {
+        const nextValue = sheetPositionRef.current + gesture.dy;
+        const shouldCollapse = nextValue > sheetCollapsedTranslateY * 0.38;
+
+        alternarModalDePontos(shouldCollapse);
+      },
+    });
+  }, [alternarModalDePontos, sheetCollapsedTranslateY, sheetTranslateY]);
+
+  useEffect(() => {
+    if (isSheetCollapsed && sheetHeight > 0) {
+      sheetTranslateY.setValue(sheetCollapsedTranslateY);
+      sheetPositionRef.current = sheetCollapsedTranslateY;
+    }
+  }, [isSheetCollapsed, sheetCollapsedTranslateY, sheetHeight, sheetTranslateY]);
+
   const openStationDetails = (stationId: string) => {
     if (isOpeningDetails) {
       return;
@@ -653,15 +733,6 @@ export default function HomeMapScreen() {
     }, FEEDBACK_DURATION);
   };
 
-  const centralizarPontosFiltrados = () => {
-    const station = visibleStations[0]?.station ?? chargingStations[0];
-
-    mapRef.current?.animateToRegion(
-      criarRegiaoComFocoVisivel(station.latitude, station.longitude),
-      450,
-    );
-    showLocationFeedback("Mapa voltou para os pontos encontrados");
-  };
 
   const centralizarLocalizacaoUsuario = () => {
     if (isLocatingUser) {
@@ -675,12 +746,10 @@ export default function HomeMapScreen() {
     setLocalizacaoUsuario(nextLocation);
 
     mapRef.current?.animateToRegion(
-      {
-        latitude: nextLocation.latitude,
-        longitude: nextLocation.longitude,
-        latitudeDelta: 0.014,
-        longitudeDelta: 0.014,
-      },
+      criarRegiaoComFocoVisivel(
+        nextLocation.latitude,
+        nextLocation.longitude,
+      ),
       500,
     );
 
@@ -787,7 +856,7 @@ export default function HomeMapScreen() {
             style={styles.realMap}
             provider={PROVIDER_DEFAULT}
             initialRegion={mapRegion}
-            showsUserLocation={Boolean(localizacaoUsuario)}
+            showsUserLocation={false}
             showsMyLocationButton={false}
             showsCompass={false}
             toolbarEnabled={false}
@@ -867,8 +936,28 @@ export default function HomeMapScreen() {
           <View pointerEvents="box-none" style={styles.fixedMapControls}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Centralizar localização demo na FIAP"
-              accessibilityHint="Centraliza o mapa em uma localização simulada próxima à FIAP."
+              accessibilityLabel="Aumentar zoom do mapa"
+              accessibilityHint="Aproxima a visualização do mapa."
+              style={styles.mapControlButton}
+              onPress={() => alterarZoomMapa("aproximar")}
+            >
+              <Text style={styles.mapControlText}>+</Text>
+            </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Diminuir zoom do mapa"
+              accessibilityHint="Afasta a visualização do mapa."
+              style={styles.mapControlButton}
+              onPress={() => alterarZoomMapa("afastar")}
+            >
+              <Text style={styles.mapControlText}>−</Text>
+            </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Centralizar localização na FIAP"
+              accessibilityHint="Centraliza o mapa em uma localização próxima à FIAP."
               accessibilityState={{ busy: isLocatingUser }}
               style={[
                 styles.mapControlButton,
@@ -879,59 +968,31 @@ export default function HomeMapScreen() {
             >
               <Crosshair size={25} color={colors.primary} strokeWidth={2.2} />
             </Pressable>
-
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Aumentar zoom do mapa"
-              accessibilityHint="Aproxima a visualização do mapa."
-              style={[styles.mapControlButton, styles.zoomControlButton]}
-              onPress={() => alterarZoomMapa("aproximar")}
-            >
-              <Text style={styles.mapControlText}>+</Text>
-            </Pressable>
-
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Diminuir zoom do mapa"
-              accessibilityHint="Afasta a visualização do mapa."
-              style={[styles.mapControlButton, styles.zoomControlButton]}
-              onPress={() => alterarZoomMapa("afastar")}
-            >
-              <Text style={styles.mapControlText}>−</Text>
-            </Pressable>
-
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Voltar para pontos encontrados"
-              accessibilityHint="Centraliza o mapa novamente nos pontos de recarga filtrados."
-              style={[
-                styles.mapControlButton,
-                isLocatingUser ? styles.mapControlButtonLoading : null,
-              ]}
-              onPress={centralizarPontosFiltrados}
-              disabled={isLocatingUser}
-            >
-              <Navigation
-                size={24}
-                color={colors.primary}
-                fill={colors.primarySoft}
-                strokeWidth={2.2}
-              />
-            </Pressable>
           </View>
 
-          <View style={styles.bottomSheet}>
+          <Animated.View
+            style={[
+              styles.bottomSheet,
+              { transform: [{ translateY: sheetTranslateY }] },
+            ]}
+            onLayout={(event) => {
+              setSheetHeight(event.nativeEvent.layout.height);
+            }}
+            {...sheetPanResponder.panHandlers}
+          >
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={
+                isSheetCollapsed ? "Puxar pontos para cima" : "Ocultar pontos"
+              }
+              accessibilityHint="Arraste ou toque para alternar a lista de pontos."
+              style={styles.sheetHandleArea}
+              onPress={() => alternarModalDePontos(!isSheetCollapsed)}
+            >
+              <View style={styles.sheetHandle} />
+            </Pressable>
             <View style={styles.sheetHeader}>
               <Text style={styles.sheetTitle}>{sheetTitle}</Text>
-
-              <View style={styles.starBadge}>
-                <Star
-                  size={20}
-                  color={colors.yellowDark}
-                  fill={colors.yellowDark}
-                  strokeWidth={2}
-                />
-              </View>
             </View>
 
             {hasNoResults ? (
@@ -1034,7 +1095,7 @@ export default function HomeMapScreen() {
                 );
               })
             )}
-          </View>
+          </Animated.View>
         </View>
         <LoadingOverlay
           visible={isOpeningDetails}
