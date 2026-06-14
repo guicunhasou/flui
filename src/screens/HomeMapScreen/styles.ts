@@ -70,6 +70,12 @@ const styles = StyleSheet.create({
     ...softShadow,
   },
 
+  profileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+
   searchBar: {
     height: 58,
     marginTop: 14,
@@ -107,9 +113,27 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
+  quickFiltersArea: {
+    marginTop: 8,
+  },
+
+  quickFiltersHandleArea: {
+    minHeight: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  quickFiltersHandle: {
+    width: 44,
+    height: 5,
+    borderRadius: 999,
+    backgroundColor: colors.border,
+  },
+
   filtersContent: {
-    paddingTop: 14,
+    paddingTop: 8,
     paddingRight: 8,
+    paddingBottom: 2,
   },
 
   chip: {
@@ -156,6 +180,10 @@ const styles = StyleSheet.create({
   mapTintOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(16, 34, 30, 0.03)",
+  },
+
+  mapTintOverlayDark: {
+    backgroundColor: "rgba(5, 12, 20, 0.24)",
   },
 
   realMapMarker: {
@@ -304,6 +332,31 @@ const styles = StyleSheet.create({
     zIndex: 12,
   },
 
+  zoomPill: {
+    width: 52,
+    height: 104,
+    borderRadius: 26,
+    alignItems: "center",
+    overflow: "hidden",
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadow,
+  },
+
+  zoomPillButton: {
+    width: 52,
+    height: 51,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  zoomPillDivider: {
+    width: 28,
+    height: 1,
+    backgroundColor: colors.border,
+  },
+
   mapControlButton: {
     width: 52,
     height: 52,
@@ -320,11 +373,6 @@ const styles = StyleSheet.create({
     opacity: 0.68,
   },
 
-  zoomControlButton: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-  },
 
   mapControlText: {
     color: colors.primary,
@@ -343,11 +391,11 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
-    backgroundColor: "rgba(243, 248, 244, 0.94)",
+    backgroundColor: colors.background,
     borderTopWidth: 1,
     borderLeftWidth: 1,
     borderRightWidth: 1,
-    borderColor: "rgba(221, 232, 227, 0.82)",
+    borderColor: colors.border,
     zIndex: 8,
     shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: -8 },
@@ -436,6 +484,14 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 13,
     fontWeight: "800",
+  },
+
+  pointsScroll: {
+    maxHeight: 262,
+  },
+
+  pointsScrollContent: {
+    paddingBottom: 2,
   },
 
   pointCard: {

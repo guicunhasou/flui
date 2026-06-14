@@ -8,6 +8,7 @@ import React, {
 import {
   PanResponder,
   Animated,
+  Image,
   Pressable,
   ScrollView,
   StatusBar,
@@ -29,7 +30,6 @@ import {
   SlidersHorizontal,
   Star,
   Toilet,
-  User,
   Zap,
 } from "lucide-react-native";
 
@@ -55,10 +55,79 @@ const logoFluiXml = `
 </svg>
 `;
 
+const imagemPerfilUsuario = require("../../assets/user/profile.webp");
+
+const criarLogoFluiXml = (corPrincipal: string, corPonto: string) => {
+  return logoFluiXml
+    .replace('fill="#2B0055"', `fill="${corPrincipal}"`)
+    .replace('fill="#9B35F5"', `fill="${corPonto}"`);
+};
+
+type EstiloMapa = {
+  elementType?: string;
+  featureType?: string;
+  stylers: Record<string, string>[];
+}[];
+
+const estiloEscuroDoMapa: EstiloMapa = [
+  { elementType: "geometry", stylers: [{ color: "#172033" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#D7E4DF" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#0E1320" }] },
+  {
+    featureType: "administrative",
+    elementType: "geometry",
+    stylers: [{ color: "#2F405C" }],
+  },
+  { featureType: "poi", elementType: "geometry", stylers: [{ color: "#1D2A3D" }] },
+  {
+    featureType: "poi.park",
+    elementType: "geometry",
+    stylers: [{ color: "#183628" }],
+  },
+  {
+    featureType: "road",
+    elementType: "geometry",
+    stylers: [{ color: "#26344D" }],
+  },
+  {
+    featureType: "road",
+    elementType: "geometry.stroke",
+    stylers: [{ color: "#111827" }],
+  },
+  {
+    featureType: "road.highway",
+    elementType: "geometry",
+    stylers: [{ color: "#384D6B" }],
+  },
+  {
+    featureType: "transit",
+    elementType: "geometry",
+    stylers: [{ color: "#243149" }],
+  },
+  {
+    featureType: "water",
+    elementType: "geometry",
+    stylers: [{ color: "#0A2237" }],
+  },
+];
+
+type FiltroRapidoId = "openNow" | "ccs2" | "fast" | "restroom";
+
+type FiltrosRapidos = Record<FiltroRapidoId, boolean>;
+
+const filtrosRapidosIniciais: FiltrosRapidos = {
+  openNow: false,
+  ccs2: false,
+  fast: false,
+  restroom: false,
+};
+
 const pointLabels = [
   { id: "near", title: "Mais próximo", icon: Navigation },
   { id: "best", title: "Melhor avaliado", icon: Star },
   { id: "comfort", title: "Mais confortável", icon: Toilet },
+  { id: "fast", title: "Carga rápida", icon: Zap },
+  { id: "open", title: "Aberto agora", icon: Clock },
 ];
 
 type Station = (typeof chargingStations)[number];
@@ -186,6 +255,33 @@ const hasActiveFilters = (filters: StationFilters) => {
     filters.rating.minRating > 0 ||
     filters.onlyOpenNow
   );
+};
+
+const combinarFiltrosRapidos = (
+  filters: StationFilters,
+  filtrosRapidos: FiltrosRapidos,
+): StationFilters => {
+  return {
+    connectorTypes: filtrosRapidos.ccs2
+      ? Array.from(new Set([...filters.connectorTypes, "ccs2"]))
+      : filters.connectorTypes,
+    statuses: filters.statuses,
+    amenities: filtrosRapidos.restroom
+      ? Array.from(new Set([...filters.amenities, "restroom"]))
+      : filters.amenities,
+    power: {
+      minKw: filtrosRapidos.fast
+        ? Math.max(filters.power.minKw, 50)
+        : filters.power.minKw,
+    },
+    distance: filters.distance,
+    rating: filters.rating,
+    onlyOpenNow: filters.onlyOpenNow || filtrosRapidos.openNow,
+  };
+};
+
+const hasFiltrosRapidosAtivos = (filtrosRapidos: FiltrosRapidos) => {
+  return Object.values(filtrosRapidos).some(Boolean);
 };
 
 const getStationId = (station: Station, index: number) => {
@@ -401,6 +497,30 @@ const getComfortMeta = (station: Station) => {
   return labels[firstAmenity] ?? firstAmenity;
 };
 
+const criarMetaDoCard = (
+  cardId: string,
+  station: Station,
+  index: number,
+) => {
+  if (cardId === "best") {
+    return getStationRating(station);
+  }
+
+  if (cardId === "comfort") {
+    return getComfortMeta(station);
+  }
+
+  if (cardId === "fast") {
+    return getStationPower(station);
+  }
+
+  if (cardId === "open") {
+    return getStationStatus(station);
+  }
+
+  return getStationDistance(station, index);
+};
+
 const stationIsOpenNow = (station: Station) => {
   const status = getRawStationStatus(station);
 
@@ -490,6 +610,10 @@ export default function HomeMapScreen() {
   const [isLocatingUser, setIsLocatingUser] = useState(false);
   const [isSheetCollapsed, setIsSheetCollapsed] = useState(false);
   const [sheetHeight, setSheetHeight] = useState(0);
+  const [atalhosRapidosAbertos, setAtalhosRapidosAbertos] = useState(false);
+  const [filtrosRapidos, setFiltrosRapidos] = useState<FiltrosRapidos>(
+    filtrosRapidosIniciais,
+  );
   const [searchTerm, setSearchTerm] = useState(() =>
     getRouteParamAsString(queryParam),
   );
@@ -506,6 +630,13 @@ export default function HomeMapScreen() {
     return getRouteParamAsString(queryParam);
   }, [queryParam]);
 
+  const logoFluiDoTema = useMemo(() => {
+    return criarLogoFluiXml(
+      isDarkMode ? "#F3E9FF" : colors.primary,
+      isDarkMode ? "#D8C7FF" : "#9B35F5",
+    );
+  }, [colors.primary, isDarkMode]);
+
   const sheetCollapsedTranslateY = useMemo(() => {
     return Math.max(sheetHeight - SHEET_VISIBLE_HANDLE, 280);
   }, [sheetHeight]);
@@ -518,71 +649,85 @@ export default function HomeMapScreen() {
     return parseRouteFilters(filtersParam);
   }, [filtersParam]);
 
+  const filtrosDoMapa = useMemo(() => {
+    return combinarFiltrosRapidos(appliedFilters, filtrosRapidos);
+  }, [appliedFilters, filtrosRapidos]);
+
   const hasFiltersApplied = useMemo(() => {
-    return hasActiveFilters(appliedFilters);
-  }, [appliedFilters]);
+    return (
+      hasActiveFilters(filtrosDoMapa) ||
+      hasFiltrosRapidosAtivos(filtrosRapidos)
+    );
+  }, [filtrosDoMapa, filtrosRapidos]);
 
   const filterChips = useMemo(() => {
     return [
       {
+        id: "openNow" as const,
         label: "Aberto agora",
         icon: Clock,
-        active: appliedFilters.onlyOpenNow,
+        active: filtrosRapidos.openNow,
       },
       {
+        id: "ccs2" as const,
         label: "CCS2",
         icon: Plug,
-        active: appliedFilters.connectorTypes.includes("ccs2"),
+        active: filtrosRapidos.ccs2,
       },
       {
+        id: "fast" as const,
         label: "Rápido",
         icon: Zap,
-        active: appliedFilters.power.minKw >= 50,
+        active: filtrosRapidos.fast,
       },
       {
+        id: "restroom" as const,
         label: "Com banheiro",
         icon: Toilet,
-        active: appliedFilters.amenities.includes("restroom"),
+        active: filtrosRapidos.restroom,
       },
     ];
-  }, [appliedFilters]);
+  }, [filtrosRapidos]);
 
   const visibleStations = useMemo(() => {
     return chargingStations
       .map((station, index) => ({ station, index }))
       .filter((item) => stationMatchesSearch(item.station, searchTerm))
       .filter((item) =>
-        stationMatchesFilters(item.station, item.index, appliedFilters),
+        stationMatchesFilters(item.station, item.index, filtrosDoMapa),
       );
-  }, [appliedFilters, searchTerm]);
+  }, [filtrosDoMapa, searchTerm]);
 
   const points = useMemo(() => {
-    return visibleStations.slice(0, 3).map((item, cardIndex) => {
-      const label = pointLabels[cardIndex] ?? pointLabels[0];
+    return visibleStations.map((item, cardIndex) => {
+      const label = pointLabels[cardIndex];
+      const cardId = label?.id ?? `station-${cardIndex}`;
 
       return {
-        id: label.id,
+        id: cardId,
         stationId: getStationId(item.station, item.index),
-        title: label.title,
+        title: label?.title ?? getStationName(item.station),
         address: getStationAddress(item.station),
         status: getStationStatus(item.station),
-        meta:
-          label.id === "best"
-            ? getStationRating(item.station)
-            : label.id === "comfort"
-              ? getComfortMeta(item.station)
-              : getStationDistance(item.station, item.index),
+        statusColor: getStationMarkerColor(item.station, colors),
+        meta: criarMetaDoCard(cardId, item.station, item.index),
         power: getStationPower(item.station),
-        icon: label.icon,
+        icon: label?.icon ?? Zap,
       };
     });
-  }, [visibleStations]);
+  }, [colors, visibleStations]);
 
 
   const hasNoResults = visibleStations.length === 0;
   const hasSearchTerm = searchTerm.trim().length > 0;
 
   const mapRegion = useMemo(() => {
+    const firstVisibleStation = visibleStations[0]?.station ?? chargingStations[0];
+
+    if ((hasFiltersApplied || hasSearchTerm) && firstVisibleStation) {
+      return criarRegiaoDoMapa(firstVisibleStation, true);
+    }
+
     if (localizacaoUsuario) {
       return criarRegiaoComFocoVisivel(
         localizacaoUsuario.latitude,
@@ -590,12 +735,7 @@ export default function HomeMapScreen() {
       );
     }
 
-    const firstVisibleStation = visibleStations[0]?.station ?? chargingStations[0];
-
-    return criarRegiaoDoMapa(
-      firstVisibleStation,
-      hasFiltersApplied || hasSearchTerm,
-    );
+    return criarRegiaoDoMapa(firstVisibleStation, false);
   }, [hasFiltersApplied, hasSearchTerm, localizacaoUsuario, visibleStations]);
 
   useEffect(() => {
@@ -625,11 +765,7 @@ export default function HomeMapScreen() {
     mapRef.current?.animateToRegion(nextRegion, 240);
   };
 
-  const sheetTitle = hasNoResults
-    ? "Nenhum ponto encontrado"
-    : hasFiltersApplied || hasSearchTerm
-      ? "Pontos encontrados"
-      : "Melhores pontos perto de você";
+  const sheetTitle = hasNoResults ? "Nenhum ponto encontrado" : "Melhores escolhas";
 
 
   const alternarModalDePontos = useCallback(
@@ -717,6 +853,69 @@ export default function HomeMapScreen() {
     router.push("/search" as Href);
   };
 
+  const alternarAtalhosRapidos = () => {
+    setAtalhosRapidosAbertos((isOpen) => !isOpen);
+  };
+
+  const alternarFiltroRapido = (filterId: FiltroRapidoId) => {
+    setFiltrosRapidos((filtrosAtuais) => ({
+      ...filtrosAtuais,
+      [filterId]: !filtrosAtuais[filterId],
+    }));
+  };
+
+  const quickFiltersPanResponder = useMemo(() => {
+    return PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, gesture) => {
+        return (
+          Math.abs(gesture.dy) > 8 &&
+          Math.abs(gesture.dy) > Math.abs(gesture.dx)
+        );
+      },
+      onPanResponderRelease: (_, gesture) => {
+        if (gesture.dy > 18) {
+          setAtalhosRapidosAbertos(true);
+          return;
+        }
+
+        if (gesture.dy < -18) {
+          setAtalhosRapidosAbertos(false);
+        }
+      },
+      onPanResponderTerminate: (_, gesture) => {
+        if (gesture.dy > 18) {
+          setAtalhosRapidosAbertos(true);
+          return;
+        }
+
+        if (gesture.dy < -18) {
+          setAtalhosRapidosAbertos(false);
+        }
+      },
+    });
+  }, []);
+
+  const renderizarPuxadorDeAtalhos = () => {
+    return (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={
+          atalhosRapidosAbertos
+            ? "Recolher atalhos de filtro"
+            : "Mostrar atalhos de filtro"
+        }
+        accessibilityHint="Arraste para abrir ou recolher filtros rápidos do mapa."
+        accessibilityState={{ expanded: atalhosRapidosAbertos }}
+        style={styles.quickFiltersHandleArea}
+        onPress={alternarAtalhosRapidos}
+        {...quickFiltersPanResponder.panHandlers}
+      >
+        <View style={styles.quickFiltersHandle} />
+      </Pressable>
+    );
+  };
+
   const openProfile = () => {
     router.push("/profile" as Href);
   };
@@ -767,7 +966,7 @@ export default function HomeMapScreen() {
       <ScreenTransition style={styles.screen}>
         <View style={styles.topArea}>
           <View style={styles.header}>
-            <SvgXml xml={logoFluiXml} width={76} height={36} />
+            <SvgXml xml={logoFluiDoTema} width={76} height={36} />
 
             <PressableScale
               accessibilityRole="button"
@@ -775,7 +974,11 @@ export default function HomeMapScreen() {
               style={styles.profileButton}
               onPress={openProfile}
             >
-              <User size={22} color={colors.primary} strokeWidth={2} />
+              <Image
+                source={imagemPerfilUsuario}
+                style={styles.profileImage}
+                resizeMode="cover"
+              />
             </PressableScale>
           </View>
 
@@ -809,45 +1012,55 @@ export default function HomeMapScreen() {
             </PressableScale>
           </View>
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filtersContent}
-          >
-            {filterChips.map((filter) => {
-              const Icon = filter.icon;
+          <View style={styles.quickFiltersArea}>
+            {atalhosRapidosAbertos ? null : renderizarPuxadorDeAtalhos()}
 
-              return (
-                <Pressable
-                  key={filter.label}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${filter.label}${filter.active ? ", filtro ativo" : ""}`}
-                  accessibilityHint="Abre a tela de busca e filtros."
-                  accessibilityState={{ selected: filter.active }}
-                  style={[
-                    styles.chip,
-                    filter.active ? styles.chipActive : null,
-                  ]}
-                  onPress={abrirBusca}
+            {atalhosRapidosAbertos ? (
+              <>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.filtersContent}
                 >
-                  <Icon
-                    size={17}
-                    color={filter.active ? colors.white : colors.primary}
-                    strokeWidth={2}
-                  />
+                  {filterChips.map((filter) => {
+                    const Icon = filter.icon;
 
-                  <Text
-                    style={[
-                      styles.chipText,
-                      filter.active ? styles.chipTextActive : null,
-                    ]}
-                  >
-                    {filter.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
+                    return (
+                      <Pressable
+                        key={filter.id}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${filter.label}${filter.active ? ", filtro ativo" : ""}`}
+                        accessibilityHint="Filtra os pontos do mapa em tempo real."
+                        accessibilityState={{ selected: filter.active }}
+                        style={[
+                          styles.chip,
+                          filter.active ? styles.chipActive : null,
+                        ]}
+                        onPress={() => alternarFiltroRapido(filter.id)}
+                      >
+                        <Icon
+                          size={17}
+                          color={filter.active ? colors.white : colors.primary}
+                          strokeWidth={2}
+                        />
+
+                        <Text
+                          style={[
+                            styles.chipText,
+                            filter.active ? styles.chipTextActive : null,
+                          ]}
+                        >
+                          {filter.label}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </ScrollView>
+
+                {renderizarPuxadorDeAtalhos()}
+              </>
+            ) : null}
+          </View>
         </View>
 
         <View style={styles.mapArea}>
@@ -861,6 +1074,8 @@ export default function HomeMapScreen() {
             showsCompass={false}
             toolbarEnabled={false}
             loadingEnabled
+            mapType={isDarkMode ? "mutedStandard" : "standard"}
+            customMapStyle={isDarkMode ? estiloEscuroDoMapa : []}
             onRegionChangeComplete={(region) => {
               currentMapRegionRef.current = region;
             }}
@@ -931,28 +1146,38 @@ export default function HomeMapScreen() {
             })}
           </MapView>
 
-          <View pointerEvents="none" style={styles.mapTintOverlay} />
+          <View
+            pointerEvents="none"
+            style={[
+              styles.mapTintOverlay,
+              isDarkMode ? styles.mapTintOverlayDark : null,
+            ]}
+          />
 
           <View pointerEvents="box-none" style={styles.fixedMapControls}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Aumentar zoom do mapa"
-              accessibilityHint="Aproxima a visualização do mapa."
-              style={styles.mapControlButton}
-              onPress={() => alterarZoomMapa("aproximar")}
-            >
-              <Text style={styles.mapControlText}>+</Text>
-            </Pressable>
+            <View style={styles.zoomPill}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Aumentar zoom do mapa"
+                accessibilityHint="Aproxima a visualização do mapa."
+                style={styles.zoomPillButton}
+                onPress={() => alterarZoomMapa("aproximar")}
+              >
+                <Text style={styles.mapControlText}>+</Text>
+              </Pressable>
 
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Diminuir zoom do mapa"
-              accessibilityHint="Afasta a visualização do mapa."
-              style={styles.mapControlButton}
-              onPress={() => alterarZoomMapa("afastar")}
-            >
-              <Text style={styles.mapControlText}>−</Text>
-            </Pressable>
+              <View style={styles.zoomPillDivider} />
+
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Diminuir zoom do mapa"
+                accessibilityHint="Afasta a visualização do mapa."
+                style={styles.zoomPillButton}
+                onPress={() => alterarZoomMapa("afastar")}
+              >
+                <Text style={styles.mapControlText}>−</Text>
+              </Pressable>
+            </View>
 
             <Pressable
               accessibilityRole="button"
@@ -978,7 +1203,6 @@ export default function HomeMapScreen() {
             onLayout={(event) => {
               setSheetHeight(event.nativeEvent.layout.height);
             }}
-            {...sheetPanResponder.panHandlers}
           >
             <Pressable
               accessibilityRole="button"
@@ -988,6 +1212,7 @@ export default function HomeMapScreen() {
               accessibilityHint="Arraste ou toque para alternar a lista de pontos."
               style={styles.sheetHandleArea}
               onPress={() => alternarModalDePontos(!isSheetCollapsed)}
+              {...sheetPanResponder.panHandlers}
             >
               <View style={styles.sheetHandle} />
             </Pressable>
@@ -1015,85 +1240,97 @@ export default function HomeMapScreen() {
                 </PressableScale>
               </View>
             ) : (
-              points.map((point) => {
-                const Icon = point.icon;
-                const isRating = point.id === "best";
-                const isComfort = point.id === "comfort";
+              <ScrollView
+                style={styles.pointsScroll}
+                contentContainerStyle={styles.pointsScrollContent}
+                showsVerticalScrollIndicator={points.length > 3}
+                nestedScrollEnabled
+              >
+                {points.map((point) => {
+                  const Icon = point.icon;
+                  const isRating = point.id === "best";
+                  const isComfort = point.id === "comfort";
 
-                return (
-                  <PressableScale
-                    key={`${point.id}-${point.stationId}`}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${point.title}. ${point.address}. ${point.status}. ${point.power}.`}
-                    accessibilityHint="Abre a ficha detalhada do ponto de recarga."
-                    style={styles.pointCard}
-                    onPress={() => openStationDetails(point.stationId)}
-                  >
-                    <View style={styles.pointIconCircle}>
-                      <Icon
-                        size={22}
-                        color={colors.primary}
-                        fill={isRating ? colors.primarySoft : "none"}
-                        strokeWidth={2}
-                      />
-                    </View>
-
-                    <View style={styles.pointInfo}>
-                      <Text style={styles.pointTitle}>{point.title}</Text>
-                      <Text style={styles.pointAddress}>{point.address}</Text>
-
-                      <View style={styles.statusRow}>
-                        <View style={styles.statusDot} />
-                        <Text style={styles.statusText}>{point.status}</Text>
-                      </View>
-                    </View>
-
-                    <View style={styles.pointMeta}>
-                      <View style={styles.metaRow}>
-                        {isRating ? (
-                          <Star
-                            size={14}
-                            color={colors.yellowDark}
-                            fill={colors.yellowDark}
-                            strokeWidth={2}
-                          />
-                        ) : null}
-
-                        {isComfort ? (
-                          <Toilet
-                            size={14}
-                            color={colors.primary}
-                            strokeWidth={2}
-                          />
-                        ) : null}
-
-                        <Text style={styles.metaText}>
-                          {String(point.meta)}
-                        </Text>
-                      </View>
-
-                      <View style={styles.metaRow}>
-                        <Zap
-                          size={13}
+                  return (
+                    <PressableScale
+                      key={`${point.id}-${point.stationId}`}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${point.title}. ${point.address}. ${point.status}. ${point.power}.`}
+                      accessibilityHint="Abre a ficha detalhada do ponto de recarga."
+                      style={styles.pointCard}
+                      onPress={() => openStationDetails(point.stationId)}
+                    >
+                      <View style={styles.pointIconCircle}>
+                        <Icon
+                          size={22}
                           color={colors.primary}
-                          fill={colors.primary}
+                          fill={isRating ? colors.primarySoft : "none"}
                           strokeWidth={2}
                         />
-
-                        <Text style={styles.metaText}>
-                          {String(point.power)}
-                        </Text>
                       </View>
-                    </View>
 
-                    <ChevronRight
-                      size={24}
-                      color={colors.primary}
-                      strokeWidth={2.2}
-                    />
-                  </PressableScale>
-                );
-              })
+                      <View style={styles.pointInfo}>
+                        <Text style={styles.pointTitle}>{point.title}</Text>
+                        <Text style={styles.pointAddress}>{point.address}</Text>
+
+                        <View style={styles.statusRow}>
+                          <View
+                            style={[
+                              styles.statusDot,
+                              { backgroundColor: point.statusColor },
+                            ]}
+                          />
+                          <Text style={styles.statusText}>{point.status}</Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.pointMeta}>
+                        <View style={styles.metaRow}>
+                          {isRating ? (
+                            <Star
+                              size={14}
+                              color={colors.yellowDark}
+                              fill={colors.yellowDark}
+                              strokeWidth={2}
+                            />
+                          ) : null}
+
+                          {isComfort ? (
+                            <Toilet
+                              size={14}
+                              color={colors.primary}
+                              strokeWidth={2}
+                            />
+                          ) : null}
+
+                          <Text style={styles.metaText}>
+                            {String(point.meta)}
+                          </Text>
+                        </View>
+
+                        <View style={styles.metaRow}>
+                          <Zap
+                            size={13}
+                            color={colors.primary}
+                            fill={colors.primary}
+                            strokeWidth={2}
+                          />
+
+                          <Text style={styles.metaText}>
+                            {String(point.power)}
+                          </Text>
+                        </View>
+                      </View>
+
+                      <ChevronRight
+                        size={24}
+                        color={colors.primary}
+                        strokeWidth={2.2}
+                      />
+                    </PressableScale>
+                  );
+                })}
+              </ScrollView>
             )}
           </Animated.View>
         </View>
