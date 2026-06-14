@@ -18,6 +18,7 @@ import {
   StationVisualCover,
 } from "../../components";
 import { useFluiStorage } from "../../hooks/useFluiStorage";
+import { getStationImageSource } from "../../assets/stations";
 
 type Station = (typeof chargingStations)[number];
 
@@ -424,6 +425,8 @@ export default function PointDetailsScreen() {
             potenciaKw={station.powerKw}
             status={station.status}
             comodidades={station.amenities}
+            imageSource={getStationImageSource(station.imageKey)}
+
             imageUrl={station.imageUrl}
           />
 <SafeAreaView edges={["top"]} style={styles.heroActions}>

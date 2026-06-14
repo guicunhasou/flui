@@ -1,3 +1,5 @@
+import type { StationImageKey } from "../assets/stations";
+
 export type ConnectorType = 'ccs2' | 'type2' | 'chademo' | 'gbt';
 
 export type Amenity =
@@ -54,6 +56,7 @@ export type ChargingStation = {
   amenities: Amenity[];
   openingHours: string;
   lessBusyPeriods: string[];
+  imageKey?: StationImageKey;
   imageUrl?: string;
   isFavorite?: boolean;
   reviews?: ChargingStationReview[];

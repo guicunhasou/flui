@@ -17,15 +17,8 @@ Arquivos previstos:
 - station-11.png
 - station-12.png
 
-Orientação visual:
+Os arquivos atuais são placeholders técnicos para manter o app compilando enquanto as imagens finais não são geradas.
 
-- imagens fictícias, mas verossímeis;
-- cenário urbano de São Paulo;
-- carregadores modernos;
-- aparência limpa, tecnológica e sustentável;
-- evitar marcas reais, placas reais identificáveis ou fachadas copiadas;
-- formato recomendado: 16:9 ou próximo disso, idealmente 1600x900 ou 1200x675.
+Na etapa visual, substitua cada PNG por uma capa fictícia/verossímil em cenário urbano de São Paulo, com carregadores modernos e identidade limpa, tecnológica e sustentável.
 
-Observação técnica:
-
-As imagens ainda não são importadas por require neste momento para evitar erro no Expo enquanto os arquivos PNG não existirem.
+Formato recomendado: 16:9, idealmente 1600x900 ou 1200x675.

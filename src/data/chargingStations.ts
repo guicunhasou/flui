@@ -23,6 +23,7 @@ function criarAvaliacao(dados: DadosAvaliacao): ChargingStationReview {
 export const chargingStations: ChargingStation[] = [
   {
     id: 'station-01',
+    imageKey: "station-01",
     name: 'Flui Hub Paulista 1106',
     address: 'Av. Paulista, 1106',
     neighborhood: 'Bela Vista',
@@ -90,6 +91,7 @@ export const chargingStations: ChargingStation[] = [
   },
   {
     id: 'station-02',
+    imageKey: "station-02",
     name: 'Flui Express MASP',
     address: 'Av. Paulista, 1578',
     neighborhood: 'Bela Vista',
@@ -143,6 +145,7 @@ export const chargingStations: ChargingStation[] = [
   },
   {
     id: 'station-03',
+    imageKey: "station-03",
     name: 'Plug & Café Consolação',
     address: 'R. da Consolação, 2302',
     neighborhood: 'Consolação',
@@ -196,6 +199,7 @@ export const chargingStations: ChargingStation[] = [
   },
   {
     id: 'station-04',
+    imageKey: "station-04",
     name: 'Charge City São Paulo',
     address: 'Av. Paulista, 1230',
     neighborhood: 'Bela Vista',
@@ -249,6 +253,7 @@ export const chargingStations: ChargingStation[] = [
   },
   {
     id: 'station-05',
+    imageKey: "station-05",
     name: 'Estação Jardins Pamplona',
     address: 'R. Pamplona, 145',
     neighborhood: 'Jardim Paulista',
@@ -294,6 +299,7 @@ export const chargingStations: ChargingStation[] = [
   },
   {
     id: 'station-06',
+    imageKey: "station-06",
     name: 'Flui Vila Mariana Lins',
     address: 'Av. Lins de Vasconcelos, 1264',
     neighborhood: 'Aclimação',
@@ -347,6 +353,7 @@ export const chargingStations: ChargingStation[] = [
   },
   {
     id: 'station-07',
+    imageKey: "station-07",
     name: 'EcoCarga Parque Aclimação',
     address: 'R. Muniz de Sousa, 1119',
     neighborhood: 'Aclimação',
@@ -392,6 +399,7 @@ export const chargingStations: ChargingStation[] = [
   },
   {
     id: 'station-08',
+    imageKey: "station-08",
     name: 'Hub Paraíso Vergueiro',
     address: 'R. Vergueiro, 1000',
     neighborhood: 'Paraíso',
@@ -445,6 +453,7 @@ export const chargingStations: ChargingStation[] = [
   },
   {
     id: 'station-09',
+    imageKey: "station-09",
     name: 'Mercado Charge Cambuci',
     address: 'R. Luís Gama, 650',
     neighborhood: 'Cambuci',
@@ -498,6 +507,7 @@ export const chargingStations: ChargingStation[] = [
   },
   {
     id: 'station-10',
+    imageKey: "station-10",
     name: 'Garagem Liberdade Solar',
     address: 'R. da Glória, 700',
     neighborhood: 'Liberdade',
@@ -551,6 +561,7 @@ export const chargingStations: ChargingStation[] = [
   },
   {
     id: 'station-11',
+    imageKey: "station-11",
     name: 'Fast Point Ana Rosa',
     address: 'R. Domingos de Morais, 770',
     neighborhood: 'Vila Mariana',
@@ -604,6 +615,7 @@ export const chargingStations: ChargingStation[] = [
   },
   {
     id: 'station-12',
+    imageKey: "station-12",
     name: 'Garagem Verde Brigadeiro',
     address: 'Av. Brigadeiro Luís Antônio, 2500',
     neighborhood: 'Jardim Paulista',
