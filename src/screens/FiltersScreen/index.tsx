@@ -9,6 +9,24 @@ import {
 } from "react-native";
 import { router, type Href } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  BatteryCharging,
+  Car,
+  ChevronRight,
+  Clock3,
+  Coffee,
+  MapPin,
+  Plug,
+  RotateCcw,
+  Search,
+  Star,
+  Toilet,
+  Umbrella,
+  Utensils,
+  Wifi,
+  X,
+  Zap,
+} from "lucide-react-native";
 
 import { chargingStations } from "../../data/chargingStations";
 import {
@@ -28,10 +46,13 @@ import { colors as baseColors } from "../../theme/colors";
 import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
 import { filtrarEstacoes } from "../../utils/filtrarEstacoes";
 
+type IconeFiltro = typeof Search;
+
 type ChipProps = {
   styles: typeof baseStyles;
+  colors: typeof baseColors;
   label: string;
-  icon?: string;
+  Icone?: IconeFiltro;
   selected: boolean;
   onPress: () => void;
   size?: "small" | "medium" | "large";
@@ -88,10 +109,12 @@ const powerOptions = [50, 100, 150, 250];
 const ratingOptions = [4, 4.5];
 const distanceOptions = [0.5, 1, 5];
 const sugestoesRapidas = [
-  "Shopping",
-  "Recife Antigo",
-  "Boa Viagem",
-  "Carga rápida",
+  "Paulista",
+  "Vila Mariana",
+  "Higienópolis",
+  "Jardins",
+  "Liberdade",
+  "Cambuci",
 ];
 
 function toggleArrayValue<TValue extends string>(
@@ -107,64 +130,44 @@ function toggleArrayValue<TValue extends string>(
   return [...currentValues, selectedValue];
 }
 
-function getConnectorIcon(value: ConnectorType) {
-  const icons: Record<ConnectorType, string> = {
-    ccs2: "▯",
-    type2: "◉",
-    chademo: "◌",
-    gbt: "▣",
-  };
-
-  return icons[value];
+function getConnectorIcone(_value: ConnectorType) {
+  return Plug;
 }
 
-function getAmenityIcon(value: Amenity) {
-  const icons: Record<Amenity, string> = {
-    restaurant: "♨",
-    coffee: "☕",
-    restroom: "♙",
-    parking: "P",
-    coveredArea: "⌂",
-    market: "□",
-    wifi: "⌁",
-    security: "◇",
+function getAmenityIcone(value: Amenity) {
+  const icones: Record<Amenity, IconeFiltro> = {
+    restaurant: Utensils,
+    coffee: Coffee,
+    restroom: Toilet,
+    parking: Car,
+    coveredArea: Umbrella,
+    market: MapPin,
+    wifi: Wifi,
+    security: MapPin,
   };
 
-  return icons[value];
+  return icones[value];
 }
 
 function formatDistanceLabel(distance: number) {
   if (distance < 1) {
-    return `Até ${distance * 1000} m`;
+    return `${distance * 1000} m`;
   }
 
   return `${distance} km`;
 }
 
-function montarTextoDeStatus(status: StationStatus) {
-  if (status === "available") {
-    return "Disponível agora";
-  }
-
-  if (status === "busy") {
-    return "Alta procura";
-  }
-
-  if (status === "maintenance") {
-    return "Em manutenção";
-  }
-
-  return "Indisponível";
-}
-
 function Chip({
   styles,
+  colors,
   label,
-  icon,
+  Icone,
   selected,
   onPress,
   size = "medium",
 }: ChipProps) {
+  const corIcone = selected ? colors.white : colors.primaryDark;
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -179,12 +182,13 @@ function Chip({
       ]}
       onPress={onPress}
     >
-      {icon ? (
-        <Text
-          style={[styles.chipIcon, selected ? styles.selectedChipText : null]}
-        >
-          {icon}
-        </Text>
+      {Icone ? (
+        <Icone
+          color={corIcone}
+          size={19}
+          strokeWidth={2.3}
+          style={styles.chipIconSvg}
+        />
       ) : null}
 
       <Text
@@ -210,10 +214,10 @@ export default function FiltersScreen() {
     filtros: filters,
     termoBusca,
   });
-  const textoContagem =
+  const textoBotaoMapa =
     pontosEncontrados.length === 1
-      ? "1 ponto"
-      : `${pontosEncontrados.length} pontos`;
+      ? "Ver 1 ponto no mapa"
+      : `Ver ${pontosEncontrados.length} pontos no mapa`;
 
   function handleToggleConnector(connectorType: ConnectorType) {
     setFilters((currentFilters) => ({
@@ -301,25 +305,15 @@ export default function FiltersScreen() {
     }, 420);
   }
 
-  function abrirFichaDoPonto(stationId: string) {
-    const route = {
-      pathname: "/point-details",
-      params: { stationId },
-    } as Href;
-
-    router.push(route);
-  }
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
       <ScreenTransition style={styles.content}>
         <View style={styles.header}>
           <View style={styles.titleGroup}>
-            <Text style={styles.eyebrow}>Busca</Text>
             <Text style={styles.title}>Busca e filtros</Text>
             <Text style={styles.subtitle}>
-              Encontre pontos por conector, potência, distância e conforto.
+              Refine os pontos por região, conector, potência e comodidades.
             </Text>
           </View>
 
@@ -329,7 +323,7 @@ export default function FiltersScreen() {
             style={styles.closeButton}
             onPress={() => router.replace("/map" as Href)}
           >
-            <Text style={styles.closeButtonText}>×</Text>
+            <X color={colors.primaryDark} size={22} strokeWidth={2.4} />
           </Pressable>
         </View>
 
@@ -339,7 +333,12 @@ export default function FiltersScreen() {
         >
           <View style={styles.searchCard}>
             <View style={styles.searchInputBox}>
-              <Text style={styles.searchIcon}>⌕</Text>
+              <Search
+                color={colors.primaryDark}
+                size={21}
+                strokeWidth={2.4}
+                style={styles.searchIconSvg}
+              />
               <TextInput
                 accessibilityLabel="Campo de busca de pontos de recarga"
                 accessibilityHint="Digite bairro, estação, potência ou tipo de conector."
@@ -358,13 +357,17 @@ export default function FiltersScreen() {
                   style={styles.searchClearButton}
                   onPress={() => setTermoBusca("")}
                 >
-                  <Text style={styles.searchClearText}>×</Text>
+                  <X color={colors.primaryDark} size={17} strokeWidth={2.6} />
                 </Pressable>
               ) : null}
             </View>
 
             <Text style={styles.quickSearchLabel}>Sugestões rápidas</Text>
-            <View style={styles.quickSearchRow}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.quickSearchRow}
+            >
               {sugestoesRapidas.map((sugestao) => (
                 <Pressable
                   key={sugestao}
@@ -392,12 +395,14 @@ export default function FiltersScreen() {
                   </Text>
                 </Pressable>
               ))}
-            </View>
+            </ScrollView>
           </View>
 
           <View style={styles.filterCard}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionIcon}>⌁</Text>
+              <View style={styles.sectionIconBox}>
+                <Plug color={colors.primaryDark} size={18} strokeWidth={2.4} />
+              </View>
               <Text style={styles.sectionTitle}>Tipo de conector</Text>
             </View>
 
@@ -405,9 +410,10 @@ export default function FiltersScreen() {
               {visibleConnectorOptions.map((option) => (
                 <Chip
                   styles={styles}
+                  colors={colors}
                   key={option.value}
                   label={option.label}
-                  icon={getConnectorIcon(option.value)}
+                  Icone={getConnectorIcone(option.value)}
                   selected={filters.connectorTypes.includes(option.value)}
                   onPress={() => handleToggleConnector(option.value)}
                 />
@@ -417,7 +423,9 @@ export default function FiltersScreen() {
 
           <View style={styles.filterCard}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionIcon}>⚡</Text>
+              <View style={styles.sectionIconBox}>
+                <Zap color={colors.primaryDark} size={18} strokeWidth={2.4} />
+              </View>
               <Text style={styles.sectionTitle}>Potência mínima</Text>
             </View>
 
@@ -425,8 +433,10 @@ export default function FiltersScreen() {
               {powerOptions.map((power) => (
                 <Chip
                   styles={styles}
+                  colors={colors}
                   key={power}
                   label={`${power} kW`}
+                  Icone={Zap}
                   selected={filters.power.minKw === power}
                   onPress={() => handleSelectPower(power)}
                   size="small"
@@ -437,24 +447,28 @@ export default function FiltersScreen() {
 
           <View style={styles.filterCard}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionIcon}>◷</Text>
+              <View style={styles.sectionIconBox}>
+                <Clock3 color={colors.primaryDark} size={18} strokeWidth={2.4} />
+              </View>
               <Text style={styles.sectionTitle}>Disponibilidade</Text>
             </View>
 
             <View style={styles.chipRow}>
               <Chip
-                  styles={styles}
+                styles={styles}
+                colors={colors}
                 label="Aberto agora"
-                icon="◷"
+                Icone={Clock3}
                 selected={filters.onlyOpenNow}
                 onPress={handleToggleOpenNow}
                 size="large"
               />
 
               <Chip
-                  styles={styles}
+                styles={styles}
+                colors={colors}
                 label="Carregadores livres"
-                icon="▯"
+                Icone={BatteryCharging}
                 selected={filters.statuses.includes("available")}
                 onPress={handleToggleAvailableChargers}
                 size="large"
@@ -464,7 +478,9 @@ export default function FiltersScreen() {
 
           <View style={styles.filterCard}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionIcon}>♙</Text>
+              <View style={styles.sectionIconBox}>
+                <Coffee color={colors.primaryDark} size={18} strokeWidth={2.4} />
+              </View>
               <Text style={styles.sectionTitle}>Comodidades</Text>
             </View>
 
@@ -472,9 +488,10 @@ export default function FiltersScreen() {
               {visibleAmenityOptions.map((option) => (
                 <Chip
                   styles={styles}
+                  colors={colors}
                   key={option.value}
                   label={option.label}
-                  icon={getAmenityIcon(option.value)}
+                  Icone={getAmenityIcone(option.value)}
                   selected={filters.amenities.includes(option.value)}
                   onPress={() => handleToggleAmenity(option.value)}
                 />
@@ -484,7 +501,9 @@ export default function FiltersScreen() {
 
           <View style={styles.filterCard}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionIcon}>☆</Text>
+              <View style={styles.sectionIconBox}>
+                <Star color={colors.primaryDark} size={18} strokeWidth={2.4} />
+              </View>
               <Text style={styles.sectionTitle}>Avaliação mínima</Text>
             </View>
 
@@ -492,11 +511,13 @@ export default function FiltersScreen() {
               {ratingOptions.map((rating) => (
                 <Chip
                   styles={styles}
+                  colors={colors}
                   key={rating}
                   label={`${rating.toFixed(1).replace(".", ",")}+`}
+                  Icone={Star}
                   selected={filters.rating.minRating === rating}
                   onPress={() => handleSelectRating(rating)}
-                  size="large"
+                  size="medium"
                 />
               ))}
             </View>
@@ -504,73 +525,28 @@ export default function FiltersScreen() {
 
           <View style={styles.filterCard}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionIcon}>⌖</Text>
-              <Text style={styles.sectionTitle}>Distância</Text>
+              <View style={styles.sectionIconBox}>
+                <MapPin color={colors.primaryDark} size={18} strokeWidth={2.4} />
+              </View>
+              <Text style={styles.sectionTitle}>Distância mínima</Text>
             </View>
 
             <View style={styles.chipRow}>
               {distanceOptions.map((distance) => (
                 <Chip
                   styles={styles}
+                  colors={colors}
                   key={distance}
                   label={formatDistanceLabel(distance)}
+                  Icone={MapPin}
                   selected={filters.distance.maxKm === distance}
                   onPress={() => handleSelectDistance(distance)}
+                  size="small"
                 />
               ))}
             </View>
           </View>
 
-          <View style={styles.resultsCard}>
-            <View style={styles.resultsHeader}>
-              <View>
-                <Text style={styles.resultsEyebrow}>Resultados simulados</Text>
-                <Text style={styles.resultsTitle}>Pontos recomendados</Text>
-              </View>
-
-              <Text style={styles.resultsCount}>{textoContagem}</Text>
-            </View>
-
-            {pontosEncontrados.length > 0 ? (
-              pontosEncontrados.map((ponto) => (
-                <Pressable
-                  key={ponto.id}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${ponto.name}. ${ponto.neighborhood}, ${ponto.distanceKm} km, ${ponto.powerKw} kW. ${montarTextoDeStatus(ponto.status)}.`}
-                  accessibilityHint="Abre a ficha detalhada deste ponto de recarga."
-                  style={({ pressed }) => [
-                    styles.resultItem,
-                    pressed ? styles.resultItemPressed : null,
-                  ]}
-                  onPress={() => abrirFichaDoPonto(ponto.id)}
-                >
-                  <View style={styles.resultIconBox}>
-                    <Text style={styles.resultIcon}>⚡</Text>
-                  </View>
-
-                  <View style={styles.resultContent}>
-                    <Text style={styles.resultName}>{ponto.name}</Text>
-                    <Text style={styles.resultAddress}>
-                      {ponto.neighborhood} · {ponto.distanceKm} km · {ponto.powerKw} kW
-                    </Text>
-                    <Text style={styles.resultStatus}>
-                      {montarTextoDeStatus(ponto.status)}
-                    </Text>
-                  </View>
-
-                  <Text style={styles.resultArrow}>›</Text>
-                </Pressable>
-              ))
-            ) : (
-              <View style={styles.emptyResultsCard}>
-                <Text style={styles.emptyResultsTitle}>Nenhum ponto encontrado</Text>
-                <Text style={styles.emptyResultsText}>
-                  Tente buscar por bairro, shopping, potência ou tipo de
-                  conector.
-                </Text>
-              </View>
-            )}
-          </View>
         </ScrollView>
 
         <SafeAreaView edges={["bottom"]} style={styles.footer}>
@@ -583,7 +559,12 @@ export default function FiltersScreen() {
             ]}
             onPress={handleClearFilters}
           >
-            <Text style={styles.clearButtonIcon}>⟳</Text>
+            <RotateCcw
+              color={colors.primaryDark}
+              size={18}
+              strokeWidth={2.4}
+              style={styles.clearButtonIconSvg}
+            />
             <Text style={styles.clearButtonText}>Limpar busca</Text>
           </Pressable>
 
@@ -598,7 +579,8 @@ export default function FiltersScreen() {
             disabled={isApplying}
             onPress={abrirMapaComBusca}
           >
-            <Text style={styles.applyButtonText}>Ver no mapa</Text>
+            <Text style={styles.applyButtonText}>{textoBotaoMapa}</Text>
+            <ChevronRight color={colors.white} size={20} strokeWidth={2.5} />
           </Pressable>
         </SafeAreaView>
         <LoadingOverlay visible={isApplying} message="Buscando pontos..." />

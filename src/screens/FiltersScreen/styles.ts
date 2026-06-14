@@ -21,7 +21,7 @@ export const styles = StyleSheet.create({
     paddingTop: spacing.sm,
     paddingBottom: spacing.md,
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "space-between",
   },
 
@@ -42,9 +42,9 @@ export const styles = StyleSheet.create({
   title: {
     ...typography.title,
     color: colors.primaryDark,
-    fontSize: 36,
-    lineHeight: 40,
-    letterSpacing: 0.6,
+    fontSize: 34,
+    lineHeight: 38,
+    letterSpacing: 0.4,
   },
 
   subtitle: {
@@ -106,6 +106,10 @@ export const styles = StyleSheet.create({
     marginRight: spacing.sm,
   },
 
+  searchIconSvg: {
+    marginRight: spacing.sm,
+  },
+
   searchInput: {
     flex: 1,
     color: colors.text,
@@ -141,8 +145,8 @@ export const styles = StyleSheet.create({
 
   quickSearchRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
     gap: spacing.sm,
+    paddingRight: spacing.md,
   },
 
   quickSearchChip: {
@@ -192,6 +196,16 @@ export const styles = StyleSheet.create({
     color: colors.primaryDark,
     fontSize: 23,
     fontWeight: typography.weights.medium,
+    marginRight: spacing.sm,
+  },
+
+  sectionIconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.primaryLight,
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: spacing.sm,
   },
 
@@ -248,6 +262,10 @@ export const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 21,
     fontWeight: typography.weights.semibold,
+    marginRight: spacing.sm,
+  },
+
+  chipIconSvg: {
     marginRight: spacing.sm,
   },
 
@@ -417,6 +435,10 @@ export const styles = StyleSheet.create({
     marginRight: spacing.xs,
   },
 
+  clearButtonIconSvg: {
+    marginRight: spacing.xs,
+  },
+
   clearButtonText: {
     color: colors.primaryDark,
     fontSize: typography.sizes.md,
@@ -425,16 +447,19 @@ export const styles = StyleSheet.create({
 
   applyButton: {
     minHeight: 56,
-    flex: 1.2,
+    flex: 1.45,
     borderRadius: radius.lg,
     backgroundColor: colors.primaryDark,
     alignItems: "center",
     justifyContent: "center",
+    flexDirection: "row",
+    gap: spacing.xs,
+    paddingHorizontal: spacing.md,
   },
 
   applyButtonText: {
     color: colors.white,
-    fontSize: typography.sizes.lg,
+    fontSize: typography.sizes.md,
     fontWeight: typography.weights.semibold,
   },
 
