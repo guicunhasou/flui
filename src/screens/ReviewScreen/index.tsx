@@ -28,7 +28,8 @@ import {
 import { chargingStations } from "../../data";
 import { LoadingOverlay, ScreenTransition } from "../../components";
 import { useFluiStorage } from "../../hooks/useFluiStorage";
-import { styles, colors } from "./styles";
+import { styles as baseStyles, colors as baseColors } from "./styles";
+import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
 
 type CriteriaKey = "quality" | "cleaning" | "availability" | "amenities";
 
@@ -107,6 +108,8 @@ function getStatusLabel(status: (typeof chargingStations)[number]["status"]) {
 }
 
 type StarRatingInputProps = {
+  styles: typeof baseStyles;
+  colors: typeof baseColors;
   value: number;
   onChange: (rating: number) => void;
   size?: number;
@@ -114,6 +117,8 @@ type StarRatingInputProps = {
 };
 
 function StarRatingInput({
+  styles,
+  colors,
   value,
   onChange,
   size = 24,
@@ -150,6 +155,10 @@ function StarRatingInput({
 }
 
 export default function ReviewScreen() {
+  const { styles, colors, isDarkMode } = useTelaComPreferencias(
+    baseStyles,
+    baseColors,
+  );
   const { stationId } = useLocalSearchParams<{
     stationId?: string | string[];
   }>();
@@ -334,7 +343,7 @@ export default function ReviewScreen() {
   if (!station) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="dark-content" />
+        <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
 
         <ScreenTransition style={styles.fallbackContainer}>
           <View style={styles.fallbackCard}>
@@ -389,7 +398,7 @@ export default function ReviewScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
 
       <KeyboardAvoidingView
         style={styles.keyboardView}
@@ -505,6 +514,8 @@ export default function ReviewScreen() {
                 </View>
 
                 <StarRatingInput
+                  styles={styles}
+                  colors={colors}
                   value={overallRating}
                   onChange={setOverallRating}
                   accessibilityLabel="Avaliação geral"
@@ -536,6 +547,8 @@ export default function ReviewScreen() {
                       </View>
 
                       <StarRatingInput
+                  styles={styles}
+                  colors={colors}
                         value={criteriaRatings[criterion.key]}
                         onChange={(rating) =>
                           updateCriterionRating(criterion.key, rating)

@@ -36,7 +36,8 @@ import {
   PressableScale,
   ScreenTransition,
 } from "../../components";
-import styles, { colors } from "./styles";
+import baseStyles, { colors as baseColors } from "./styles";
+import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
 
 const mapaFlui = require("../../../assets/images/mapa.png");
 
@@ -422,6 +423,10 @@ const clamp = (value: number, min: number, max: number) => {
 };
 
 export default function HomeMapScreen() {
+  const { styles, colors, isDarkMode } = useTelaComPreferencias(
+    baseStyles,
+    baseColors,
+  );
   const routeParams = useLocalSearchParams();
   const filtersParam = routeParams.filters;
   const queryParam = routeParams.query;
@@ -664,7 +669,7 @@ export default function HomeMapScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
 
       <ScreenTransition style={styles.screen}>
         <View style={styles.topArea}>

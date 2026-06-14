@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import {
+  Pressable,
+  ScrollView,
+  StatusBar,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { router, type Href } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -15,12 +22,14 @@ import {
   StationFilters,
   StationStatus,
 } from "../../types";
-import { styles } from "./styles";
+import { styles as baseStyles } from "./styles";
 import { LoadingOverlay, ScreenTransition } from "../../components";
-import { colors } from "../../theme/colors";
+import { colors as baseColors } from "../../theme/colors";
+import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
 import { filtrarEstacoes } from "../../utils/filtrarEstacoes";
 
 type ChipProps = {
+  styles: typeof baseStyles;
   label: string;
   icon?: string;
   selected: boolean;
@@ -148,7 +157,14 @@ function montarTextoDeStatus(status: StationStatus) {
   return "Indisponível";
 }
 
-function Chip({ label, icon, selected, onPress, size = "medium" }: ChipProps) {
+function Chip({
+  styles,
+  label,
+  icon,
+  selected,
+  onPress,
+  size = "medium",
+}: ChipProps) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -181,6 +197,10 @@ function Chip({ label, icon, selected, onPress, size = "medium" }: ChipProps) {
 }
 
 export default function FiltersScreen() {
+  const { styles, colors, isDarkMode } = useTelaComPreferencias(
+    baseStyles,
+    baseColors,
+  );
   const [filters, setFilters] = useState<StationFilters>(initialFilters);
   const [termoBusca, setTermoBusca] = useState("");
   const [isApplying, setIsApplying] = useState(false);
@@ -292,6 +312,7 @@ export default function FiltersScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
       <ScreenTransition style={styles.content}>
         <View style={styles.header}>
           <View style={styles.titleGroup}>
@@ -383,6 +404,7 @@ export default function FiltersScreen() {
             <View style={styles.chipRow}>
               {visibleConnectorOptions.map((option) => (
                 <Chip
+                  styles={styles}
                   key={option.value}
                   label={option.label}
                   icon={getConnectorIcon(option.value)}
@@ -402,6 +424,7 @@ export default function FiltersScreen() {
             <View style={styles.chipRow}>
               {powerOptions.map((power) => (
                 <Chip
+                  styles={styles}
                   key={power}
                   label={`${power} kW`}
                   selected={filters.power.minKw === power}
@@ -420,6 +443,7 @@ export default function FiltersScreen() {
 
             <View style={styles.chipRow}>
               <Chip
+                  styles={styles}
                 label="Aberto agora"
                 icon="◷"
                 selected={filters.onlyOpenNow}
@@ -428,6 +452,7 @@ export default function FiltersScreen() {
               />
 
               <Chip
+                  styles={styles}
                 label="Carregadores livres"
                 icon="▯"
                 selected={filters.statuses.includes("available")}
@@ -446,6 +471,7 @@ export default function FiltersScreen() {
             <View style={styles.chipRow}>
               {visibleAmenityOptions.map((option) => (
                 <Chip
+                  styles={styles}
                   key={option.value}
                   label={option.label}
                   icon={getAmenityIcon(option.value)}
@@ -465,6 +491,7 @@ export default function FiltersScreen() {
             <View style={styles.chipRow}>
               {ratingOptions.map((rating) => (
                 <Chip
+                  styles={styles}
                   key={rating}
                   label={`${rating.toFixed(1).replace(".", ",")}+`}
                   selected={filters.rating.minRating === rating}
@@ -484,6 +511,7 @@ export default function FiltersScreen() {
             <View style={styles.chipRow}>
               {distanceOptions.map((distance) => (
                 <Chip
+                  styles={styles}
                   key={distance}
                   label={formatDistanceLabel(distance)}
                   selected={filters.distance.maxKm === distance}

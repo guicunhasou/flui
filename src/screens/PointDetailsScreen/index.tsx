@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import {
   Alert,
   Linking,
+  StatusBar,
   Pressable,
   ScrollView,
   Text,
@@ -11,13 +12,14 @@ import { router, type Href, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { chargingStations } from "../../data/chargingStations";
-import { styles } from "./styles";
+import { styles as baseStyles } from "./styles";
 import {
   LoadingOverlay,
   ScreenTransition,
   StationVisualCover,
 } from "../../components";
 import { useFluiStorage } from "../../hooks/useFluiStorage";
+import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
 import { getStationImageSource } from "../../assets/stations";
 
 type Station = (typeof chargingStations)[number];
@@ -188,6 +190,7 @@ function montarPerfilDoPonto(station: Station) {
 }
 
 export default function PointDetailsScreen() {
+  const { styles, colors, isDarkMode } = useTelaComPreferencias(baseStyles);
   const { stationId } = useLocalSearchParams<{
     stationId?: string | string[];
   }>();
@@ -316,6 +319,7 @@ export default function PointDetailsScreen() {
   if (!station) {
     return (
       <SafeAreaView style={styles.fallbackContainer}>
+        <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
         <View style={styles.fallbackCard}>
           <Text style={styles.fallbackIcon}>!</Text>
 
@@ -410,9 +414,18 @@ export default function PointDetailsScreen() {
   ];
 
   const mainReview = station.reviews?.[0] ?? null;
+  const statusColor =
+    station.status === "available"
+      ? colors.success
+      : station.status === "busy"
+        ? colors.yellowDark
+        : station.status === "maintenance"
+          ? colors.dangerBorder
+          : colors.textLight;
 
   return (
     <ScreenTransition style={styles.container}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
@@ -480,7 +493,7 @@ export default function PointDetailsScreen() {
                 accessible={false}
                 style={[
                   styles.statusDot,
-                  { backgroundColor: statusInfo.color },
+                  { backgroundColor: statusColor },
                 ]}
               />
 

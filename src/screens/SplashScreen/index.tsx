@@ -4,7 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
 import { SvgXml } from 'react-native-svg';
 
-import styles from './styles';
+import baseStyles, { colors as baseColors } from './styles';
+import { useTelaComPreferencias } from '../../hooks/useTelaComPreferencias';
 
 const logoFluiXml = `
 <svg width="1115" height="516" viewBox="0 0 1115 516" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -16,6 +17,10 @@ const logoFluiXml = `
 const SPLASH_DURATION = 2800;
 
 export default function SplashScreen() {
+  const { styles, isDarkMode } = useTelaComPreferencias(
+    baseStyles,
+    baseColors,
+  );
   const logoOpacity = useRef(new Animated.Value(0)).current;
   const logoScale = useRef(new Animated.Value(0.94)).current;
 
@@ -59,7 +64,7 @@ export default function SplashScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
 
       <View style={styles.screen}>
         <Animated.View

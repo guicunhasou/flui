@@ -22,7 +22,8 @@ import {
 
 import { rechargeHistory, sentReviews } from "../../data";
 import { LoadingOverlay, ScreenTransition } from "../../components";
-import styles, { colors } from "./styles";
+import baseStyles, { colors as baseColors } from "./styles";
+import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
 
 type RechargeItem = (typeof rechargeHistory)[number];
 type ReviewItem = (typeof sentReviews)[number];
@@ -113,6 +114,10 @@ function getReviewTitle(item: ReviewItem) {
 }
 
 export default function ActivitiesScreen() {
+  const { styles, colors, isDarkMode } = useTelaComPreferencias(
+    baseStyles,
+    baseColors,
+  );
   const [isOpeningReview, setIsOpeningReview] = useState(false);
 
   function handleOpenReview(stationId: string) {
@@ -129,7 +134,7 @@ export default function ActivitiesScreen() {
   }
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
 
       <ScreenTransition style={styles.screen}>
         <ScrollView

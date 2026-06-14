@@ -31,7 +31,8 @@ import {
 
 import { chargingStations } from "../../data";
 import { LoadingOverlay, ScreenTransition } from "../../components";
-import styles, { colors } from "./styles";
+import baseStyles, { colors as baseColors } from "./styles";
+import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
 
 type Station = (typeof chargingStations)[number];
 
@@ -115,6 +116,10 @@ function getAmenityIcon(amenity: string) {
 }
 
 export default function FavoritesScreen() {
+  const { styles, colors, isDarkMode } = useTelaComPreferencias(
+    baseStyles,
+    baseColors,
+  );
   const [favoriteIds, setFavoriteIds] = useState(() =>
     chargingStations
       .filter((station) => station.isFavorite)
@@ -162,7 +167,7 @@ export default function FavoritesScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
 
       <ScreenTransition style={styles.screen}>
         <ScrollView
