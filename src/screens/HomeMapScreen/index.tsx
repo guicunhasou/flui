@@ -424,11 +424,14 @@ const clamp = (value: number, min: number, max: number) => {
 export default function HomeMapScreen() {
   const routeParams = useLocalSearchParams();
   const filtersParam = routeParams.filters;
+  const queryParam = routeParams.query;
   const pan = useRef(new Animated.ValueXY()).current;
 
   const lastMapPosition = useRef({ x: 0, y: 0 });
   const currentMapPosition = useRef({ x: 0, y: 0 });
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(() =>
+    getRouteParamAsString(queryParam),
+  );
   const [isOpeningDetails, setIsOpeningDetails] = useState(false);
   const [mapFeedbackMessage, setMapFeedbackMessage] = useState<string | null>(
     null,
@@ -442,6 +445,14 @@ export default function HomeMapScreen() {
     width: 390,
     height: 560,
   });
+
+  const routeSearchTerm = useMemo(() => {
+    return getRouteParamAsString(queryParam);
+  }, [queryParam]);
+
+  useEffect(() => {
+    setSearchTerm(routeSearchTerm);
+  }, [routeSearchTerm]);
 
   const appliedFilters = useMemo(() => {
     return parseRouteFilters(filtersParam);

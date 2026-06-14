@@ -18,6 +18,7 @@ import {
 import { styles } from "./styles";
 import { LoadingOverlay, ScreenTransition } from "../../components";
 import { colors } from "../../theme/colors";
+import { filtrarEstacoes } from "../../utils/filtrarEstacoes";
 
 type ChipProps = {
   label: string;
@@ -28,19 +29,16 @@ type ChipProps = {
 };
 
 const initialFilters: StationFilters = {
-  connectorTypes: ["ccs2"],
-  statuses: [],
-  amenities: ["restroom", "parking"],
+  ...defaultFilters,
   power: {
-    minKw: 150,
+    ...defaultFilters.power,
   },
   distance: {
-    maxKm: 1,
+    ...defaultFilters.distance,
   },
   rating: {
-    minRating: 4.5,
+    ...defaultFilters.rating,
   },
-  onlyOpenNow: true,
 };
 
 const visibleConnectorOptions = connectorOptions
@@ -134,38 +132,6 @@ function formatDistanceLabel(distance: number) {
   return `${distance} km`;
 }
 
-function normalizarTexto(texto: string) {
-  return texto
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
-}
-
-function buscarPontos(termo: string) {
-  const termoNormalizado = normalizarTexto(termo);
-
-  if (!termoNormalizado) {
-    return chargingStations.slice(0, 3);
-  }
-
-  return chargingStations.filter((ponto) => {
-    const textoDoPonto = normalizarTexto(
-      [
-        ponto.name,
-        ponto.address,
-        ponto.neighborhood,
-        ponto.city,
-        ponto.state,
-        `${ponto.powerKw} kW`,
-        ponto.connectors.map((connector) => connector.label).join(" "),
-      ].join(" "),
-    );
-
-    return textoDoPonto.includes(termoNormalizado);
-  });
-}
-
 function montarTextoDeStatus(status: StationStatus) {
   if (status === "available") {
     return "Disponível agora";
@@ -219,7 +185,11 @@ export default function FiltersScreen() {
   const [termoBusca, setTermoBusca] = useState("");
   const [isApplying, setIsApplying] = useState(false);
 
-  const pontosEncontrados = buscarPontos(termoBusca);
+  const pontosEncontrados = filtrarEstacoes({
+    estacoes: chargingStations,
+    filtros: filters,
+    termoBusca,
+  });
   const textoContagem =
     pontosEncontrados.length === 1
       ? "1 ponto"
@@ -299,6 +269,7 @@ export default function FiltersScreen() {
       pathname: "/map",
       params: {
         filters: JSON.stringify(filters),
+        query: termoBusca.trim(),
       },
     } as Href;
 
