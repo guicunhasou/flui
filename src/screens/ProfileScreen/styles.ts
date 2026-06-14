@@ -70,59 +70,8 @@ export function createProfileStyles(colors: AppTheme, fontScale: number) {
     content: {
       paddingHorizontal: 20,
       paddingTop: 8,
-      paddingBottom: 30,
+      paddingBottom: 34,
       alignItems: "stretch",
-    },
-
-    profileActionsRow: {
-      width: "100%",
-      alignSelf: "center",
-      marginTop: 8,
-      marginBottom: 14,
-      flexDirection: "row",
-      gap: 10,
-    },
-
-    profileActionText: {
-      color: colors.primary,
-      fontSize: s(13),
-      fontWeight: "800",
-    },
-
-    settingsButton: {
-      flex: 1,
-      width: 195,
-      height: 54,
-      paddingHorizontal: 12,
-      borderRadius: 18,
-      borderWidth: 1,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      alignSelf: "stretch",
-      padding: 18,
-      gap: 8,
-      backgroundColor: colors.primarySoft,
-      borderColor: colors.primarySoftStrong,
-      ...softShadow,
-    },
-
-    logoutButton: {
-      flex: 1,
-      width: 195,
-      height: 54,
-      paddingHorizontal: 12,
-      borderRadius: 18,
-      borderWidth: 1,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      alignSelf: "stretch",
-      padding: 18,
-      gap: 8,
-      backgroundColor: colors.dangerSoft,
-      borderColor: colors.dangerBorder,
-      ...softShadow,
     },
 
     profileCard: {
@@ -167,6 +116,58 @@ export function createProfileStyles(colors: AppTheme, fontScale: number) {
       lineHeight: s(19),
     },
 
+    profileBadge: {
+      alignSelf: "flex-start",
+      marginTop: 11,
+      minHeight: 28,
+      paddingHorizontal: 10,
+      borderRadius: 14,
+      backgroundColor: colors.primarySoft,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+    },
+
+    profileBadgeText: {
+      color: colors.primary,
+      fontSize: s(12),
+      fontWeight: "800",
+    },
+
+    feedbackBadge: {
+      marginTop: 12,
+      minHeight: 40,
+      paddingHorizontal: 14,
+      borderRadius: 18,
+      backgroundColor: colors.primarySoft,
+      borderWidth: 1,
+      borderColor: colors.primarySoftStrong,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+
+    feedbackText: {
+      color: colors.primary,
+      fontSize: s(13),
+      fontWeight: "800",
+    },
+
+    errorCard: {
+      marginTop: 12,
+      padding: 13,
+      borderRadius: 18,
+      backgroundColor: colors.dangerSoft,
+      borderWidth: 1,
+      borderColor: colors.dangerBorder,
+    },
+
+    errorText: {
+      color: colors.text,
+      fontSize: s(12.5),
+      fontWeight: "700",
+      lineHeight: s(18),
+    },
+
     statsRow: {
       marginTop: 14,
       flexDirection: "row",
@@ -199,8 +200,98 @@ export function createProfileStyles(colors: AppTheme, fontScale: number) {
       fontWeight: "700",
     },
 
+    profileActionsRow: {
+      width: "100%",
+      alignSelf: "center",
+      marginTop: 14,
+      flexDirection: "row",
+      gap: 10,
+    },
+
+    profileActionText: {
+      color: colors.primary,
+      fontSize: s(13),
+      fontWeight: "800",
+    },
+
+    settingsButton: {
+      flex: 1,
+      minHeight: 54,
+      paddingHorizontal: 12,
+      borderRadius: 18,
+      borderWidth: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      backgroundColor: colors.primarySoft,
+      borderColor: colors.primarySoftStrong,
+      ...softShadow,
+    },
+
+    logoutButton: {
+      flex: 1,
+      minHeight: 54,
+      paddingHorizontal: 12,
+      borderRadius: 18,
+      borderWidth: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      backgroundColor: colors.dangerSoft,
+      borderColor: colors.dangerBorder,
+      ...softShadow,
+    },
+
+    quickActionsSection: {
+      marginTop: 22,
+    },
+
+    quickActionsGrid: {
+      marginTop: 12,
+      flexDirection: "row",
+      gap: 10,
+    },
+
+    shortcutCard: {
+      flex: 1,
+      minHeight: 118,
+      padding: 12,
+      borderRadius: 22,
+      backgroundColor: colors.white,
+      borderWidth: 1,
+      borderColor: colors.border,
+      ...softShadow,
+    },
+
+    shortcutIconBox: {
+      width: 38,
+      height: 38,
+      borderRadius: 19,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.primarySoft,
+    },
+
+    shortcutTitle: {
+      marginTop: 10,
+      color: colors.text,
+      fontSize: s(13.5),
+      fontWeight: "800",
+      letterSpacing: -0.1,
+    },
+
+    shortcutText: {
+      marginTop: 3,
+      color: colors.textMuted,
+      fontSize: s(11.5),
+      fontWeight: "600",
+      lineHeight: s(16),
+    },
+
     segmentedControl: {
-      marginTop: 18,
+      marginTop: 20,
       padding: 5,
       borderRadius: 22,
       backgroundColor: colors.white,
@@ -372,76 +463,20 @@ export function createProfileStyles(colors: AppTheme, fontScale: number) {
       color: colors.textMuted,
       fontSize: s(12.5),
       fontWeight: "600",
+      lineHeight: s(18),
     },
 
     easterEgg: {
       marginTop: 300,
       marginBottom: 38,
       alignItems: "center",
-      opacity: 0.55,
     },
 
     easterEggText: {
       color: colors.textMuted,
-      fontSize: s(13),
+      fontSize: s(11.5),
       fontWeight: "700",
-      lineHeight: s(20),
-      textAlign: "center",
-    },
-
-    easterEggHighlight: {
-      color: colors.primary,
-      fontWeight: "900",
-    },
-
-    easterEggSubtext: {
-      color: colors.textLight,
-      fontSize: s(12.5),
-      fontWeight: "600",
-      lineHeight: s(19),
-      textAlign: "center",
-      paddingTop: 4,
-    },
-
-    feedbackToastOverlay: {
-      ...StyleSheet.absoluteFillObject,
-      zIndex: 30,
-      alignItems: "center",
-      justifyContent: "center",
-      paddingHorizontal: 24,
-    },
-
-    feedbackToastCard: {
-      minHeight: 52,
-      paddingHorizontal: 16,
-      borderRadius: 999,
-      backgroundColor: colors.white,
-      borderWidth: 1,
-      borderColor: colors.border,
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 9,
-      ...shadow,
-    },
-
-    feedbackToastIcon: {
-      width: 22,
-      height: 22,
-      borderRadius: 11,
-      overflow: "hidden",
-      backgroundColor: colors.primarySoft,
-      color: colors.primary,
-      fontSize: s(14),
-      fontWeight: "900",
-      lineHeight: s(22),
-      textAlign: "center",
-    },
-
-    feedbackToastText: {
-      color: colors.text,
-      fontSize: s(14),
-      fontWeight: "800",
-      letterSpacing: -0.1,
+      opacity: 0.58,
     },
   });
 }

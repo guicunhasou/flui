@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Pressable, ScrollView, StatusBar, Text, View } from "react-native";
+import { ScrollView, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, type Href, useFocusEffect } from "expo-router";
 import {
@@ -15,7 +15,9 @@ import {
   Heart,
   History,
   LogOut,
+  Map as MapIcon,
   MapPin,
+  Search,
   Settings as SettingsIcon,
   Star,
   User,
@@ -23,11 +25,7 @@ import {
 } from "lucide-react-native";
 
 import { chargingStations } from "../../data";
-import {
-  LoadingOverlay,
-  PressableScale,
-  ScreenTransition,
-} from "../../components";
+import { PressableScale, ScreenTransition } from "../../components";
 import { useFluiStorage } from "../../hooks/useFluiStorage";
 import { useAppPreferences } from "../../context/PreferencesContext";
 import { createProfileStyles } from "./styles";
@@ -105,6 +103,22 @@ const isStation = (station?: Station): station is Station => {
   return Boolean(station);
 };
 
+const formatarDataCurta = (value: unknown) => {
+  if (typeof value !== "string" || value.trim().length === 0) {
+    return "Avaliação salva";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Avaliação salva";
+  }
+
+  return date.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "short",
+  });
+};
 
 export default function ProfileScreen() {
   const { theme, fontScale, appearanceMode } = useAppPreferences();
@@ -117,7 +131,6 @@ export default function ProfileScreen() {
   const isDarkMode = appearanceMode === "dark";
 
   const [activeTab, setActiveTab] = useState<ProfileTab>("favorites");
-
   const [profileFeedbackMessage, setProfileFeedbackMessage] = useState<
     string | null
   >(null);
@@ -130,7 +143,6 @@ export default function ProfileScreen() {
     favoriteStationIds,
     sentReviews,
     recentHistory,
-    isLoadingStorage,
     storageError,
     reloadStorage,
   } = useFluiStorage();
@@ -165,7 +177,34 @@ export default function ProfileScreen() {
     });
   }, [recentHistory, stationsById]);
 
-  const reviewedStations = sentReviews;
+  const reviewedStations = useMemo(() => {
+    return sentReviews.map((review) => {
+      return {
+        review,
+        station: stationsById.get(review.stationId),
+      };
+    });
+  }, [sentReviews, stationsById]);
+
+  const resumoPerfil = useMemo(() => {
+    const recargas = recentStations.length;
+    const favoritos = favoriteStations.length;
+    const avaliacoes = reviewedStations.length;
+
+    if (recargas === 0 && favoritos === 0 && avaliacoes === 0) {
+      return "Monte seu guia pessoal salvando pontos, visitando estações e avaliando suas melhores experiências.";
+    }
+
+    if (favoritos >= recargas && favoritos > 0) {
+      return "Você já tem pontos salvos para recarregar com mais previsibilidade no dia a dia.";
+    }
+
+    if (recargas > 0) {
+      return "Seu histórico ajuda a encontrar de novo os pontos que funcionaram melhor para sua rotina.";
+    }
+
+    return "Suas avaliações ajudam a destacar pontos de recarga mais confiáveis para outros motoristas.";
+  }, [favoriteStations.length, recentStations.length, reviewedStations.length]);
 
   const openSettingsScreen = () => {
     router.push("/settings" as Href);
@@ -180,6 +219,22 @@ export default function ProfileScreen() {
     } as Href;
 
     router.push(route);
+  };
+
+  const abrirRota = (pathname: Href) => {
+    router.push(pathname);
+  };
+
+  const showProfileFeedback = (message: string) => {
+    if (profileFeedbackTimeoutRef.current) {
+      clearTimeout(profileFeedbackTimeoutRef.current);
+    }
+
+    setProfileFeedbackMessage(message);
+
+    profileFeedbackTimeoutRef.current = setTimeout(() => {
+      setProfileFeedbackMessage(null);
+    }, FEEDBACK_DURATION);
   };
 
   const renderEmptyCard = (
@@ -199,16 +254,24 @@ export default function ProfileScreen() {
     );
   };
 
-  const showProfileFeedback = (message: string) => {
-    if (profileFeedbackTimeoutRef.current) {
-      clearTimeout(profileFeedbackTimeoutRef.current);
-    }
+  const renderShortcutCard = (
+    icon: React.ReactNode,
+    title: string,
+    description: string,
+    route: Href,
+  ) => {
+    return (
+      <PressableScale
+        key={title}
+        style={styles.shortcutCard}
+        onPress={() => abrirRota(route)}
+      >
+        <View style={styles.shortcutIconBox}>{icon}</View>
 
-    setProfileFeedbackMessage(message);
-
-    profileFeedbackTimeoutRef.current = setTimeout(() => {
-      setProfileFeedbackMessage(null);
-    }, FEEDBACK_DURATION);
+        <Text style={styles.shortcutTitle}>{title}</Text>
+        <Text style={styles.shortcutText}>{description}</Text>
+      </PressableScale>
+    );
   };
 
   const renderStationCard = (
@@ -224,7 +287,7 @@ export default function ProfileScreen() {
 
     return (
       <PressableScale
-        key={`${variant}-${stationId}`}
+        key={`${variant}-${stationId}-${index}`}
         style={styles.stationCard}
         onPress={() => openStationDetails(stationId)}
       >
@@ -242,7 +305,9 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.stationInfo}>
-          <Text style={styles.stationName}>{stationName}</Text>
+          <Text style={styles.stationName} numberOfLines={1}>
+            {stationName}
+          </Text>
 
           <View style={styles.stationAddressRow}>
             <MapPin size={13} color={theme.textMuted} strokeWidth={2} />
@@ -279,6 +344,66 @@ export default function ProfileScreen() {
     );
   };
 
+  const renderReviewCard = (
+    reviewData: (typeof reviewedStations)[number],
+    index: number,
+  ) => {
+    const { review, station } = reviewData;
+    const stationId = review.stationId;
+    const stationName = station?.name ?? "Ponto avaliado";
+    const rating = review.rating.toFixed(1).replace(".", ",");
+    const comment = review.comment.trim();
+    const reviewText =
+      comment.length > 0
+        ? comment
+        : `${formatarDataCurta(review.createdAt)} • avaliação salva`;
+
+    return (
+      <PressableScale
+        key={`review-${stationId}-${review.id ?? index}`}
+        style={styles.reviewCard}
+        onPress={() => openStationDetails(stationId)}
+      >
+        <View style={styles.reviewIconBox}>
+          <Star
+            size={19}
+            color={theme.yellowDark}
+            fill={theme.yellowDark}
+            strokeWidth={2}
+          />
+        </View>
+
+        <View style={styles.reviewInfo}>
+          <Text style={styles.reviewStation} numberOfLines={1}>
+            {stationName}
+          </Text>
+
+          <Text style={styles.reviewText} numberOfLines={2}>
+            {rating} estrelas • {reviewText}
+          </Text>
+        </View>
+
+        <ChevronRight size={21} color={theme.primary} strokeWidth={2.2} />
+      </PressableScale>
+    );
+  };
+
+  const stationsToRender =
+    activeTab === "favorites" ? favoriteStations : recentStations;
+
+  const emptyContent =
+    activeTab === "favorites"
+      ? renderEmptyCard(
+          <Heart size={21} color={theme.primary} strokeWidth={2.1} />,
+          "Nenhum favorito salvo",
+          "Toque no coração de uma estação para montar sua lista de pontos preferidos.",
+        )
+      : renderEmptyCard(
+          <History size={21} color={theme.primary} strokeWidth={2.1} />,
+          "Histórico vazio",
+          "Ao abrir detalhes de pontos de recarga, eles aparecem aqui para consulta rápida.",
+        );
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
@@ -301,6 +426,51 @@ export default function ProfileScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.content}
         >
+          <View style={styles.profileCard}>
+            <View style={styles.avatarCircle}>
+              <User size={30} color={theme.primary} strokeWidth={2.1} />
+            </View>
+
+            <View style={styles.profileInfo}>
+              <Text style={styles.profileName}>Motorista Flui</Text>
+
+              <Text style={styles.profileText}>{resumoPerfil}</Text>
+
+              <View style={styles.profileBadge}>
+                <Zap size={13} color={theme.primary} strokeWidth={2.2} />
+                <Text style={styles.profileBadgeText}>Guia de recarga pessoal</Text>
+              </View>
+            </View>
+          </View>
+
+          {profileFeedbackMessage ? (
+            <View style={styles.feedbackBadge}>
+              <Text style={styles.feedbackText}>{profileFeedbackMessage}</Text>
+            </View>
+          ) : null}
+
+          {storageError ? (
+            <View style={styles.errorCard}>
+              <Text style={styles.errorText}>{storageError}</Text>
+            </View>
+          ) : null}
+
+          <View style={styles.statsRow}>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{favoriteStations.length}</Text>
+              <Text style={styles.statLabel}>favoritos</Text>
+            </View>
+
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{recentStations.length}</Text>
+              <Text style={styles.statLabel}>histórico</Text>
+            </View>
+
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{reviewedStations.length}</Text>
+              <Text style={styles.statLabel}>avaliações</Text>
+            </View>
+          </View>
 
           <View style={styles.profileActionsRow}>
             <PressableScale
@@ -319,55 +489,40 @@ export default function ProfileScreen() {
               <Text style={styles.profileActionText}>Sair da conta</Text>
             </PressableScale>
           </View>
-          
-          <View style={styles.profileCard}>
-            <View style={styles.avatarCircle}>
-              <User size={30} color={theme.primary} strokeWidth={2.2} />
-            </View>
 
-            <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>Usuário Flui</Text>
-              <Text style={styles.profileText}>
-                Favoritos e preferências salvos localmente no protótipo.
-              </Text>
-            </View>
-          </View>
+          <View style={styles.quickActionsSection}>
+            <Text style={styles.sectionTitle}>Atalhos úteis</Text>
+            <Text style={styles.sectionText}>
+              Acesse rapidamente as áreas mais importantes antes de escolher
+              onde carregar.
+            </Text>
 
-          {storageError ? (
-            <View style={styles.section}>
-              {renderEmptyCard(
-                <History size={21} color={theme.primary} strokeWidth={2.1} />,
-                "Dados locais indisponíveis",
-                storageError,
+            <View style={styles.quickActionsGrid}>
+              {renderShortcutCard(
+                <MapIcon size={21} color={theme.primary} strokeWidth={2.1} />,
+                "Mapa",
+                "Ver pontos",
+                "/map" as Href,
               )}
-            </View>
-          ) : null}
 
-          <View style={styles.statsRow}>
-            <View style={styles.statCard}>
-              <Text style={styles.statNumber}>
-                {isLoadingStorage ? "..." : favoriteStations.length}
-              </Text>
-              <Text style={styles.statLabel}>favoritos</Text>
-            </View>
+              {renderShortcutCard(
+                <Search size={21} color={theme.primary} strokeWidth={2.1} />,
+                "Filtros",
+                "Refinar busca",
+                "/filters" as Href,
+              )}
 
-            <View style={styles.statCard}>
-              <Text style={styles.statNumber}>
-                {isLoadingStorage ? "..." : recentStations.length}
-              </Text>
-              <Text style={styles.statLabel}>recentes</Text>
-            </View>
-
-            <View style={styles.statCard}>
-              <Text style={styles.statNumber}>
-                {isLoadingStorage ? "..." : reviewedStations.length}
-              </Text>
-              <Text style={styles.statLabel}>avaliações</Text>
+              {renderShortcutCard(
+                <History size={21} color={theme.primary} strokeWidth={2.1} />,
+                "Atividades",
+                "Ver rotina",
+                "/activities" as Href,
+              )}
             </View>
           </View>
 
           <View style={styles.segmentedControl}>
-            <Pressable
+            <PressableScale
               style={[
                 styles.segmentButton,
                 activeTab === "favorites" ? styles.segmentButtonActive : null,
@@ -375,10 +530,13 @@ export default function ProfileScreen() {
               onPress={() => setActiveTab("favorites")}
             >
               <Heart
-                size={17}
-                color={activeTab === "favorites" ? theme.white : theme.primary}
+                size={18}
+                color={
+                  activeTab === "favorites" ? theme.white : theme.primary
+                }
                 strokeWidth={2.1}
               />
+
               <Text
                 style={[
                   styles.segmentText,
@@ -387,9 +545,9 @@ export default function ProfileScreen() {
               >
                 Favoritos
               </Text>
-            </Pressable>
+            </PressableScale>
 
-            <Pressable
+            <PressableScale
               style={[
                 styles.segmentButton,
                 activeTab === "history" ? styles.segmentButtonActive : null,
@@ -397,10 +555,11 @@ export default function ProfileScreen() {
               onPress={() => setActiveTab("history")}
             >
               <History
-                size={17}
+                size={18}
                 color={activeTab === "history" ? theme.white : theme.primary}
                 strokeWidth={2.1}
               />
+
               <Text
                 style={[
                   styles.segmentText,
@@ -409,148 +568,56 @@ export default function ProfileScreen() {
               >
                 Histórico
               </Text>
-            </Pressable>
+            </PressableScale>
           </View>
 
-          {activeTab === "favorites" ? (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Pontos favoritos</Text>
-              <Text style={styles.sectionText}>
-                Pontos salvos pelo botão de coração na ficha da estação.
-              </Text>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>
+              {activeTab === "favorites"
+                ? "Pontos favoritos"
+                : "Últimos pontos vistos"}
+            </Text>
 
-              <View style={styles.cardsList}>
-                {favoriteStations.length > 0
-                  ? favoriteStations.map((station, index) =>
-                      renderStationCard(station, index, "favorite"),
-                    )
-                  : renderEmptyCard(
-                      <Heart
-                        size={21}
-                        color={theme.primary}
-                        strokeWidth={2.1}
-                      />,
-                      "Nenhum favorito salvo ainda",
-                      "Abra a ficha de um ponto e toque no coração para salvá-lo aqui.",
-                    )}
-              </View>
+            <Text style={styles.sectionText}>
+              {activeTab === "favorites"
+                ? "Sua seleção de estações para consultar antes de sair."
+                : "Pontos acessados recentemente para você não perder o caminho."}
+            </Text>
+
+            <View style={styles.cardsList}>
+              {stationsToRender.length > 0
+                ? stationsToRender.map((station, index) =>
+                    renderStationCard(station, index, activeTab === "favorites" ? "favorite" : "history"),
+                  )
+                : emptyContent}
             </View>
-          ) : (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Histórico recente</Text>
-              <Text style={styles.sectionText}>
-                Aqui aparecerão os pontos abertos recentemente ou usados em
-                rotas.
-              </Text>
+          </View>
 
-              <View style={styles.cardsList}>
-                {recentStations.length > 0
-                  ? recentStations.map((station, index) =>
-                      renderStationCard(station, index, "history"),
-                    )
-                  : renderEmptyCard(
-                      <CalendarClock
-                        size={21}
-                        color={theme.primary}
-                        strokeWidth={2.1}
-                      />,
-                      "Histórico ainda vazio",
-                      "Abra a ficha de um ponto, inicie uma rota ou envie uma avaliação para criar seu histórico.",
-                    )}
-              </View>
+          <View style={styles.reviewsHeader}>
+            <Text style={styles.sectionTitle}>Avaliações enviadas</Text>
 
-              <View style={styles.reviewsHeader}>
-                <Text style={styles.sectionTitle}>Avaliações enviadas</Text>
-                <Text style={styles.sectionText}>
-                  Avaliações salvas localmente pela tela de avaliação.
-                </Text>
-              </View>
+            <Text style={styles.sectionText}>
+              Seus comentários ajudam a dar mais contexto sobre qualidade,
+              disponibilidade e comodidades.
+            </Text>
 
-              <View style={styles.cardsList}>
-                {reviewedStations.length > 0
-                  ? reviewedStations.map((review, index) => {
-                      const stationId = getStationId(review, index);
-                      const reviewId = readString(review, "id", stationId);
-                      const stationName = getStationName(review);
-                      const rating = getStationRating(review);
-                      const comment = readString(
-                        review,
-                        "comment",
-                        "Avaliação enviada pelo app.",
-                      );
-
-                      return (
-                        <PressableScale
-                          key={`review-${reviewId}`}
-                          style={styles.reviewCard}
-                          onPress={() => openStationDetails(stationId)}
-                        >
-                          <View style={styles.reviewIconBox}>
-                            <Star
-                              size={20}
-                              color={theme.yellowDark}
-                              fill={theme.yellowDark}
-                              strokeWidth={2}
-                            />
-                          </View>
-
-                          <View style={styles.reviewInfo}>
-                            <Text style={styles.reviewStation}>
-                              {stationName}
-                            </Text>
-                            <Text style={styles.reviewText} numberOfLines={2}>
-                              Nota {rating} · {comment}
-                            </Text>
-                          </View>
-
-                          <ChevronRight
-                            size={22}
-                            color={theme.primary}
-                            strokeWidth={2.2}
-                          />
-                        </PressableScale>
-                      );
-                    })
-                  : renderEmptyCard(
-                      <Star
-                        size={21}
-                        color={theme.yellowDark}
-                        fill={theme.yellowDark}
-                        strokeWidth={2}
-                      />,
-                      "Nenhuma avaliação enviada",
-                      "Envie uma avaliação pela ficha de um ponto para vê-la nesta área.",
-                    )}
-              </View>
+            <View style={styles.cardsList}>
+              {reviewedStations.length > 0
+                ? reviewedStations.map(renderReviewCard)
+                : renderEmptyCard(
+                    <Star size={21} color={theme.primary} strokeWidth={2.1} />,
+                    "Nenhuma avaliação ainda",
+                    "Depois de avaliar uma estação, seu registro aparece aqui.",
+                  )}
             </View>
-          )}
+          </View>
 
           <View style={styles.easterEgg}>
             <Text style={styles.easterEggText}>
-              App criado por <Text style={styles.easterEggHighlight}>MGIK</Text>
-            </Text>
-            <Text style={styles.easterEggText}>Mirna, Gui, Isa & Kau</Text>
-            <Text style={styles.easterEggSubtext}>
-              Estudantes FIAP e futuros Web Designers.
+              carregando boas escolhas desde 2026 ⚡
             </Text>
           </View>
         </ScrollView>
-
-        <LoadingOverlay
-          visible={isLoadingStorage}
-          message="Carregando dados locais..."
-        />
-
-        {profileFeedbackMessage ? (
-          <View pointerEvents="none" style={styles.feedbackToastOverlay}>
-            <View style={styles.feedbackToastCard}>
-              <Text style={styles.feedbackToastIcon}>i</Text>
-              <Text style={styles.feedbackToastText}>
-                {profileFeedbackMessage}
-              </Text>
-            </View>
-          </View>
-        ) : null}
       </ScreenTransition>
     </SafeAreaView>
   );
