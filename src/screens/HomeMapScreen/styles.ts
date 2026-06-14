@@ -185,6 +185,31 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "45deg" }],
   },
 
+  userLocationMarker: {
+    width: 54,
+    height: 54,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  userLocationPulse: {
+    position: "absolute",
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    backgroundColor: "rgba(31, 169, 113, 0.18)",
+  },
+
+  userLocationDot: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.primary,
+    borderWidth: 5,
+    borderColor: colors.white,
+    ...shadow,
+  },
+
   mapCanvas: {
     position: "absolute",
     top: 0,
@@ -289,6 +314,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     ...shadow,
+  },
+
+  mapControlButtonLoading: {
+    opacity: 0.68,
+  },
+
+  zoomControlButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+  },
+
+  mapControlText: {
+    color: colors.primary,
+    fontSize: 28,
+    fontWeight: "800",
+    lineHeight: 31,
   },
 
   bottomSheet: {

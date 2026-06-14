@@ -55,6 +55,18 @@ const pointLabels = [
 type Station = (typeof chargingStations)[number];
 type MapColorTokens = typeof baseColors & { dangerBorder?: string; success?: string };
 
+type UserLocation = {
+  latitude: number;
+  longitude: number;
+  accuracy?: number | null;
+};
+
+const LOCALIZACAO_DEMO_FIAP: UserLocation = {
+  latitude: -23.564304,
+  longitude: -46.652537,
+  accuracy: 25,
+};
+
 const toRecord = (value: unknown): Record<string, unknown> => {
   return typeof value === "object" && value !== null
     ? (value as Record<string, unknown>)
@@ -286,6 +298,26 @@ const criarRegiaoDoMapa = (station: Station | undefined, aproxima: boolean): Reg
   };
 };
 
+const criarRegiaoComFocoVisivel = (
+  latitude: number,
+  longitude: number,
+  aproxima = true,
+): Region => {
+  const latitudeDelta = aproxima ? 0.014 : 0.026;
+  const longitudeDelta = aproxima ? 0.014 : 0.026;
+
+  return {
+    latitude: latitude - latitudeDelta * 0.32,
+    longitude,
+    latitudeDelta,
+    longitudeDelta,
+  };
+};
+
+const limitarValor = (value: number, min: number, max: number) => {
+  return Math.min(Math.max(value, min), max);
+};
+
 const getStationMarkerColor = (station: Station, colorSet: MapColorTokens) => {
   const status = getRawStationStatus(station);
 
@@ -441,6 +473,10 @@ export default function HomeMapScreen() {
   const filtersParam = routeParams.filters;
   const queryParam = routeParams.query;
   const mapRef = useRef<MapView | null>(null);
+  const currentMapRegionRef = useRef<Region | null>(null);
+  const [localizacaoUsuario, setLocalizacaoUsuario] =
+    useState<UserLocation | null>(null);
+  const [isLocatingUser, setIsLocatingUser] = useState(false);
   const [searchTerm, setSearchTerm] = useState(() =>
     getRouteParamAsString(queryParam),
   );
@@ -530,17 +566,47 @@ export default function HomeMapScreen() {
   const hasSearchTerm = searchTerm.trim().length > 0;
 
   const mapRegion = useMemo(() => {
+    if (localizacaoUsuario) {
+      return criarRegiaoComFocoVisivel(
+        localizacaoUsuario.latitude,
+        localizacaoUsuario.longitude,
+      );
+    }
+
     const firstVisibleStation = visibleStations[0]?.station ?? chargingStations[0];
 
     return criarRegiaoDoMapa(
       firstVisibleStation,
       hasFiltersApplied || hasSearchTerm,
     );
-  }, [hasFiltersApplied, hasSearchTerm, visibleStations]);
+  }, [hasFiltersApplied, hasSearchTerm, localizacaoUsuario, visibleStations]);
 
   useEffect(() => {
+    currentMapRegionRef.current = mapRegion;
     mapRef.current?.animateToRegion(mapRegion, 450);
   }, [mapRegion]);
+
+  const alterarZoomMapa = (direction: "aproximar" | "afastar") => {
+    const currentRegion = currentMapRegionRef.current ?? mapRegion;
+    const zoomFactor = direction === "aproximar" ? 0.58 : 1.55;
+
+    const nextRegion = {
+      ...currentRegion,
+      latitudeDelta: limitarValor(
+        currentRegion.latitudeDelta * zoomFactor,
+        0.004,
+        0.08,
+      ),
+      longitudeDelta: limitarValor(
+        currentRegion.longitudeDelta * zoomFactor,
+        0.004,
+        0.08,
+      ),
+    };
+
+    currentMapRegionRef.current = nextRegion;
+    mapRef.current?.animateToRegion(nextRegion, 240);
+  };
 
   const sheetTitle = hasNoResults
     ? "Nenhum ponto encontrado"
@@ -575,16 +641,54 @@ export default function HomeMapScreen() {
     router.push("/profile" as Href);
   };
 
-  const showLocationFeedback = () => {
+  const showLocationFeedback = (message: string) => {
     if (mapFeedbackTimeoutRef.current) {
       clearTimeout(mapFeedbackTimeoutRef.current);
     }
 
-    setMapFeedbackMessage("Localização real na próxima tarefa");
+    setMapFeedbackMessage(message);
 
     mapFeedbackTimeoutRef.current = setTimeout(() => {
       setMapFeedbackMessage(null);
     }, FEEDBACK_DURATION);
+  };
+
+  const centralizarPontosFiltrados = () => {
+    const station = visibleStations[0]?.station ?? chargingStations[0];
+
+    mapRef.current?.animateToRegion(
+      criarRegiaoComFocoVisivel(station.latitude, station.longitude),
+      450,
+    );
+    showLocationFeedback("Mapa voltou para os pontos encontrados");
+  };
+
+  const centralizarLocalizacaoUsuario = () => {
+    if (isLocatingUser) {
+      return;
+    }
+
+    setIsLocatingUser(true);
+
+    const nextLocation = LOCALIZACAO_DEMO_FIAP;
+
+    setLocalizacaoUsuario(nextLocation);
+
+    mapRef.current?.animateToRegion(
+      {
+        latitude: nextLocation.latitude,
+        longitude: nextLocation.longitude,
+        latitudeDelta: 0.014,
+        longitudeDelta: 0.014,
+      },
+      500,
+    );
+
+    showLocationFeedback("Localização centralizada na FIAP");
+
+    setTimeout(() => {
+      setIsLocatingUser(false);
+    }, 450);
   };
 
   return (
@@ -683,13 +787,33 @@ export default function HomeMapScreen() {
             style={styles.realMap}
             provider={PROVIDER_DEFAULT}
             initialRegion={mapRegion}
-            showsUserLocation={false}
+            showsUserLocation={Boolean(localizacaoUsuario)}
             showsMyLocationButton={false}
             showsCompass={false}
             toolbarEnabled={false}
             loadingEnabled
+            onRegionChangeComplete={(region) => {
+              currentMapRegionRef.current = region;
+            }}
             accessibilityLabel="Mapa com pontos de recarga próximos"
           >
+            {localizacaoUsuario ? (
+              <Marker
+                coordinate={{
+                  latitude: localizacaoUsuario.latitude,
+                  longitude: localizacaoUsuario.longitude,
+                }}
+                title="Você na FIAP"
+                description="Localização simulada para demonstração do mapa."
+                anchor={{ x: 0.5, y: 0.5 }}
+              >
+                <View style={styles.userLocationMarker}>
+                  <View style={styles.userLocationPulse} />
+                  <View style={styles.userLocationDot} />
+                </View>
+              </Marker>
+            ) : null}
+
             {visibleStations.map((item) => {
               const stationId = getStationId(item.station, item.index);
               const markerColor = getStationMarkerColor(item.station, colors);
@@ -743,20 +867,49 @@ export default function HomeMapScreen() {
           <View pointerEvents="box-none" style={styles.fixedMapControls}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Centralizar localização"
-              accessibilityHint="Mostra um aviso sobre a próxima etapa de localização."
-              style={styles.mapControlButton}
-              onPress={showLocationFeedback}
+              accessibilityLabel="Centralizar localização demo na FIAP"
+              accessibilityHint="Centraliza o mapa em uma localização simulada próxima à FIAP."
+              accessibilityState={{ busy: isLocatingUser }}
+              style={[
+                styles.mapControlButton,
+                isLocatingUser ? styles.mapControlButtonLoading : null,
+              ]}
+              onPress={centralizarLocalizacaoUsuario}
+              disabled={isLocatingUser}
             >
               <Crosshair size={25} color={colors.primary} strokeWidth={2.2} />
             </Pressable>
 
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Abrir rota a partir da localização atual"
-              accessibilityHint="Mostra um aviso sobre a próxima etapa de localização."
-              style={styles.mapControlButton}
-              onPress={showLocationFeedback}
+              accessibilityLabel="Aumentar zoom do mapa"
+              accessibilityHint="Aproxima a visualização do mapa."
+              style={[styles.mapControlButton, styles.zoomControlButton]}
+              onPress={() => alterarZoomMapa("aproximar")}
+            >
+              <Text style={styles.mapControlText}>+</Text>
+            </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Diminuir zoom do mapa"
+              accessibilityHint="Afasta a visualização do mapa."
+              style={[styles.mapControlButton, styles.zoomControlButton]}
+              onPress={() => alterarZoomMapa("afastar")}
+            >
+              <Text style={styles.mapControlText}>−</Text>
+            </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Voltar para pontos encontrados"
+              accessibilityHint="Centraliza o mapa novamente nos pontos de recarga filtrados."
+              style={[
+                styles.mapControlButton,
+                isLocatingUser ? styles.mapControlButtonLoading : null,
+              ]}
+              onPress={centralizarPontosFiltrados}
+              disabled={isLocatingUser}
             >
               <Navigation
                 size={24}
