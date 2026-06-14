@@ -41,3 +41,5 @@ app-example
 # generated native folders
 /ios
 /android
+# Prompts locais usados para gerar imagens fake dos pontos
+src/assets/stations/prompts.md
