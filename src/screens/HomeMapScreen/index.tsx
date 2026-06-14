@@ -1,9 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Animated,
-  Image,
-  LayoutChangeEvent,
-  PanResponder,
   Pressable,
   ScrollView,
   StatusBar,
@@ -12,6 +8,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import MapView, { Marker, PROVIDER_DEFAULT, type Region } from "react-native-maps";
 import { SvgXml } from "react-native-svg";
 import { router, type Href, useLocalSearchParams } from "expo-router";
 import {
@@ -39,7 +36,6 @@ import {
 import baseStyles, { colors as baseColors } from "./styles";
 import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
 
-const mapaFlui = require("../../../assets/images/mapa.png");
 
 const FEEDBACK_DURATION = 1500;
 
@@ -50,16 +46,6 @@ const logoFluiXml = `
 </svg>
 `;
 
-const markers = [
-  { id: "1", type: "zap", top: "18%", left: "24%" },
-  { id: "2", type: "zap", top: "13%", left: "55%" },
-  { id: "3", type: "zap", top: "31%", left: "72%" },
-  { id: "4", type: "zap", top: "48%", left: "42%" },
-  { id: "5", type: "zap", top: "53%", left: "76%" },
-  { id: "6", type: "plug", top: "38%", left: "26%" },
-  { id: "7", type: "plug", top: "20%", left: "72%" },
-] as const;
-
 const pointLabels = [
   { id: "near", title: "Mais próximo", icon: Navigation },
   { id: "best", title: "Melhor avaliado", icon: Star },
@@ -67,6 +53,7 @@ const pointLabels = [
 ];
 
 type Station = (typeof chargingStations)[number];
+type MapColorTokens = typeof baseColors & { dangerBorder?: string; success?: string };
 
 const toRecord = (value: unknown): Record<string, unknown> => {
   return typeof value === "object" && value !== null
@@ -290,6 +277,33 @@ const getStationDistance = (station: Station, index: number) => {
   return `${distance.toFixed(1).replace(".", ",")} km`;
 };
 
+const criarRegiaoDoMapa = (station: Station | undefined, aproxima: boolean): Region => {
+  return {
+    latitude: station?.latitude ?? -23.5639,
+    longitude: station?.longitude ?? -46.6524,
+    latitudeDelta: aproxima ? 0.018 : 0.035,
+    longitudeDelta: aproxima ? 0.018 : 0.035,
+  };
+};
+
+const getStationMarkerColor = (station: Station, colorSet: MapColorTokens) => {
+  const status = getRawStationStatus(station);
+
+  if (status === "busy") {
+    return colorSet.yellowDark;
+  }
+
+  if (status === "maintenance") {
+    return colorSet.dangerBorder ?? colorSet.yellowDark;
+  }
+
+  if (status === "unavailable") {
+    return colorSet.textLight;
+  }
+
+  return colorSet.green ?? colorSet.success ?? colorSet.primary;
+};
+
 const getStationConnectors = (station: Station) => {
   return [
     ...readArray(station, "connectors"),
@@ -418,10 +432,6 @@ const stationMatchesFilters = (
   );
 };
 
-const clamp = (value: number, min: number, max: number) => {
-  return Math.min(Math.max(value, min), max);
-};
-
 export default function HomeMapScreen() {
   const { styles, colors, isDarkMode } = useTelaComPreferencias(
     baseStyles,
@@ -430,10 +440,7 @@ export default function HomeMapScreen() {
   const routeParams = useLocalSearchParams();
   const filtersParam = routeParams.filters;
   const queryParam = routeParams.query;
-  const pan = useRef(new Animated.ValueXY()).current;
-
-  const lastMapPosition = useRef({ x: 0, y: 0 });
-  const currentMapPosition = useRef({ x: 0, y: 0 });
+  const mapRef = useRef<MapView | null>(null);
   const [searchTerm, setSearchTerm] = useState(() =>
     getRouteParamAsString(queryParam),
   );
@@ -445,11 +452,6 @@ export default function HomeMapScreen() {
   const mapFeedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
-
-  const [mapViewport, setMapViewport] = useState({
-    width: 390,
-    height: 560,
-  });
 
   const routeSearchTerm = useMemo(() => {
     return getRouteParamAsString(queryParam);
@@ -523,26 +525,22 @@ export default function HomeMapScreen() {
     });
   }, [visibleStations]);
 
-  const visibleMarkers = useMemo(() => {
-    return visibleStations
-      .slice(0, markers.length)
-      .map((item, index) => {
-        const marker = markers[index];
-
-        if (!marker) {
-          return null;
-        }
-
-        return {
-          ...marker,
-          stationId: getStationId(item.station, item.index),
-        };
-      })
-      .filter((marker) => marker !== null);
-  }, [visibleStations]);
 
   const hasNoResults = visibleStations.length === 0;
   const hasSearchTerm = searchTerm.trim().length > 0;
+
+  const mapRegion = useMemo(() => {
+    const firstVisibleStation = visibleStations[0]?.station ?? chargingStations[0];
+
+    return criarRegiaoDoMapa(
+      firstVisibleStation,
+      hasFiltersApplied || hasSearchTerm,
+    );
+  }, [hasFiltersApplied, hasSearchTerm, visibleStations]);
+
+  useEffect(() => {
+    mapRef.current?.animateToRegion(mapRegion, 450);
+  }, [mapRegion]);
 
   const sheetTitle = hasNoResults
     ? "Nenhum ponto encontrado"
@@ -550,84 +548,6 @@ export default function HomeMapScreen() {
       ? "Pontos encontrados"
       : "Melhores pontos perto de você";
 
-  const mapSize = useMemo(() => {
-    return Math.max(mapViewport.width * 2.15, mapViewport.height * 1.35);
-  }, [mapViewport.height, mapViewport.width]);
-
-  const mapLimits = useMemo(() => {
-    return {
-      minX: mapViewport.width - mapSize,
-      maxX: 0,
-      minY: mapViewport.height - mapSize,
-      maxY: 0,
-    };
-  }, [mapSize, mapViewport.height, mapViewport.width]);
-
-  useEffect(() => {
-    const centeredPosition = {
-      x: (mapViewport.width - mapSize) / 2,
-      y: (mapViewport.height - mapSize) / 2,
-    };
-
-    pan.setValue(centeredPosition);
-    lastMapPosition.current = centeredPosition;
-    currentMapPosition.current = centeredPosition;
-  }, [mapSize, mapViewport.height, mapViewport.width, pan]);
-
-  useEffect(() => {
-    return () => {
-      if (mapFeedbackTimeoutRef.current) {
-        clearTimeout(mapFeedbackTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  const panResponder = useMemo(() => {
-    return PanResponder.create({
-      onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponder: (_, gesture) => {
-        return Math.abs(gesture.dx) > 3 || Math.abs(gesture.dy) > 3;
-      },
-      onPanResponderMove: (_, gesture) => {
-        const nextPosition = {
-          x: clamp(
-            lastMapPosition.current.x + gesture.dx,
-            mapLimits.minX,
-            mapLimits.maxX,
-          ),
-          y: clamp(
-            lastMapPosition.current.y + gesture.dy,
-            mapLimits.minY,
-            mapLimits.maxY,
-          ),
-        };
-
-        pan.setValue(nextPosition);
-        currentMapPosition.current = nextPosition;
-      },
-      onPanResponderRelease: () => {
-        lastMapPosition.current = currentMapPosition.current;
-      },
-      onPanResponderTerminate: () => {
-        lastMapPosition.current = currentMapPosition.current;
-      },
-    });
-  }, [mapLimits.maxX, mapLimits.maxY, mapLimits.minX, mapLimits.minY, pan]);
-
-  const handleMapLayout = (event: LayoutChangeEvent) => {
-    const { width, height } = event.nativeEvent.layout;
-
-    setMapViewport((current) => {
-      const sameWidth = Math.abs(current.width - width) < 1;
-      const sameHeight = Math.abs(current.height - height) < 1;
-
-      if (sameWidth && sameHeight) {
-        return current;
-      }
-
-      return { width, height };
-    });
-  };
 
   const openStationDetails = (stationId: string) => {
     if (isOpeningDetails) {
@@ -660,7 +580,7 @@ export default function HomeMapScreen() {
       clearTimeout(mapFeedbackTimeoutRef.current);
     }
 
-    setMapFeedbackMessage("Localização em breve");
+    setMapFeedbackMessage("Localização real na próxima tarefa");
 
     mapFeedbackTimeoutRef.current = setTimeout(() => {
       setMapFeedbackMessage(null);
@@ -757,90 +677,74 @@ export default function HomeMapScreen() {
           </ScrollView>
         </View>
 
-        <View
-          style={styles.mapArea}
-          onLayout={handleMapLayout}
-          {...panResponder.panHandlers}
-        >
-          <Animated.View
-            style={[
-              styles.mapCanvas,
-              {
-                width: mapSize,
-                height: mapSize,
-                transform: pan.getTranslateTransform(),
-              },
-            ]}
+        <View style={styles.mapArea}>
+          <MapView
+            ref={mapRef}
+            style={styles.realMap}
+            provider={PROVIDER_DEFAULT}
+            initialRegion={mapRegion}
+            showsUserLocation={false}
+            showsMyLocationButton={false}
+            showsCompass={false}
+            toolbarEnabled={false}
+            loadingEnabled
+            accessibilityLabel="Mapa com pontos de recarga próximos"
           >
-            <Image
-              source={mapaFlui}
-              style={styles.mapImage}
-              accessible={false}
-            />
+            {visibleStations.map((item) => {
+              const stationId = getStationId(item.station, item.index);
+              const markerColor = getStationMarkerColor(item.station, colors);
 
-            {visibleMarkers.map((marker) => {
-              if (marker.type === "plug") {
-                return (
-                  <Pressable
-                    key={marker.id}
+              return (
+                <Marker
+                  key={stationId}
+                  coordinate={{
+                    latitude: item.station.latitude,
+                    longitude: item.station.longitude,
+                  }}
+                  title={getStationName(item.station)}
+                  description={`${getStationStatus(item.station)} • ${getStationPower(item.station)}`}
+                  onPress={() => openStationDetails(stationId)}
+                >
+                  <View
+                    accessible
                     accessibilityRole="button"
-                    accessibilityLabel={`Abrir ficha de ${getStationNameById(marker.stationId)}`}
+                    accessibilityLabel={`Abrir ficha de ${getStationNameById(stationId)}`}
                     accessibilityHint="Mostra detalhes, disponibilidade e comodidades do ponto."
-                    onPress={() => openStationDetails(marker.stationId)}
-                    style={[
-                      styles.mapMarker,
-                      styles.plugMarkerPosition,
-                      { top: marker.top, left: marker.left },
-                    ]}
+                    style={styles.realMapMarker}
                   >
-                    <View style={styles.plugMarker}>
-                      <Plug
-                        size={18}
-                        color={colors.primary}
+                    <View
+                      style={[
+                        styles.realMapMarkerBody,
+                        { backgroundColor: markerColor },
+                      ]}
+                    >
+                      <Zap
+                        size={19}
+                        color={colors.white}
+                        fill={colors.white}
                         strokeWidth={2.2}
                       />
                     </View>
-                  </Pressable>
-                );
-              }
 
-              return (
-                <Pressable
-                  key={marker.id}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Abrir ficha de ${getStationNameById(marker.stationId)}`}
-                  accessibilityHint="Mostra detalhes, disponibilidade e comodidades do ponto."
-                  onPress={() => openStationDetails(marker.stationId)}
-                  style={[
-                    styles.mapMarker,
-                    { top: marker.top, left: marker.left },
-                  ]}
-                >
-                  <View style={styles.pinBody}>
-                    <Zap
-                      size={20}
-                      color={colors.white}
-                      fill={colors.white}
-                      strokeWidth={2.2}
+                    <View
+                      style={[
+                        styles.realMapMarkerTip,
+                        { backgroundColor: markerColor },
+                      ]}
                     />
                   </View>
-
-                  <View style={styles.pinTip} />
-                </Pressable>
+                </Marker>
               );
             })}
+          </MapView>
 
-            <View style={styles.currentLocation} accessible={false}>
-              <View style={styles.currentLocationHalo} />
-              <View style={styles.currentLocationDot} />
-            </View>
-          </Animated.View>
+          <View pointerEvents="none" style={styles.mapTintOverlay} />
 
           <View pointerEvents="box-none" style={styles.fixedMapControls}>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Centralizar localização"
-              accessibilityHint="Mostra um aviso de recurso em preparação."
+              accessibilityHint="Mostra um aviso sobre a próxima etapa de localização."
               style={styles.mapControlButton}
               onPress={showLocationFeedback}
             >
@@ -850,7 +754,7 @@ export default function HomeMapScreen() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Abrir rota a partir da localização atual"
-              accessibilityHint="Mostra um aviso de recurso em preparação."
+              accessibilityHint="Mostra um aviso sobre a próxima etapa de localização."
               style={styles.mapControlButton}
               onPress={showLocationFeedback}
             >

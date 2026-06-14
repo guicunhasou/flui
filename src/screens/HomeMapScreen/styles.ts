@@ -151,6 +151,40 @@ const styles = StyleSheet.create({
     backgroundColor: "#E8F1EB",
   },
 
+  realMap: {
+    ...StyleSheet.absoluteFillObject,
+  },
+
+  mapTintOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(16, 34, 30, 0.03)",
+  },
+
+  realMapMarker: {
+    width: 44,
+    height: 56,
+    alignItems: "center",
+  },
+
+  realMapMarkerBody: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 3,
+    borderColor: colors.white,
+    ...shadow,
+  },
+
+  realMapMarkerTip: {
+    width: 14,
+    height: 14,
+    marginTop: -8,
+    borderRadius: 3,
+    transform: [{ rotate: "45deg" }],
+  },
+
   mapCanvas: {
     position: "absolute",
     top: 0,
