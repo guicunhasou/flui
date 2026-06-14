@@ -1,5 +1,10 @@
 import React from "react";
-import { Text, View } from "react-native";
+import {
+  ImageBackground,
+  type ImageSourcePropType,
+  Text,
+  View,
+} from "react-native";
 
 import { styles } from "./styles";
 
@@ -11,16 +16,9 @@ type StationVisualCoverProps = {
   potenciaKw: number;
   status: StatusEstacao;
   comodidades: string[];
+  imageUrl?: string;
+  imageSource?: ImageSourcePropType;
   variant?: "hero" | "card";
-};
-
-type PerfilVisual = {
-  tipo: string;
-  icone: string;
-  legenda: string;
-  corBase: string;
-  corBloco: string;
-  corDetalhe: string;
 };
 
 function normalizarTexto(texto: string) {
@@ -32,70 +30,57 @@ function normalizarTexto(texto: string) {
 
 function obterNomeCurto(nome: string) {
   return nome
-    .replace("Flui Station", "Flui")
-    .replace("Flui Carga Rápida", "Flui")
-    .replace("Eletroposto", "Eletro")
+    .replace("Flui Hub", "Flui")
+    .replace("Flui Express", "Flui")
+    .replace("Flui Vila Mariana", "Flui")
+    .replace("Estação", "")
     .trim();
 }
 
-function obterPerfilVisual(
-  nome: string,
-  bairro: string,
-  comodidades: string[],
-): PerfilVisual {
+function obterPerfilVisual(nome: string, bairro: string, comodidades: string[]) {
   const textoBase = normalizarTexto(`${nome} ${bairro}`);
 
-  if (textoBase.includes("shopping") || textoBase.includes("riomar")) {
+  if (
+    textoBase.includes("paulista") ||
+    textoBase.includes("masp") ||
+    textoBase.includes("consolacao") ||
+    textoBase.includes("jardins")
+  ) {
     return {
-      tipo: "Shopping",
-      icone: "▦",
-      legenda: "Parada com serviços por perto",
-      corBase: "#143B34",
-      corBloco: "#E8EFEA",
-      corDetalhe: "#F2C94C",
+      tipo: "Hub urbano",
+      legenda: "Recarga próxima à Av. Paulista",
     };
   }
 
-  if (textoBase.includes("parque") || textoBase.includes("jaqueira")) {
+  if (
+    textoBase.includes("lins") ||
+    textoBase.includes("aclimacao") ||
+    textoBase.includes("vila mariana") ||
+    textoBase.includes("paraiso")
+  ) {
     return {
-      tipo: "Parque",
-      icone: "♧",
-      legenda: "Recarga perto de área verde",
-      corBase: "#173C28",
-      corBloco: "#DDEEDB",
-      corDetalhe: "#78D48B",
+      tipo: "Rota FIAP",
+      legenda: "Ponto estratégico perto da FIAP",
     };
   }
 
-  if (textoBase.includes("marco zero") || textoBase.includes("antigo")) {
+  if (comodidades.includes("market")) {
     return {
-      tipo: "Centro urbano",
-      icone: "⌂",
-      legenda: "Boa opção para circular pela cidade",
-      corBase: "#1C314A",
-      corBloco: "#E6EDF5",
-      corDetalhe: "#7CCBFF",
+      tipo: "Parada de rotina",
+      legenda: "Boa opção para resolver compras rápidas",
     };
   }
 
-  if (comodidades.includes("market") || comodidades.includes("coffee")) {
+  if (comodidades.includes("coffee")) {
     return {
-      tipo: "Bairro",
-      icone: "◇",
-      legenda: "Recarga prática para rotina",
-      corBase: "#273A2D",
-      corBloco: "#F0EFE4",
-      corDetalhe: "#D8A84B",
+      tipo: "Café e carga",
+      legenda: "Recarga com serviços por perto",
     };
   }
 
   return {
     tipo: "Ponto Flui",
-    icone: "⚡",
     legenda: "Estação de recarga monitorada",
-    corBase: "#10221E",
-    corBloco: "#EDF3EE",
-    corDetalhe: "#6EE7A8",
   };
 }
 
@@ -137,11 +122,89 @@ export default function StationVisualCover({
   potenciaKw,
   status,
   comodidades,
+  imageUrl,
+  imageSource,
   variant = "card",
 }: StationVisualCoverProps) {
   const perfil = obterPerfilVisual(nome, bairro, comodidades);
   const nomeCurto = obterNomeCurto(nome);
   const isHero = variant === "hero";
+  const source = imageSource ?? (imageUrl ? { uri: imageUrl } : undefined);
+
+  const conteudo = (
+    <>
+      <View style={styles.escurecedor} />
+
+      {!source ? (
+        <>
+          <View style={styles.fallbackGlow} />
+          <View style={styles.fallbackShape} />
+        </>
+      ) : null}
+
+      <View
+        style={[
+          styles.conteudo,
+          isHero ? styles.conteudoHero : styles.conteudoCard,
+        ]}
+      >
+        <View style={styles.topo}>
+          <View style={styles.tipoPill}>
+            <Text style={styles.tipoTexto}>{perfil.tipo}</Text>
+          </View>
+
+          <View style={styles.statusPill}>
+            <View
+              style={[
+                styles.statusDot,
+                { backgroundColor: obterCorStatus(status) },
+              ]}
+            />
+            <Text style={styles.statusTexto}>{obterTextoStatus(status)}</Text>
+          </View>
+        </View>
+
+        <View style={styles.rodape}>
+          <View style={styles.tituloArea}>
+            <Text
+              numberOfLines={isHero ? 2 : 1}
+              style={[styles.nome, isHero ? styles.nomeHero : null]}
+            >
+              {nomeCurto}
+            </Text>
+
+            <Text numberOfLines={1} style={styles.legenda}>
+              {perfil.legenda}
+            </Text>
+          </View>
+
+          <View style={styles.potenciaBadge}>
+            <Text style={styles.potenciaValor}>{potenciaKw}</Text>
+            <Text style={styles.potenciaUnidade}>kW</Text>
+          </View>
+        </View>
+      </View>
+    </>
+  );
+
+  if (source) {
+    return (
+      <ImageBackground
+        accessible={false}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        source={source}
+        resizeMode="cover"
+        imageStyle={isHero ? styles.imagemHero : styles.imagemCard}
+        style={[
+          styles.container,
+          isHero ? styles.heroContainer : styles.cardContainer,
+        ]}
+      >
+        {conteudo}
+      </ImageBackground>
+    );
+  }
 
   return (
     <View
@@ -150,54 +213,11 @@ export default function StationVisualCover({
       importantForAccessibility="no-hide-descendants"
       style={[
         styles.container,
+        styles.fallbackContainer,
         isHero ? styles.heroContainer : styles.cardContainer,
-        { backgroundColor: perfil.corBase },
       ]}
     >
-      <View style={styles.gradeFundo}>
-        <View style={[styles.blocoMaior, { backgroundColor: perfil.corBloco }]} />
-        <View style={[styles.blocoMenor, { backgroundColor: perfil.corDetalhe }]} />
-        <View style={[styles.blocoBaixo, { backgroundColor: perfil.corBloco }]} />
-      </View>
-
-      <View style={styles.linhaEnergia} />
-      <View style={styles.pontoEnergia} />
-
-      <View style={styles.carregadorPrincipal}>
-        <Text style={styles.raio}>⚡</Text>
-        <View style={styles.telaCarregador}>
-          <Text style={styles.telaTexto}>{potenciaKw}kW</Text>
-        </View>
-      </View>
-
-      <View style={styles.carregadorSecundario}>
-        <Text style={styles.raioSecundario}>⚡</Text>
-      </View>
-
-      <View style={styles.conteudo}>
-        <View style={styles.tipoLinha}>
-          <Text style={styles.tipoIcone}>{perfil.icone}</Text>
-          <Text style={styles.tipoTexto}>{perfil.tipo}</Text>
-        </View>
-
-        <Text
-          numberOfLines={isHero ? 2 : 1}
-          style={[styles.nome, isHero ? styles.nomeHero : null]}
-        >
-          {nomeCurto}
-        </Text>
-
-        <Text numberOfLines={1} style={styles.legenda}>
-          {perfil.legenda}
-        </Text>
-      </View>
-
-      <View style={styles.statusPill}>
-        <View
-          style={[styles.statusDot, { backgroundColor: obterCorStatus(status) }]}
-        />
-        <Text style={styles.statusTexto}>{obterTextoStatus(status)}</Text>
-      </View>
+      {conteudo}
     </View>
   );
 }

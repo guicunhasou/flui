@@ -417,9 +417,6 @@ export default function PointDetailsScreen() {
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.hero}>
-          <View style={styles.heroSky} />
-          <View style={styles.heroCanopy} />
-          <View style={styles.heroGround} />
           <StationVisualCover
             variant="hero"
             nome={station.name}
@@ -427,19 +424,9 @@ export default function PointDetailsScreen() {
             potenciaKw={station.powerKw}
             status={station.status}
             comodidades={station.amenities}
+            imageUrl={station.imageUrl}
           />
-
-
-          <View style={styles.chargerLarge}>
-            <Text style={styles.chargerLogo}>Flui</Text>
-            <Text style={styles.chargerSymbol}>⚡</Text>
-          </View>
-
-          <View style={styles.chargerSmall}>
-            <Text style={styles.chargerSmallSymbol}>⚡</Text>
-          </View>
-
-          <SafeAreaView edges={["top"]} style={styles.heroActions}>
+<SafeAreaView edges={["top"]} style={styles.heroActions}>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Voltar ao mapa"

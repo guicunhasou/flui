@@ -3,6 +3,7 @@ import { StyleSheet } from "react-native";
 export const styles = StyleSheet.create({
   container: {
     overflow: "hidden",
+    backgroundColor: "#10221E",
   },
 
   heroContainer: {
@@ -14,147 +15,75 @@ export const styles = StyleSheet.create({
     borderRadius: 22,
   },
 
-  gradeFundo: {
+  imagemHero: {
+    resizeMode: "cover",
+  },
+
+  imagemCard: {
+    borderRadius: 22,
+    resizeMode: "cover",
+  },
+
+  fallbackContainer: {
+    backgroundColor: "#143B34",
+  },
+
+  escurecedor: {
     ...StyleSheet.absoluteFillObject,
-    opacity: 0.92,
+    backgroundColor: "rgba(8, 18, 16, 0.5)",
   },
 
-  blocoMaior: {
+  fallbackGlow: {
     position: "absolute",
-    left: -32,
-    right: 90,
-    bottom: -12,
-    height: 104,
-    borderTopRightRadius: 42,
-    opacity: 0.22,
-    transform: [{ rotate: "-4deg" }],
+    right: -48,
+    top: -54,
+    width: 210,
+    height: 210,
+    borderRadius: 105,
+    backgroundColor: "rgba(110, 231, 168, 0.26)",
   },
 
-  blocoMenor: {
+  fallbackShape: {
     position: "absolute",
-    right: 34,
-    bottom: 52,
-    width: 82,
-    height: 62,
-    borderRadius: 20,
-    opacity: 0.24,
-    transform: [{ rotate: "8deg" }],
-  },
-
-  blocoBaixo: {
-    position: "absolute",
-    left: 46,
-    right: -24,
-    bottom: -38,
-    height: 92,
-    borderTopLeftRadius: 46,
-    opacity: 0.16,
-  },
-
-  linhaEnergia: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 70,
-    height: 2,
-    backgroundColor: "rgba(252, 254, 250, 0.22)",
-  },
-
-  pontoEnergia: {
-    position: "absolute",
-    right: 96,
-    bottom: 63,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: "#FCFEFA",
-    opacity: 0.82,
-  },
-
-  carregadorPrincipal: {
-    position: "absolute",
-    right: 68,
-    bottom: 42,
-    width: 58,
-    height: 126,
-    borderRadius: 16,
-    padding: 10,
-    backgroundColor: "rgba(252, 254, 250, 0.92)",
-    borderWidth: 1,
-    borderColor: "rgba(252, 254, 250, 0.58)",
-    justifyContent: "space-between",
-    shadowColor: "#080A12",
-    shadowOpacity: 0.16,
-    shadowRadius: 18,
-    shadowOffset: {
-      width: 0,
-      height: 10,
-    },
-    elevation: 6,
-  },
-
-  raio: {
-    color: "#10221E",
-    fontSize: 24,
-    fontWeight: "800",
-  },
-
-  telaCarregador: {
-    minHeight: 28,
-    borderRadius: 9,
-    backgroundColor: "#10221E",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 4,
-  },
-
-  telaTexto: {
-    color: "#FCFEFA",
-    fontSize: 10,
-    fontWeight: "800",
-  },
-
-  carregadorSecundario: {
-    position: "absolute",
-    right: 138,
-    bottom: 42,
-    width: 42,
-    height: 82,
-    borderRadius: 13,
-    backgroundColor: "rgba(252, 254, 250, 0.68)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  raioSecundario: {
-    color: "#2166F3",
-    fontSize: 20,
-    fontWeight: "800",
+    left: -36,
+    bottom: -54,
+    width: 260,
+    height: 150,
+    borderTopRightRadius: 90,
+    backgroundColor: "rgba(252, 254, 250, 0.14)",
+    transform: [{ rotate: "-6deg" }],
   },
 
   conteudo: {
-    position: "absolute",
-    left: 22,
-    right: 150,
-    bottom: 30,
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "space-between",
   },
 
-  tipoLinha: {
-    alignSelf: "flex-start",
+  conteudoHero: {
+    paddingTop: 82,
+    paddingHorizontal: 22,
+    paddingBottom: 28,
+  },
+
+  conteudoCard: {
+    padding: 18,
+  },
+
+  topo: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 7,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    backgroundColor: "rgba(252, 254, 250, 0.16)",
-    marginBottom: 10,
+    justifyContent: "space-between",
+    gap: 10,
   },
 
-  tipoIcone: {
-    color: "#FCFEFA",
-    fontSize: 13,
-    fontWeight: "800",
+  tipoPill: {
+    maxWidth: "58%",
+    borderRadius: 999,
+    paddingHorizontal: 11,
+    paddingVertical: 7,
+    backgroundColor: "rgba(252, 254, 250, 0.18)",
+    borderWidth: 1,
+    borderColor: "rgba(252, 254, 250, 0.22)",
   },
 
   tipoTexto: {
@@ -163,38 +92,14 @@ export const styles = StyleSheet.create({
     fontWeight: "800",
   },
 
-  nome: {
-    color: "#FCFEFA",
-    fontSize: 20,
-    fontWeight: "900",
-    letterSpacing: -0.4,
-    lineHeight: 24,
-  },
-
-  nomeHero: {
-    fontSize: 25,
-    lineHeight: 30,
-  },
-
-  legenda: {
-    color: "rgba(252, 254, 250, 0.78)",
-    fontSize: 12,
-    fontWeight: "600",
-    lineHeight: 17,
-    marginTop: 5,
-  },
-
   statusPill: {
-    position: "absolute",
-    top: 76,
-    right: 20,
     flexDirection: "row",
     alignItems: "center",
     gap: 7,
     borderRadius: 999,
     paddingHorizontal: 11,
     paddingVertical: 7,
-    backgroundColor: "rgba(252, 254, 250, 0.9)",
+    backgroundColor: "rgba(252, 254, 250, 0.92)",
   },
 
   statusDot: {
@@ -207,5 +112,60 @@ export const styles = StyleSheet.create({
     color: "#10221E",
     fontSize: 11,
     fontWeight: "800",
+  },
+
+  rodape: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    gap: 14,
+  },
+
+  tituloArea: {
+    flex: 1,
+  },
+
+  nome: {
+    color: "#FCFEFA",
+    fontSize: 21,
+    fontWeight: "900",
+    letterSpacing: -0.4,
+    lineHeight: 25,
+  },
+
+  nomeHero: {
+    fontSize: 27,
+    lineHeight: 32,
+  },
+
+  legenda: {
+    color: "rgba(252, 254, 250, 0.82)",
+    fontSize: 12,
+    fontWeight: "600",
+    lineHeight: 17,
+    marginTop: 5,
+  },
+
+  potenciaBadge: {
+    minWidth: 58,
+    borderRadius: 18,
+    paddingHorizontal: 10,
+    paddingVertical: 9,
+    backgroundColor: "rgba(252, 254, 250, 0.92)",
+    alignItems: "center",
+  },
+
+  potenciaValor: {
+    color: "#2B0055",
+    fontSize: 17,
+    fontWeight: "900",
+    lineHeight: 20,
+  },
+
+  potenciaUnidade: {
+    color: "#3F554F",
+    fontSize: 10,
+    fontWeight: "800",
+    lineHeight: 12,
   },
 });
