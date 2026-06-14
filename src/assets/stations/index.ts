@@ -15,18 +15,18 @@ export type StationImageKey =
   | "station-12";
 
 export const stationImages: Record<StationImageKey, ImageSourcePropType> = {
-  "station-01": require("./station-01.png"),
-  "station-02": require("./station-02.png"),
-  "station-03": require("./station-03.png"),
-  "station-04": require("./station-04.png"),
-  "station-05": require("./station-05.png"),
-  "station-06": require("./station-06.png"),
-  "station-07": require("./station-07.png"),
-  "station-08": require("./station-08.png"),
-  "station-09": require("./station-09.png"),
-  "station-10": require("./station-10.png"),
-  "station-11": require("./station-11.png"),
-  "station-12": require("./station-12.png"),
+  "station-01": require("./station-01.webp"),
+  "station-02": require("./station-02.webp"),
+  "station-03": require("./station-03.webp"),
+  "station-04": require("./station-04.webp"),
+  "station-05": require("./station-05.webp"),
+  "station-06": require("./station-06.webp"),
+  "station-07": require("./station-07.webp"),
+  "station-08": require("./station-08.webp"),
+  "station-09": require("./station-09.webp"),
+  "station-10": require("./station-10.webp"),
+  "station-11": require("./station-11.webp"),
+  "station-12": require("./station-12.webp"),
 };
 
 export const stationImageKeys = Object.keys(stationImages) as StationImageKey[];
