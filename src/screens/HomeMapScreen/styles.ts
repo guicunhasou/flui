@@ -1,6 +1,4 @@
-import { Dimensions, Platform, StyleSheet } from "react-native";
-
-const { height } = Dimensions.get("window");
+import { Platform, StyleSheet } from "react-native";
 
 export const colors = {
   background: "#F3F8F4",
@@ -298,10 +296,10 @@ const styles = StyleSheet.create({
 
   fixedMapControls: {
     position: "absolute",
-    right: 18,
-    top: height < 760 ? "23%" : "32%",
-    gap: 14,
-    zIndex: 5,
+    right: 16,
+    top: 18,
+    gap: 10,
+    zIndex: 12,
   },
 
   mapControlButton: {
