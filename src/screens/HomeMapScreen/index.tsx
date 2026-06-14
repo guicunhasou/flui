@@ -873,7 +873,7 @@ export default function HomeMapScreen() {
                   longitude: localizacaoUsuario.longitude,
                 }}
                 title="Você na FIAP"
-                description="Localização simulada para demonstração do mapa."
+                description="Localização simulada para demonstração."
                 anchor={{ x: 0.5, y: 0.5 }}
               >
                 <View style={styles.userLocationMarker}>
