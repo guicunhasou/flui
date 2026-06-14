@@ -18,18 +18,18 @@ export const colors = {
 
 const shadow = {
   shadowColor: colors.shadow,
-  shadowOffset: { width: 0, height: 10 },
-  shadowOpacity: 0.09,
-  shadowRadius: 20,
-  elevation: 7,
+  shadowOffset: { width: 0, height: 5 },
+  shadowOpacity: 0.05,
+  shadowRadius: 10,
+  elevation: 3,
 };
 
 const softShadow = {
   shadowColor: colors.shadow,
-  shadowOffset: { width: 0, height: 6 },
-  shadowOpacity: 0.07,
-  shadowRadius: 14,
-  elevation: 4,
+  shadowOffset: { width: 0, height: 3 },
+  shadowOpacity: 0.035,
+  shadowRadius: 10,
+  elevation: 2,
 };
 
 const styles = StyleSheet.create({
@@ -118,16 +118,21 @@ const styles = StyleSheet.create({
   },
 
   quickFiltersHandleArea: {
-    minHeight: 20,
+    minHeight: 4,
     alignItems: "center",
     justifyContent: "center",
+    paddingVertical: 6,
   },
 
   quickFiltersHandle: {
-    width: 44,
+    width: 52,
     height: 5,
     borderRadius: 999,
     backgroundColor: colors.border,
+  },
+
+  quickFiltersAnimatedContent: {
+    overflow: "hidden",
   },
 
   filtersContent: {
@@ -183,32 +188,31 @@ const styles = StyleSheet.create({
   },
 
   mapTintOverlayDark: {
-    backgroundColor: "rgba(5, 12, 20, 0.24)",
+    backgroundColor: "rgba(5, 12, 20, 0.08)",
   },
 
   realMapMarker: {
-    width: 44,
-    height: 56,
+    width: 50,
+    height: 58,
     alignItems: "center",
+    justifyContent: "flex-start",
   },
 
   realMapMarkerBody: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    borderBottomRightRadius: 6,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 3,
     borderColor: colors.white,
+    transform: [{ rotate: "45deg" }],
     ...shadow,
   },
 
-  realMapMarkerTip: {
-    width: 14,
-    height: 14,
-    marginTop: -8,
-    borderRadius: 3,
-    transform: [{ rotate: "45deg" }],
+  realMapMarkerIcon: {
+    transform: [{ rotate: "-45deg" }],
   },
 
   userLocationMarker: {
@@ -405,7 +409,7 @@ const styles = StyleSheet.create({
   },
 
   sheetHandleArea: {
-    minHeight: 14,
+    minHeight: 4,
     marginTop: -2,
     marginBottom: 6,
     alignItems: "center",

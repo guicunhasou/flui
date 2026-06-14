@@ -9,6 +9,7 @@ import {
   PanResponder,
   Animated,
   Image,
+  Platform,
   Pressable,
   ScrollView,
   StatusBar,
@@ -131,6 +132,10 @@ const pointLabels = [
 ];
 
 type Station = (typeof chargingStations)[number];
+
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+};
 type MapColorTokens = typeof baseColors & { dangerBorder?: string; success?: string };
 
 type UserLocation = {
@@ -412,7 +417,7 @@ const criarRegiaoComFocoVisivel = (
   const longitudeDelta = aproxima ? 0.014 : 0.026;
 
   return {
-    latitude: latitude - latitudeDelta * 0.32,
+    latitude: latitude - latitudeDelta * 0.08,
     longitude,
     latitudeDelta,
     longitudeDelta,
@@ -527,6 +532,18 @@ const stationIsOpenNow = (station: Station) => {
   return status === "available" || status === "busy";
 };
 
+const stationHasAvailableCharger = (station: Station) => {
+  const connectors = readArray(station, "connectors");
+
+  return connectors.some((connector) => {
+    if (!isRecord(connector)) {
+      return false;
+    }
+
+    return readNumber(connector, "availableChargers") > 0;
+  });
+};
+
 const stationMatchesSearch = (station: Station, query: string) => {
   const normalizedQuery = query.trim().toLowerCase();
 
@@ -580,7 +597,9 @@ const stationMatchesFilters = (
   const matchesPower = stationPower >= filters.power.minKw;
   const matchesDistance = stationDistance <= filters.distance.maxKm;
   const matchesRating = stationRating >= filters.rating.minRating;
-  const matchesOpenNow = !filters.onlyOpenNow || stationIsOpenNow(station);
+  const matchesOpenNow =
+    !filters.onlyOpenNow ||
+    (stationIsOpenNow(station) && stationHasAvailableCharger(station));
 
   return (
     matchesConnector &&
@@ -591,6 +610,67 @@ const stationMatchesFilters = (
     matchesRating &&
     matchesOpenNow
   );
+};
+
+const calcularPontuacaoDosFiltrosRapidos = (
+  station: Station,
+  filtrosRapidos: FiltrosRapidos,
+) => {
+  let pontuacao = 0;
+
+  if (filtrosRapidos.openNow && stationHasAvailableCharger(station)) {
+    pontuacao += 80;
+  }
+
+  if (filtrosRapidos.ccs2) {
+    const hasCcs2 = getStationConnectors(station).some((connector) =>
+      connector.includes("ccs2"),
+    );
+
+    if (hasCcs2) {
+      pontuacao += 60;
+    }
+  }
+
+  if (filtrosRapidos.fast) {
+    pontuacao += getStationPowerNumber(station);
+  }
+
+  if (filtrosRapidos.restroom) {
+    const hasRestroom = getStationAmenities(station).includes("restroom");
+
+    if (hasRestroom) {
+      pontuacao += 50;
+    }
+  }
+
+  return pontuacao;
+};
+
+const ordenarPorFiltrosRapidos = (
+  estacoes: { station: Station; index: number }[],
+  filtrosRapidos: FiltrosRapidos,
+) => {
+  if (!hasFiltrosRapidosAtivos(filtrosRapidos)) {
+    return estacoes;
+  }
+
+  return [...estacoes].sort((a, b) => {
+    const pontuacaoA = calcularPontuacaoDosFiltrosRapidos(
+      a.station,
+      filtrosRapidos,
+    );
+    const pontuacaoB = calcularPontuacaoDosFiltrosRapidos(
+      b.station,
+      filtrosRapidos,
+    );
+
+    if (pontuacaoA !== pontuacaoB) {
+      return pontuacaoB - pontuacaoA;
+    }
+
+    return (a.station.distanceKm ?? a.index) - (b.station.distanceKm ?? b.index);
+  });
 };
 
 export default function HomeMapScreen() {
@@ -604,6 +684,7 @@ export default function HomeMapScreen() {
   const mapRef = useRef<MapView | null>(null);
   const currentMapRegionRef = useRef<Region | null>(null);
   const sheetTranslateY = useRef(new Animated.Value(0)).current;
+  const quickFiltersProgress = useRef(new Animated.Value(0)).current;
   const sheetPositionRef = useRef(0);
   const [localizacaoUsuario, setLocalizacaoUsuario] =
     useState<UserLocation | null>(LOCALIZACAO_DEMO_FIAP);
@@ -637,6 +718,13 @@ export default function HomeMapScreen() {
     );
   }, [colors.primary, isDarkMode]);
 
+  const usarMapaEscuro = Platform.OS === "android" && isDarkMode;
+
+  const alturaAtalhosRapidos = quickFiltersProgress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 56],
+  });
+
   const sheetCollapsedTranslateY = useMemo(() => {
     return Math.max(sheetHeight - SHEET_VISIBLE_HANDLE, 280);
   }, [sheetHeight]);
@@ -644,6 +732,14 @@ export default function HomeMapScreen() {
   useEffect(() => {
     setSearchTerm(routeSearchTerm);
   }, [routeSearchTerm]);
+
+  useEffect(() => {
+    Animated.timing(quickFiltersProgress, {
+      toValue: atalhosRapidosAbertos ? 1 : 0,
+      duration: 220,
+      useNativeDriver: false,
+    }).start();
+  }, [atalhosRapidosAbertos, quickFiltersProgress]);
 
   const appliedFilters = useMemo(() => {
     return parseRouteFilters(filtersParam);
@@ -690,13 +786,15 @@ export default function HomeMapScreen() {
   }, [filtrosRapidos]);
 
   const visibleStations = useMemo(() => {
-    return chargingStations
+    const estacoesFiltradas = chargingStations
       .map((station, index) => ({ station, index }))
       .filter((item) => stationMatchesSearch(item.station, searchTerm))
       .filter((item) =>
         stationMatchesFilters(item.station, item.index, filtrosDoMapa),
       );
-  }, [filtrosDoMapa, searchTerm]);
+
+    return ordenarPorFiltrosRapidos(estacoesFiltradas, filtrosRapidos);
+  }, [filtrosDoMapa, filtrosRapidos, searchTerm]);
 
   const points = useMemo(() => {
     return visibleStations.map((item, cardIndex) => {
@@ -790,19 +888,13 @@ export default function HomeMapScreen() {
       onStartShouldSetPanResponder: () => false,
       onMoveShouldSetPanResponder: (_, gesture) => {
         return (
-          Math.abs(gesture.dy) > 8 &&
+          Math.abs(gesture.dy) > 6 &&
           Math.abs(gesture.dy) > Math.abs(gesture.dx)
         );
       },
-      onPanResponderGrant: () => {
-        sheetTranslateY.stopAnimation((value) => {
-          sheetPositionRef.current = value;
-        });
-      },
       onPanResponderMove: (_, gesture) => {
-        const nextValue = limitarValor(
-          sheetPositionRef.current + gesture.dy,
-          0,
+        const nextValue = Math.min(
+          Math.max(sheetPositionRef.current + gesture.dy, 0),
           sheetCollapsedTranslateY,
         );
 
@@ -815,14 +907,16 @@ export default function HomeMapScreen() {
 
         alternarModalDePontos(shouldCollapse);
       },
-      onPanResponderTerminate: (_, gesture) => {
-        const nextValue = sheetPositionRef.current + gesture.dy;
-        const shouldCollapse = nextValue > sheetCollapsedTranslateY * 0.38;
-
-        alternarModalDePontos(shouldCollapse);
+      onPanResponderTerminate: () => {
+        alternarModalDePontos(isSheetCollapsed);
       },
     });
-  }, [alternarModalDePontos, sheetCollapsedTranslateY, sheetTranslateY]);
+  }, [
+    alternarModalDePontos,
+    isSheetCollapsed,
+    sheetCollapsedTranslateY,
+    sheetTranslateY,
+  ]);
 
   useEffect(() => {
     if (isSheetCollapsed && sheetHeight > 0) {
@@ -853,9 +947,6 @@ export default function HomeMapScreen() {
     router.push("/search" as Href);
   };
 
-  const alternarAtalhosRapidos = () => {
-    setAtalhosRapidosAbertos((isOpen) => !isOpen);
-  };
 
   const alternarFiltroRapido = (filterId: FiltroRapidoId) => {
     setFiltrosRapidos((filtrosAtuais) => ({
@@ -864,32 +955,36 @@ export default function HomeMapScreen() {
     }));
   };
 
+  const alternarAtalhosRapidos = () => {
+    setAtalhosRapidosAbertos((isOpen) => !isOpen);
+  };
+
   const quickFiltersPanResponder = useMemo(() => {
     return PanResponder.create({
       onStartShouldSetPanResponder: () => false,
       onMoveShouldSetPanResponder: (_, gesture) => {
         return (
-          Math.abs(gesture.dy) > 8 &&
+          Math.abs(gesture.dy) > 6 &&
           Math.abs(gesture.dy) > Math.abs(gesture.dx)
         );
       },
       onPanResponderRelease: (_, gesture) => {
-        if (gesture.dy > 18) {
+        if (gesture.dy > 8) {
           setAtalhosRapidosAbertos(true);
           return;
         }
 
-        if (gesture.dy < -18) {
+        if (gesture.dy < -8) {
           setAtalhosRapidosAbertos(false);
         }
       },
       onPanResponderTerminate: (_, gesture) => {
-        if (gesture.dy > 18) {
+        if (gesture.dy > 8) {
           setAtalhosRapidosAbertos(true);
           return;
         }
 
-        if (gesture.dy < -18) {
+        if (gesture.dy < -8) {
           setAtalhosRapidosAbertos(false);
         }
       },
@@ -1015,51 +1110,59 @@ export default function HomeMapScreen() {
           <View style={styles.quickFiltersArea}>
             {atalhosRapidosAbertos ? null : renderizarPuxadorDeAtalhos()}
 
-            {atalhosRapidosAbertos ? (
-              <>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.filtersContent}
-                >
-                  {filterChips.map((filter) => {
-                    const Icon = filter.icon;
+            <Animated.View
+              pointerEvents={atalhosRapidosAbertos ? "auto" : "none"}
+              style={[
+                styles.quickFiltersAnimatedContent,
+                {
+                  height: alturaAtalhosRapidos,
+                  opacity: quickFiltersProgress,
+                },
+              ]}
+            >
+              <ScrollView
+                horizontal
+                scrollEnabled={atalhosRapidosAbertos}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.filtersContent}
+              >
+                {filterChips.map((filter) => {
+                  const Icon = filter.icon;
 
-                    return (
-                      <Pressable
-                        key={filter.id}
-                        accessibilityRole="button"
-                        accessibilityLabel={`${filter.label}${filter.active ? ", filtro ativo" : ""}`}
-                        accessibilityHint="Filtra os pontos do mapa em tempo real."
-                        accessibilityState={{ selected: filter.active }}
+                  return (
+                    <Pressable
+                      key={filter.id}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${filter.label}${filter.active ? ", filtro ativo" : ""}`}
+                      accessibilityHint="Filtra os pontos do mapa em tempo real."
+                      accessibilityState={{ selected: filter.active }}
+                      style={[
+                        styles.chip,
+                        filter.active ? styles.chipActive : null,
+                      ]}
+                      onPress={() => alternarFiltroRapido(filter.id)}
+                    >
+                      <Icon
+                        size={17}
+                        color={filter.active ? colors.white : colors.primary}
+                        strokeWidth={2}
+                      />
+
+                      <Text
                         style={[
-                          styles.chip,
-                          filter.active ? styles.chipActive : null,
+                          styles.chipText,
+                          filter.active ? styles.chipTextActive : null,
                         ]}
-                        onPress={() => alternarFiltroRapido(filter.id)}
                       >
-                        <Icon
-                          size={17}
-                          color={filter.active ? colors.white : colors.primary}
-                          strokeWidth={2}
-                        />
+                        {filter.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            </Animated.View>
 
-                        <Text
-                          style={[
-                            styles.chipText,
-                            filter.active ? styles.chipTextActive : null,
-                          ]}
-                        >
-                          {filter.label}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </ScrollView>
-
-                {renderizarPuxadorDeAtalhos()}
-              </>
-            ) : null}
+            {atalhosRapidosAbertos ? renderizarPuxadorDeAtalhos() : null}
           </View>
         </View>
 
@@ -1074,8 +1177,7 @@ export default function HomeMapScreen() {
             showsCompass={false}
             toolbarEnabled={false}
             loadingEnabled
-            mapType={isDarkMode ? "mutedStandard" : "standard"}
-            customMapStyle={isDarkMode ? estiloEscuroDoMapa : []}
+            customMapStyle={usarMapaEscuro ? estiloEscuroDoMapa : []}
             onRegionChangeComplete={(region) => {
               currentMapRegionRef.current = region;
             }}
@@ -1112,6 +1214,7 @@ export default function HomeMapScreen() {
                   title={getStationName(item.station)}
                   description={`${getStationStatus(item.station)} • ${getStationPower(item.station)}`}
                   onPress={() => openStationDetails(stationId)}
+                  anchor={{ x: 0.5, y: 1 }}
                 >
                   <View
                     accessible
@@ -1126,20 +1229,15 @@ export default function HomeMapScreen() {
                         { backgroundColor: markerColor },
                       ]}
                     >
-                      <Zap
-                        size={19}
-                        color={colors.white}
-                        fill={colors.white}
-                        strokeWidth={2.2}
-                      />
+                      <View style={styles.realMapMarkerIcon}>
+                        <Zap
+                          size={19}
+                          color={colors.white}
+                          fill={colors.white}
+                          strokeWidth={2.2}
+                        />
+                      </View>
                     </View>
-
-                    <View
-                      style={[
-                        styles.realMapMarkerTip,
-                        { backgroundColor: markerColor },
-                      ]}
-                    />
                   </View>
                 </Marker>
               );
@@ -1150,7 +1248,7 @@ export default function HomeMapScreen() {
             pointerEvents="none"
             style={[
               styles.mapTintOverlay,
-              isDarkMode ? styles.mapTintOverlayDark : null,
+              usarMapaEscuro ? styles.mapTintOverlayDark : null,
             ]}
           />
 
