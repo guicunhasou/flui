@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { ScrollView, StatusBar, Text, View } from "react-native";
+import { Image, ScrollView, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, type Href, useFocusEffect } from "expo-router";
 import {
@@ -20,7 +20,6 @@ import {
   Search,
   Settings as SettingsIcon,
   Star,
-  User,
   Zap,
 } from "lucide-react-native";
 
@@ -34,6 +33,10 @@ type ProfileTab = "favorites" | "history";
 type Station = (typeof chargingStations)[number];
 
 const FEEDBACK_DURATION = 1500;
+const nomeMotorista = "Caio Duarte";
+const modeloCarro = "BYD Dolphin Plus";
+const imagemPerfilUsuario = require("../../assets/user/profile.webp");
+const imagemCarroUsuario = require("../../assets/user/car.webp");
 
 const toRecord = (value: unknown): Record<string, unknown> => {
   return typeof value === "object" && value !== null
@@ -186,25 +189,6 @@ export default function ProfileScreen() {
     });
   }, [sentReviews, stationsById]);
 
-  const resumoPerfil = useMemo(() => {
-    const recargas = recentStations.length;
-    const favoritos = favoriteStations.length;
-    const avaliacoes = reviewedStations.length;
-
-    if (recargas === 0 && favoritos === 0 && avaliacoes === 0) {
-      return "Monte seu guia pessoal salvando pontos, visitando estações e avaliando suas melhores experiências.";
-    }
-
-    if (favoritos >= recargas && favoritos > 0) {
-      return "Você já tem pontos salvos para recarregar com mais previsibilidade no dia a dia.";
-    }
-
-    if (recargas > 0) {
-      return "Seu histórico ajuda a encontrar de novo os pontos que funcionaram melhor para sua rotina.";
-    }
-
-    return "Suas avaliações ajudam a destacar pontos de recarga mais confiáveis para outros motoristas.";
-  }, [favoriteStations.length, recentStations.length, reviewedStations.length]);
 
   const openSettingsScreen = () => {
     router.push("/settings" as Href);
@@ -261,16 +245,17 @@ export default function ProfileScreen() {
     route: Href,
   ) => {
     return (
-      <PressableScale
-        key={title}
-        style={styles.shortcutCard}
-        onPress={() => abrirRota(route)}
-      >
-        <View style={styles.shortcutIconBox}>{icon}</View>
+      <View key={title} style={styles.shortcutItem}>
+        <PressableScale
+          style={styles.shortcutCard}
+          onPress={() => abrirRota(route)}
+        >
+          <View style={styles.shortcutIconBox}>{icon}</View>
 
-        <Text style={styles.shortcutTitle}>{title}</Text>
-        <Text style={styles.shortcutText}>{description}</Text>
-      </PressableScale>
+          <Text style={styles.shortcutTitle}>{title}</Text>
+          <Text style={styles.shortcutText}>{description}</Text>
+        </PressableScale>
+      </View>
     );
   };
 
@@ -426,21 +411,25 @@ export default function ProfileScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.content}
         >
-          <View style={styles.profileCard}>
-            <View style={styles.avatarCircle}>
-              <User size={30} color={theme.primary} strokeWidth={2.1} />
+          <View style={styles.profileHeader}>
+            <View style={styles.profileHeroCard}>
+              <Image
+                source={imagemCarroUsuario}
+                style={styles.profileHeroImage}
+                resizeMode="cover"
+              />
             </View>
 
-            <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>Motorista Flui</Text>
-
-              <Text style={styles.profileText}>{resumoPerfil}</Text>
-
-              <View style={styles.profileBadge}>
-                <Zap size={13} color={theme.primary} strokeWidth={2.2} />
-                <Text style={styles.profileBadgeText}>Guia de recarga pessoal</Text>
-              </View>
+            <View style={styles.profileAvatarWrap}>
+              <Image
+                source={imagemPerfilUsuario}
+                style={styles.profileAvatar}
+                resizeMode="cover"
+              />
             </View>
+
+            <Text style={styles.profileName}>{nomeMotorista}</Text>
+            <Text style={styles.profileVehicle}>{modeloCarro}</Text>
           </View>
 
           {profileFeedbackMessage ? (
@@ -473,21 +462,25 @@ export default function ProfileScreen() {
           </View>
 
           <View style={styles.profileActionsRow}>
-            <PressableScale
-              style={styles.settingsButton}
-              onPress={openSettingsScreen}
-            >
-              <SettingsIcon size={19} color={theme.primary} strokeWidth={2.1} />
-              <Text style={styles.profileActionText}>Configurações</Text>
-            </PressableScale>
+            <View style={styles.profileActionItem}>
+              <PressableScale
+                style={styles.settingsButton}
+                onPress={openSettingsScreen}
+              >
+                <SettingsIcon size={19} color={theme.primary} strokeWidth={2.1} />
+                <Text style={styles.profileActionText}>Configurações</Text>
+              </PressableScale>
+            </View>
 
-            <PressableScale
-              style={styles.logoutButton}
-              onPress={() => showProfileFeedback("Logout apenas visual")}
-            >
-              <LogOut size={19} color={theme.primary} strokeWidth={2.1} />
-              <Text style={styles.profileActionText}>Sair da conta</Text>
-            </PressableScale>
+            <View style={styles.profileActionItem}>
+              <PressableScale
+                style={styles.logoutButton}
+                onPress={() => showProfileFeedback("Logout apenas visual")}
+              >
+                <LogOut size={19} color={theme.primary} strokeWidth={2.1} />
+                <Text style={styles.profileActionText}>Sair da conta</Text>
+              </PressableScale>
+            </View>
           </View>
 
           <View style={styles.quickActionsSection}>
@@ -522,53 +515,55 @@ export default function ProfileScreen() {
           </View>
 
           <View style={styles.segmentedControl}>
-            <PressableScale
-              style={[
-                styles.segmentButton,
-                activeTab === "favorites" ? styles.segmentButtonActive : null,
-              ]}
-              onPress={() => setActiveTab("favorites")}
-            >
-              <Heart
-                size={18}
-                color={
-                  activeTab === "favorites" ? theme.white : theme.primary
-                }
-                strokeWidth={2.1}
-              />
-
-              <Text
+            <View style={styles.segmentItem}>
+              <PressableScale
                 style={[
-                  styles.segmentText,
-                  activeTab === "favorites" ? styles.segmentTextActive : null,
+                  styles.segmentButton,
+                  activeTab === "favorites" ? styles.segmentButtonActive : null,
                 ]}
+                onPress={() => setActiveTab("favorites")}
               >
-                Favoritos
-              </Text>
-            </PressableScale>
+                <Heart
+                  size={18}
+                  color={activeTab === "favorites" ? theme.white : theme.primary}
+                  strokeWidth={2.1}
+                />
 
-            <PressableScale
-              style={[
-                styles.segmentButton,
-                activeTab === "history" ? styles.segmentButtonActive : null,
-              ]}
-              onPress={() => setActiveTab("history")}
-            >
-              <History
-                size={18}
-                color={activeTab === "history" ? theme.white : theme.primary}
-                strokeWidth={2.1}
-              />
+                <Text
+                  style={[
+                    styles.segmentText,
+                    activeTab === "favorites" ? styles.segmentTextActive : null,
+                  ]}
+                >
+                  Favoritos
+                </Text>
+              </PressableScale>
+            </View>
 
-              <Text
+            <View style={styles.segmentItem}>
+              <PressableScale
                 style={[
-                  styles.segmentText,
-                  activeTab === "history" ? styles.segmentTextActive : null,
+                  styles.segmentButton,
+                  activeTab === "history" ? styles.segmentButtonActive : null,
                 ]}
+                onPress={() => setActiveTab("history")}
               >
-                Histórico
-              </Text>
-            </PressableScale>
+                <History
+                  size={18}
+                  color={activeTab === "history" ? theme.white : theme.primary}
+                  strokeWidth={2.1}
+                />
+
+                <Text
+                  style={[
+                    styles.segmentText,
+                    activeTab === "history" ? styles.segmentTextActive : null,
+                  ]}
+                >
+                  Histórico
+                </Text>
+              </PressableScale>
+            </View>
           </View>
 
           <View style={styles.section}>
@@ -593,30 +588,26 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          <View style={styles.reviewsHeader}>
-            <Text style={styles.sectionTitle}>Avaliações enviadas</Text>
+          {activeTab === "history" ? (
+            <View style={styles.reviewsHeader}>
+              <Text style={styles.sectionTitle}>Avaliações enviadas</Text>
 
-            <Text style={styles.sectionText}>
-              Seus comentários ajudam a dar mais contexto sobre qualidade,
-              disponibilidade e comodidades.
-            </Text>
+              <Text style={styles.sectionText}>
+                Seus comentários ajudam a dar mais contexto sobre qualidade,
+                disponibilidade e comodidades.
+              </Text>
 
-            <View style={styles.cardsList}>
-              {reviewedStations.length > 0
-                ? reviewedStations.map(renderReviewCard)
-                : renderEmptyCard(
-                    <Star size={21} color={theme.primary} strokeWidth={2.1} />,
-                    "Nenhuma avaliação ainda",
-                    "Depois de avaliar uma estação, seu registro aparece aqui.",
-                  )}
+              <View style={styles.cardsList}>
+                {reviewedStations.length > 0
+                  ? reviewedStations.map(renderReviewCard)
+                  : renderEmptyCard(
+                      <Star size={21} color={theme.primary} strokeWidth={2.1} />,
+                      "Nenhuma avaliação ainda",
+                      "Depois de avaliar uma estação, seu registro aparece aqui.",
+                    )}
+              </View>
             </View>
-          </View>
-
-          <View style={styles.easterEgg}>
-            <Text style={styles.easterEggText}>
-              carregando boas escolhas desde 2026 ⚡
-            </Text>
-          </View>
+          ) : null}
         </ScrollView>
       </ScreenTransition>
     </SafeAreaView>

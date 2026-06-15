@@ -74,64 +74,60 @@ export function createProfileStyles(colors: AppTheme, fontScale: number) {
       alignItems: "stretch",
     },
 
-    profileCard: {
+    profileHeader: {
       width: "100%",
       alignSelf: "stretch",
-      padding: 18,
+      alignItems: "center",
+    },
+
+    profileHeroCard: {
+      width: "100%",
+      height: 176,
       borderRadius: 28,
+      overflow: "hidden",
       backgroundColor: colors.white,
       borderWidth: 1,
       borderColor: colors.border,
-      flexDirection: "row",
-      alignItems: "center",
       ...shadow,
     },
 
-    avatarCircle: {
-      width: 66,
-      height: 66,
-      borderRadius: 33,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: colors.primarySoft,
+    profileHeroImage: {
+      width: "100%",
+      height: "100%",
     },
 
-    profileInfo: {
-      flex: 1,
-      marginLeft: 14,
+    profileAvatarWrap: {
+      width: 108,
+      height: 108,
+      marginTop: -54,
+      borderRadius: 54,
+      overflow: "hidden",
+      backgroundColor: colors.white,
+      borderWidth: 4,
+      borderColor: colors.white,
+      ...softShadow,
+    },
+
+    profileAvatar: {
+      width: "100%",
+      height: "100%",
     },
 
     profileName: {
+      marginTop: 14,
       color: colors.text,
-      fontSize: s(18),
+      fontSize: s(22),
       fontWeight: "800",
-      letterSpacing: -0.25,
+      letterSpacing: -0.35,
+      textAlign: "center",
     },
 
-    profileText: {
-      marginTop: 5,
+    profileVehicle: {
+      marginTop: 6,
       color: colors.textMuted,
-      fontSize: s(13.5),
-      fontWeight: "500",
-      lineHeight: s(19),
-    },
-
-    profileBadge: {
-      alignSelf: "flex-start",
-      marginTop: 11,
-      minHeight: 28,
-      paddingHorizontal: 10,
-      borderRadius: 14,
-      backgroundColor: colors.primarySoft,
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 6,
-    },
-
-    profileBadgeText: {
-      color: colors.primary,
-      fontSize: s(12),
-      fontWeight: "800",
+      fontSize: s(15.5),
+      fontWeight: "600",
+      textAlign: "center",
     },
 
     feedbackBadge: {
@@ -169,6 +165,8 @@ export function createProfileStyles(colors: AppTheme, fontScale: number) {
     },
 
     statsRow: {
+      width: "100%",
+      alignSelf: "stretch",
       marginTop: 14,
       flexDirection: "row",
       gap: 10,
@@ -202,10 +200,15 @@ export function createProfileStyles(colors: AppTheme, fontScale: number) {
 
     profileActionsRow: {
       width: "100%",
-      alignSelf: "center",
+      alignSelf: "stretch",
       marginTop: 14,
       flexDirection: "row",
       gap: 10,
+    },
+
+    profileActionItem: {
+      flex: 1,
+      minWidth: 0,
     },
 
     profileActionText: {
@@ -215,7 +218,7 @@ export function createProfileStyles(colors: AppTheme, fontScale: number) {
     },
 
     settingsButton: {
-      flex: 1,
+      width: "100%",
       minHeight: 54,
       paddingHorizontal: 12,
       borderRadius: 18,
@@ -230,7 +233,7 @@ export function createProfileStyles(colors: AppTheme, fontScale: number) {
     },
 
     logoutButton: {
-      flex: 1,
+      width: "100%",
       minHeight: 54,
       paddingHorizontal: 12,
       borderRadius: 18,
@@ -245,17 +248,26 @@ export function createProfileStyles(colors: AppTheme, fontScale: number) {
     },
 
     quickActionsSection: {
+      width: "100%",
+      alignSelf: "stretch",
       marginTop: 22,
     },
 
     quickActionsGrid: {
+      width: "100%",
+      alignSelf: "stretch",
       marginTop: 12,
       flexDirection: "row",
       gap: 10,
     },
 
-    shortcutCard: {
+    shortcutItem: {
       flex: 1,
+      minWidth: 0,
+    },
+
+    shortcutCard: {
+      width: "100%",
       minHeight: 118,
       padding: 12,
       borderRadius: 22,
@@ -291,6 +303,8 @@ export function createProfileStyles(colors: AppTheme, fontScale: number) {
     },
 
     segmentedControl: {
+      width: "100%",
+      alignSelf: "stretch",
       marginTop: 20,
       padding: 5,
       borderRadius: 22,
@@ -301,8 +315,13 @@ export function createProfileStyles(colors: AppTheme, fontScale: number) {
       ...softShadow,
     },
 
-    segmentButton: {
+    segmentItem: {
       flex: 1,
+      minWidth: 0,
+    },
+
+    segmentButton: {
+      width: "100%",
       minHeight: 44,
       borderRadius: 17,
       flexDirection: "row",
@@ -464,19 +483,6 @@ export function createProfileStyles(colors: AppTheme, fontScale: number) {
       fontSize: s(12.5),
       fontWeight: "600",
       lineHeight: s(18),
-    },
-
-    easterEgg: {
-      marginTop: 300,
-      marginBottom: 38,
-      alignItems: "center",
-    },
-
-    easterEggText: {
-      color: colors.textMuted,
-      fontSize: s(11.5),
-      fontWeight: "700",
-      opacity: 0.58,
     },
   });
 }
