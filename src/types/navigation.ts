@@ -5,8 +5,6 @@ export type AppRoute =
   | '/point-details'
   | '/filters'
   | '/review'
-  | '/favorites'
-  | '/activities'
   | '/profile'
   | '/settings';
 

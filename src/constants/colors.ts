@@ -27,5 +27,4 @@ export const colors = {
   mapBackground: "#E8F1EB",
   mapStreet: "#C9D8D1",
 
-  tabBar: "#230044",
 };

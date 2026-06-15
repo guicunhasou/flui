@@ -504,13 +504,6 @@ export default function ProfileScreen() {
                 "Refinar busca",
                 "/filters" as Href,
               )}
-
-              {renderShortcutCard(
-                <History size={21} color={theme.primary} strokeWidth={2.1} />,
-                "Atividades",
-                "Ver rotina",
-                "/activities" as Href,
-              )}
             </View>
           </View>
 

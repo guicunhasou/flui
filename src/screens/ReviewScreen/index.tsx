@@ -401,9 +401,9 @@ export default function ReviewScreen() {
     station.status === "available"
       ? colors.success
       : station.status === "busy"
-        ? "#D99721"
+        ? colors.yellowDark
         : station.status === "maintenance"
-          ? "#D94343"
+          ? colors.dangerBorder
           : colors.textMuted;
 
   return (

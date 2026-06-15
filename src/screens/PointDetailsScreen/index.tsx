@@ -42,7 +42,6 @@ type Station = (typeof chargingStations)[number];
 type StatusInfo = {
   label: string;
   description: string;
-  color: string;
 };
 
 type RouteProvider = "google" | "waze";
@@ -66,7 +65,6 @@ function getStatusInfo(status: Station["status"]): StatusInfo {
     return {
       label: "Aberto agora",
       description: "Carregadores disponíveis neste momento",
-      color: "#18A957",
     };
   }
 
@@ -74,7 +72,6 @@ function getStatusInfo(status: Station["status"]): StatusInfo {
     return {
       label: "Ocupado agora",
       description: "Alta procura no momento",
-      color: "#D99721",
     };
   }
 
@@ -82,14 +79,12 @@ function getStatusInfo(status: Station["status"]): StatusInfo {
     return {
       label: "Em manutenção",
       description: "Ponto temporariamente indisponível",
-      color: "#D94343",
     };
   }
 
   return {
     label: "Status indisponível",
     description: "Não foi possível consultar a disponibilidade",
-    color: "#7A7688",
   };
 }
 
@@ -436,7 +431,7 @@ export default function PointDetailsScreen() {
               style={styles.iconButton}
               onPress={voltarAoMapa}
             >
-              <ArrowLeft size={24} color="#10221E" strokeWidth={2.4} />
+              <ArrowLeft size={24} color={colors.text} strokeWidth={2.4} />
             </Pressable>
 
             <Pressable
@@ -455,8 +450,8 @@ export default function PointDetailsScreen() {
             >
               <Heart
                 size={23}
-                color="#2B0055"
-                fill={isFavorite ? "#2B0055" : "transparent"}
+                color={colors.primary}
+                fill={isFavorite ? colors.primary : "transparent"}
                 strokeWidth={2.2}
               />
             </Pressable>
@@ -472,8 +467,8 @@ export default function PointDetailsScreen() {
             <View style={styles.ratingGroup}>
               <Star
                 size={19}
-                color="#F4B942"
-                fill="#F4B942"
+                color={colors.yellowDark}
+                fill={colors.yellowDark}
                 strokeWidth={2}
                 style={styles.starIcon}
               />
@@ -502,7 +497,12 @@ export default function PointDetailsScreen() {
 
           <View style={styles.availableRow}>
             <View style={styles.availableIconBox}>
-              <Zap size={17} color="#2166F3" fill="#2166F3" strokeWidth={2.2} />
+              <Zap
+                size={17}
+                color={colors.primaryBright}
+                fill={colors.primaryBright}
+                strokeWidth={2.2}
+              />
             </View>
 
             <Text style={styles.availableText}>
@@ -539,7 +539,7 @@ export default function PointDetailsScreen() {
           <View style={styles.infoGrid}>
             <View style={styles.infoCard}>
               <View style={styles.infoIconBox}>
-                <Zap size={22} color="#2166F3" strokeWidth={2.2} />
+                <Zap size={22} color={colors.primaryBright} strokeWidth={2.2} />
               </View>
 
               <View style={styles.infoTextBox}>
@@ -551,7 +551,7 @@ export default function PointDetailsScreen() {
 
             <View style={styles.infoCard}>
               <View style={styles.infoIconBox}>
-                <Zap size={22} color="#2166F3" strokeWidth={2.2} />
+                <Zap size={22} color={colors.primaryBright} strokeWidth={2.2} />
               </View>
 
               <View style={styles.infoTextBox}>
@@ -563,7 +563,11 @@ export default function PointDetailsScreen() {
 
             <View style={styles.infoCard}>
               <View style={styles.infoIconBox}>
-                <Clock3 size={22} color="#2166F3" strokeWidth={2.2} />
+                <Clock3
+                  size={22}
+                  color={colors.primaryBright}
+                  strokeWidth={2.2}
+                />
               </View>
 
               <View style={styles.infoTextBox}>
@@ -577,7 +581,11 @@ export default function PointDetailsScreen() {
 
             <View style={styles.infoCard}>
               <View style={styles.infoIconBox}>
-                <MapPin size={22} color="#2166F3" strokeWidth={2.2} />
+                <MapPin
+                  size={22}
+                  color={colors.primaryBright}
+                  strokeWidth={2.2}
+                />
               </View>
 
               <View style={styles.infoTextBox}>
@@ -590,7 +598,7 @@ export default function PointDetailsScreen() {
 
           <View style={styles.highlightCard}>
             <View style={styles.highlightIconBox}>
-              <Clock3 size={24} color="#D99A10" strokeWidth={2.2} />
+              <Clock3 size={24} color={colors.yellowDark} strokeWidth={2.2} />
             </View>
 
             <View style={styles.highlightContent}>
@@ -608,7 +616,11 @@ export default function PointDetailsScreen() {
             {station.connectors.map((connector) => (
               <View key={connector.id} style={styles.connectorRow}>
                 <View style={styles.connectorIconBox}>
-                  <Zap size={18} color="#2166F3" strokeWidth={2.2} />
+                  <Zap
+                    size={18}
+                    color={colors.primaryBright}
+                    strokeWidth={2.2}
+                  />
                 </View>
 
                 <View style={styles.connectorInfo}>
@@ -635,7 +647,7 @@ export default function PointDetailsScreen() {
                     <View style={styles.amenityIconBox}>
                       <IconeComodidade
                         size={18}
-                        color="#2B0055"
+                        color={colors.primary}
                         strokeWidth={2.1}
                       />
                     </View>

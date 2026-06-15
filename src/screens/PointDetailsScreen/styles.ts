@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import { colors } from "../../theme/colors";
 
 export const styles = StyleSheet.create({
   container: {
@@ -156,7 +157,7 @@ export const styles = StyleSheet.create({
   },
 
   star: {
-    color: "#F4B942",
+    color: colors.warning,
     fontSize: 20,
     marginRight: 7,
   },
@@ -212,7 +213,7 @@ export const styles = StyleSheet.create({
   },
 
   availableIcon: {
-    color: "#2166F3",
+    color: colors.primaryBright,
     fontSize: 17,
     fontWeight: "700",
   },
@@ -233,7 +234,7 @@ export const styles = StyleSheet.create({
   },
 
   resumoEyebrow: {
-    color: "#2166F3",
+    color: colors.primaryBright,
     fontSize: 12,
     fontWeight: "800",
     letterSpacing: 1.2,
@@ -316,7 +317,7 @@ export const styles = StyleSheet.create({
   },
 
   infoIcon: {
-    color: "#2166F3",
+    color: colors.primaryBright,
     fontSize: 22,
     fontWeight: "700",
   },
@@ -474,7 +475,7 @@ export const styles = StyleSheet.create({
   },
 
   connectorIcon: {
-    color: "#2166F3",
+    color: colors.primaryBright,
     fontSize: 18,
     fontWeight: "700",
   },
@@ -536,7 +537,7 @@ export const styles = StyleSheet.create({
   },
 
   seeAllText: {
-    color: "#2166F3",
+    color: colors.primaryBright,
     fontSize: 13,
     fontWeight: "800",
     marginBottom: 14,
@@ -561,7 +562,7 @@ export const styles = StyleSheet.create({
   },
 
   ratingStars: {
-    color: "#F4B942",
+    color: colors.warning,
     fontSize: 14,
     marginTop: 3,
     marginBottom: 6,
@@ -671,7 +672,7 @@ export const styles = StyleSheet.create({
   },
 
   userStars: {
-    color: "#F4B942",
+    color: colors.warning,
     fontSize: 12,
     marginBottom: 5,
   },
@@ -846,6 +847,6 @@ export const styles = StyleSheet.create({
   iconButtonSelected: {
     backgroundColor: "#EAF1FF",
     borderWidth: 1.5,
-    borderColor: "#2166F3",
+    borderColor: colors.primaryBright,
   },
 });
