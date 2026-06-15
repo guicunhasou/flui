@@ -24,6 +24,7 @@ import { router, type Href, useLocalSearchParams } from "expo-router";
 import {
   ChevronRight,
   Clock,
+  Coffee,
   Crosshair,
   Navigation,
   Plug,
@@ -126,7 +127,7 @@ const filtrosRapidosIniciais: FiltrosRapidos = {
 const pointLabels = [
   { id: "near", title: "Mais próximo", icon: Navigation },
   { id: "best", title: "Melhor avaliado", icon: Star },
-  { id: "comfort", title: "Mais confortável", icon: Toilet },
+  { id: "comfort", title: "Mais confortável", icon: Coffee },
   { id: "fast", title: "Carga rápida", icon: Zap },
   { id: "open", title: "Aberto agora", icon: Clock },
 ];
@@ -778,7 +779,7 @@ export default function HomeMapScreen() {
       },
       {
         id: "restroom" as const,
-        label: "Com banheiro",
+        label: "Banheiro",
         icon: Toilet,
         active: filtrosRapidos.restroom,
       },
@@ -1394,7 +1395,7 @@ export default function HomeMapScreen() {
                           ) : null}
 
                           {isComfort ? (
-                            <Toilet
+                            <Coffee
                               size={14}
                               color={colors.primary}
                               strokeWidth={2}

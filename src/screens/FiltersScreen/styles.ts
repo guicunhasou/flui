@@ -17,11 +17,12 @@ export const styles = StyleSheet.create({
   },
 
   header: {
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md,
+    minHeight: 58,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 8,
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     justifyContent: "space-between",
   },
 
@@ -52,6 +53,30 @@ export const styles = StyleSheet.create({
     fontSize: typography.sizes.md,
     lineHeight: 21,
     marginTop: spacing.xs,
+  },
+
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.surface,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadows.soft,
+  },
+
+  headerTitle: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: typography.weights.bold,
+    letterSpacing: -0.25,
+  },
+
+  headerSpacer: {
+    width: 44,
+    height: 44,
   },
 
   closeButton: {

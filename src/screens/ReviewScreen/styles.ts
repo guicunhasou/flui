@@ -54,21 +54,27 @@ export const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 18,
-    paddingTop: 10,
+    paddingTop: 8,
     paddingBottom: 112,
   },
   header: {
-    marginBottom: 16,
+    minHeight: 58,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 8,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
-  screenTitle: {
-    fontSize: 27,
-    lineHeight: 33,
+  headerTitle: {
+    fontSize: 18,
     fontWeight: "800",
     color: colors.text,
-    letterSpacing: -0.7,
+    letterSpacing: -0.25,
+  },
+  headerSpacer: {
+    width: 44,
+    height: 44,
   },
   closeButton: {
     width: 46,
@@ -126,11 +132,15 @@ export const styles = StyleSheet.create({
     ...shadow,
   },
   backButton: {
-    width: 36,
-    height: 72,
-    marginRight: 8,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...softShadow,
   },
   stationImage: {
     width: 88,

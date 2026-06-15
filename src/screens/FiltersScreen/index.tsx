@@ -10,6 +10,7 @@ import {
 import { router, type Href } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
+  ArrowLeft,
   BatteryCharging,
   Car,
   ChevronRight,
@@ -310,21 +311,21 @@ export default function FiltersScreen() {
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
       <ScreenTransition style={styles.content}>
         <View style={styles.header}>
-          <View style={styles.titleGroup}>
-            <Text style={styles.title}>Busca e filtros</Text>
-            <Text style={styles.subtitle}>
-              Refine os pontos por região, conector, potência e comodidades.
-            </Text>
-          </View>
-
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Fechar busca e voltar ao mapa"
-            style={styles.closeButton}
+            accessibilityLabel="Voltar ao mapa"
+            style={({ pressed }) => [
+              styles.backButton,
+              pressed ? styles.buttonPressed : null,
+            ]}
             onPress={() => router.replace("/map" as Href)}
           >
-            <X color={colors.primaryDark} size={22} strokeWidth={2.4} />
+            <ArrowLeft color={colors.primaryDark} size={22} strokeWidth={2.3} />
           </Pressable>
+
+          <Text style={styles.headerTitle}>Busca e filtros</Text>
+
+          <View style={styles.headerSpacer} />
         </View>
 
         <ScrollView

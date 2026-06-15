@@ -14,6 +14,7 @@ import {
 import { router, type Href, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
+  ArrowLeft,
   Heart,
   Check,
   Clock3,
@@ -22,7 +23,6 @@ import {
   Star,
   ThumbsDown,
   ThumbsUp,
-  X,
   Zap,
 } from "lucide-react-native";
 
@@ -415,27 +415,29 @@ export default function ReviewScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScreenTransition style={styles.screen}>
+          <View style={styles.header}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Voltar"
+              style={({ pressed }) => [
+                styles.backButton,
+                pressed ? styles.buttonPressed : null,
+              ]}
+              onPress={() => router.back()}
+            >
+              <ArrowLeft size={22} color={colors.primary} strokeWidth={2.3} />
+            </Pressable>
+
+            <Text style={styles.headerTitle}>Avaliação</Text>
+
+            <View style={styles.headerSpacer} />
+          </View>
+
           <ScrollView
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={styles.scrollContent}
           >
-            <View style={styles.header}>
-              <Text style={styles.screenTitle}>Avaliação</Text>
-
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Fechar avaliação"
-                style={({ pressed }) => [
-                  styles.closeButton,
-                  pressed ? styles.buttonPressed : null,
-                ]}
-                onPress={() => router.back()}
-              >
-                <X size={22} color={colors.text} strokeWidth={2.3} />
-              </Pressable>
-            </View>
-
             <View style={styles.stationCard}>
               <Image
                 source={getStationImageSource(station.imageKey)}
