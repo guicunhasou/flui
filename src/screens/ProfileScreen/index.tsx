@@ -35,8 +35,8 @@ type Station = (typeof chargingStations)[number];
 const FEEDBACK_DURATION = 1500;
 const nomeMotorista = "Caio Duarte";
 const modeloCarro = "BYD Dolphin Plus";
-const imagemPerfilUsuario = require("../../assets/user/profile.webp");
-const imagemCarroUsuario = require("../../assets/user/car.webp");
+const imagemPerfilUsuario = require("../../assets/user/profile1.webp");
+const imagemCarroUsuario = require("../../assets/user/car1.webp");
 
 const toRecord = (value: unknown): Record<string, unknown> => {
   return typeof value === "object" && value !== null
