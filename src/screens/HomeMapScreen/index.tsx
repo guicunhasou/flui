@@ -1204,6 +1204,7 @@ export default function HomeMapScreen() {
             {visibleStations.map((item) => {
               const stationId = getStationId(item.station, item.index);
               const markerColor = getStationMarkerColor(item.station, colors);
+              const markerContentColor = "#FCFEFA";
 
               return (
                 <Marker
@@ -1216,6 +1217,7 @@ export default function HomeMapScreen() {
                   description={`${getStationStatus(item.station)} • ${getStationPower(item.station)}`}
                   onPress={() => openStationDetails(stationId)}
                   anchor={{ x: 0.5, y: 1 }}
+                  tracksViewChanges={false}
                 >
                   <View
                     accessible
@@ -1226,18 +1228,26 @@ export default function HomeMapScreen() {
                   >
                     <View
                       style={[
+                        styles.realMapMarkerTail,
+                        { borderTopColor: markerColor },
+                      ]}
+                    />
+
+                    <View
+                      style={[
                         styles.realMapMarkerBody,
-                        { backgroundColor: markerColor },
+                        {
+                          backgroundColor: markerColor,
+                          borderColor: markerContentColor,
+                        },
                       ]}
                     >
-                      <View style={styles.realMapMarkerIcon}>
-                        <Zap
-                          size={19}
-                          color={colors.white}
-                          fill={colors.white}
-                          strokeWidth={2.2}
-                        />
-                      </View>
+                      <Zap
+                        size={19}
+                        color={markerContentColor}
+                        fill={markerContentColor}
+                        strokeWidth={2.2}
+                      />
                     </View>
                   </View>
                 </Marker>

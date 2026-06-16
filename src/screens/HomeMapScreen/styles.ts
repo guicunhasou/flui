@@ -202,17 +202,26 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    borderBottomRightRadius: 6,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 3,
     borderColor: colors.white,
-    transform: [{ rotate: "45deg" }],
+    zIndex: 2,
     ...shadow,
   },
 
-  realMapMarkerIcon: {
-    transform: [{ rotate: "-45deg" }],
+  realMapMarkerTail: {
+    position: "absolute",
+    top: 36,
+    left: 17,
+    width: 0,
+    height: 0,
+    borderLeftWidth: 8,
+    borderRightWidth: 8,
+    borderTopWidth: 14,
+    borderLeftColor: "transparent",
+    borderRightColor: "transparent",
+    zIndex: 1,
   },
 
   userLocationMarker: {
