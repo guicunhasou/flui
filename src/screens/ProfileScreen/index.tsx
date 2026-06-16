@@ -33,10 +33,10 @@ type ProfileTab = "favorites" | "history";
 type Station = (typeof chargingStations)[number];
 
 const FEEDBACK_DURATION = 1500;
-const nomeMotorista = "Caio Duarte";
-const modeloCarro = "BYD Dolphin Plus";
-const imagemPerfilUsuario = require("../../assets/user/profile.webp");
-const imagemCarroUsuario = require("../../assets/user/car.webp");
+const nomeMotorista = "Isabela Martins";
+const modeloCarro = "Volvo EX30";
+const imagemPerfilUsuario = require("../../assets/user/profile1.webp");
+const imagemCarroUsuario = require("../../assets/user/car1.webp");
 
 const toRecord = (value: unknown): Record<string, unknown> => {
   return typeof value === "object" && value !== null
@@ -188,7 +188,6 @@ export default function ProfileScreen() {
       };
     });
   }, [sentReviews, stationsById]);
-
 
   const openSettingsScreen = () => {
     router.push("/settings" as Href);
@@ -467,7 +466,11 @@ export default function ProfileScreen() {
                 style={styles.settingsButton}
                 onPress={openSettingsScreen}
               >
-                <SettingsIcon size={19} color={theme.primary} strokeWidth={2.1} />
+                <SettingsIcon
+                  size={19}
+                  color={theme.primary}
+                  strokeWidth={2.1}
+                />
                 <Text style={styles.profileActionText}>Configurações</Text>
               </PressableScale>
             </View>
@@ -518,7 +521,9 @@ export default function ProfileScreen() {
               >
                 <Heart
                   size={18}
-                  color={activeTab === "favorites" ? theme.white : theme.primary}
+                  color={
+                    activeTab === "favorites" ? theme.white : theme.primary
+                  }
                   strokeWidth={2.1}
                 />
 
@@ -575,7 +580,11 @@ export default function ProfileScreen() {
             <View style={styles.cardsList}>
               {stationsToRender.length > 0
                 ? stationsToRender.map((station, index) =>
-                    renderStationCard(station, index, activeTab === "favorites" ? "favorite" : "history"),
+                    renderStationCard(
+                      station,
+                      index,
+                      activeTab === "favorites" ? "favorite" : "history",
+                    ),
                   )
                 : emptyContent}
             </View>
@@ -594,7 +603,11 @@ export default function ProfileScreen() {
                 {reviewedStations.length > 0
                   ? reviewedStations.map(renderReviewCard)
                   : renderEmptyCard(
-                      <Star size={21} color={theme.primary} strokeWidth={2.1} />,
+                      <Star
+                        size={21}
+                        color={theme.primary}
+                        strokeWidth={2.1}
+                      />,
                       "Nenhuma avaliação ainda",
                       "Depois de avaliar uma estação, seu registro aparece aqui.",
                     )}

@@ -18,7 +18,11 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import MapView, { Marker, PROVIDER_DEFAULT, type Region } from "react-native-maps";
+import MapView, {
+  Marker,
+  PROVIDER_DEFAULT,
+  type Region,
+} from "react-native-maps";
 import { SvgXml } from "react-native-svg";
 import { router, type Href, useLocalSearchParams } from "expo-router";
 import {
@@ -46,7 +50,6 @@ import {
 import baseStyles, { colors as baseColors } from "./styles";
 import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
 
-
 const FEEDBACK_DURATION = 1500;
 const SHEET_VISIBLE_HANDLE = 30;
 
@@ -57,7 +60,7 @@ const logoFluiXml = `
 </svg>
 `;
 
-const imagemPerfilUsuario = require("../../assets/user/profile.webp");
+const imagemPerfilUsuario = require("../../assets/user/profile1.webp");
 
 const criarLogoFluiXml = (corPrincipal: string, corPonto: string) => {
   return logoFluiXml
@@ -80,7 +83,11 @@ const estiloEscuroDoMapa: EstiloMapa = [
     elementType: "geometry",
     stylers: [{ color: "#2F405C" }],
   },
-  { featureType: "poi", elementType: "geometry", stylers: [{ color: "#1D2A3D" }] },
+  {
+    featureType: "poi",
+    elementType: "geometry",
+    stylers: [{ color: "#1D2A3D" }],
+  },
   {
     featureType: "poi.park",
     elementType: "geometry",
@@ -137,7 +144,10 @@ type Station = (typeof chargingStations)[number];
 const isRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 };
-type MapColorTokens = typeof baseColors & { dangerBorder?: string; success?: string };
+type MapColorTokens = typeof baseColors & {
+  dangerBorder?: string;
+  success?: string;
+};
 
 type UserLocation = {
   latitude: number;
@@ -400,7 +410,10 @@ const getStationDistance = (station: Station, index: number) => {
   return `${distance.toFixed(1).replace(".", ",")} km`;
 };
 
-const criarRegiaoDoMapa = (station: Station | undefined, aproxima: boolean): Region => {
+const criarRegiaoDoMapa = (
+  station: Station | undefined,
+  aproxima: boolean,
+): Region => {
   return {
     latitude: station?.latitude ?? -23.5639,
     longitude: station?.longitude ?? -46.6524,
@@ -503,11 +516,7 @@ const getComfortMeta = (station: Station) => {
   return labels[firstAmenity] ?? firstAmenity;
 };
 
-const criarMetaDoCard = (
-  cardId: string,
-  station: Station,
-  index: number,
-) => {
+const criarMetaDoCard = (cardId: string, station: Station, index: number) => {
   if (cardId === "best") {
     return getStationRating(station);
   }
@@ -670,7 +679,9 @@ const ordenarPorFiltrosRapidos = (
       return pontuacaoB - pontuacaoA;
     }
 
-    return (a.station.distanceKm ?? a.index) - (b.station.distanceKm ?? b.index);
+    return (
+      (a.station.distanceKm ?? a.index) - (b.station.distanceKm ?? b.index)
+    );
   });
 };
 
@@ -752,8 +763,7 @@ export default function HomeMapScreen() {
 
   const hasFiltersApplied = useMemo(() => {
     return (
-      hasActiveFilters(filtrosDoMapa) ||
-      hasFiltrosRapidosAtivos(filtrosRapidos)
+      hasActiveFilters(filtrosDoMapa) || hasFiltrosRapidosAtivos(filtrosRapidos)
     );
   }, [filtrosDoMapa, filtrosRapidos]);
 
@@ -816,12 +826,12 @@ export default function HomeMapScreen() {
     });
   }, [colors, visibleStations]);
 
-
   const hasNoResults = visibleStations.length === 0;
   const hasSearchTerm = searchTerm.trim().length > 0;
 
   const mapRegion = useMemo(() => {
-    const firstVisibleStation = visibleStations[0]?.station ?? chargingStations[0];
+    const firstVisibleStation =
+      visibleStations[0]?.station ?? chargingStations[0];
 
     if ((hasFiltersApplied || hasSearchTerm) && firstVisibleStation) {
       return criarRegiaoDoMapa(firstVisibleStation, true);
@@ -864,8 +874,9 @@ export default function HomeMapScreen() {
     mapRef.current?.animateToRegion(nextRegion, 240);
   };
 
-  const sheetTitle = hasNoResults ? "Nenhum ponto encontrado" : "Melhores escolhas";
-
+  const sheetTitle = hasNoResults
+    ? "Nenhum ponto encontrado"
+    : "Melhores escolhas";
 
   const alternarModalDePontos = useCallback(
     (shouldCollapse: boolean) => {
@@ -924,7 +935,12 @@ export default function HomeMapScreen() {
       sheetTranslateY.setValue(sheetCollapsedTranslateY);
       sheetPositionRef.current = sheetCollapsedTranslateY;
     }
-  }, [isSheetCollapsed, sheetCollapsedTranslateY, sheetHeight, sheetTranslateY]);
+  }, [
+    isSheetCollapsed,
+    sheetCollapsedTranslateY,
+    sheetHeight,
+    sheetTranslateY,
+  ]);
 
   const openStationDetails = (stationId: string) => {
     if (isOpeningDetails) {
@@ -947,7 +963,6 @@ export default function HomeMapScreen() {
   const abrirBusca = () => {
     router.push("/search" as Href);
   };
-
 
   const alternarFiltroRapido = (filterId: FiltroRapidoId) => {
     setFiltrosRapidos((filtrosAtuais) => ({
@@ -1028,7 +1043,6 @@ export default function HomeMapScreen() {
     }, FEEDBACK_DURATION);
   };
 
-
   const centralizarLocalizacaoUsuario = () => {
     if (isLocatingUser) {
       return;
@@ -1041,10 +1055,7 @@ export default function HomeMapScreen() {
     setLocalizacaoUsuario(nextLocation);
 
     mapRef.current?.animateToRegion(
-      criarRegiaoComFocoVisivel(
-        nextLocation.latitude,
-        nextLocation.longitude,
-      ),
+      criarRegiaoComFocoVisivel(nextLocation.latitude, nextLocation.longitude),
       500,
     );
 
