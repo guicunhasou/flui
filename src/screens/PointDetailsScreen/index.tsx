@@ -126,6 +126,15 @@ function getRatingStars(rating: number) {
   ).join(" ");
 }
 
+function getUserInitials(userName: string) {
+  const nameParts = userName.trim().split(/\s+/);
+  const firstInitial = nameParts[0]?.[0] ?? "";
+  const lastInitial =
+    nameParts.length > 1 ? nameParts[nameParts.length - 1]?.[0] ?? "" : "";
+
+  return `${firstInitial}${lastInitial}`.toUpperCase();
+}
+
 function getRouteUrl(station: Station, provider: RouteProvider) {
   const latitude = station.latitude;
   const longitude = station.longitude;
@@ -395,7 +404,7 @@ export default function PointDetailsScreen() {
     availableChargers,
   );
   const perfilDoPonto = montarPerfilDoPonto(station);
-  const mainReview = station.reviews?.[0] ?? null;
+  const stationReviews = station.reviews ?? [];
   const statusColor =
     station.status === "available"
       ? colors.success
@@ -733,23 +742,27 @@ export default function PointDetailsScreen() {
               </View>
             </View>
 
-            {mainReview ? (
-              <View style={styles.userReviewCard}>
-                <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>
-                    {mainReview.userName.slice(0, 2).toUpperCase()}
-                  </Text>
-                </View>
+            {stationReviews.length > 0 ? (
+              <View style={styles.userReviewsList}>
+                {stationReviews.map((review) => (
+                  <View key={review.id} style={styles.userReviewCard}>
+                    <View style={styles.avatar}>
+                      <Text style={styles.avatarText}>
+                        {getUserInitials(review.userName)}
+                      </Text>
+                    </View>
 
-                <View style={styles.userReviewContent}>
-                  <Text style={styles.userName}>{mainReview.userName}</Text>
+                    <View style={styles.userReviewContent}>
+                      <Text style={styles.userName}>{review.userName}</Text>
 
-                  <Text style={styles.userStars}>
-                    {getRatingStars(mainReview.rating)}
-                  </Text>
+                      <Text style={styles.userStars}>
+                        {getRatingStars(review.rating)}
+                      </Text>
 
-                  <Text style={styles.userComment}>{mainReview.comment}</Text>
-                </View>
+                      <Text style={styles.userComment}>{review.comment}</Text>
+                    </View>
+                  </View>
+                ))}
               </View>
             ) : (
               <View style={styles.emptyReviewCard}>

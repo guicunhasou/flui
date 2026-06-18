@@ -635,14 +635,18 @@ export const styles = StyleSheet.create({
     textAlign: "right",
   },
 
+  userReviewsList: {
+    gap: 12,
+  },
+
   userReviewCard: {
-  flexDirection: "row",
-  borderRadius: 16,
-  padding: 14,
-  backgroundColor: "#FCFEFA",
-  borderWidth: 1,
-  borderColor: "#DDE8E3",
-},
+    flexDirection: "row",
+    borderRadius: 16,
+    padding: 14,
+    backgroundColor: "#FCFEFA",
+    borderWidth: 1,
+    borderColor: "#DDE8E3",
+  },
 
   avatar: {
     width: 44,
@@ -684,12 +688,12 @@ export const styles = StyleSheet.create({
   },
 
   emptyReviewCard: {
-  borderRadius: 16,
-  padding: 14,
-  backgroundColor: "#FCFEFA",
-  borderWidth: 1,
-  borderColor: "#DDE8E3",
-},
+    borderRadius: 16,
+    padding: 14,
+    backgroundColor: "#FCFEFA",
+    borderWidth: 1,
+    borderColor: "#DDE8E3",
+  },
 
   emptyReviewTitle: {
     color: "#10221E",
