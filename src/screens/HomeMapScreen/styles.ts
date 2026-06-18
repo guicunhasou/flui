@@ -114,21 +114,22 @@ const styles = StyleSheet.create({
   },
 
   quickFiltersArea: {
-    marginTop: 8,
+    marginTop: 4,
   },
 
   quickFiltersHandleArea: {
-    minHeight: 4,
+    minHeight: 2,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 6,
+    paddingVertical: 2,
   },
 
-  quickFiltersHandle: {
-    width: 52,
-    height: 5,
-    borderRadius: 999,
-    backgroundColor: colors.border,
+  quickFiltersChevronButton: {
+    width: 30,
+    height: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "transparent",
   },
 
   quickFiltersAnimatedContent: {
@@ -136,15 +137,15 @@ const styles = StyleSheet.create({
   },
 
   filtersContent: {
-    paddingTop: 8,
+    paddingTop: 4,
     paddingRight: 8,
-    paddingBottom: 2,
+    gap: 4,
   },
 
   chip: {
     height: 42,
-    marginRight: 10,
-    paddingHorizontal: 15,
+    marginRight: 4,
+    paddingHorizontal: 14,
     borderRadius: 22,
     backgroundColor: colors.white,
     borderWidth: 1,
@@ -418,18 +419,19 @@ const styles = StyleSheet.create({
   },
 
   sheetHandleArea: {
-    minHeight: 4,
-    marginTop: -2,
-    marginBottom: 6,
+    minHeight: 22,
+    marginTop: -10,
+    marginBottom: 0,
     alignItems: "center",
     justifyContent: "center",
   },
 
-  sheetHandle: {
-    width: 46,
-    height: 5,
-    borderRadius: 999,
-    backgroundColor: colors.border,
+  sheetChevronButton: {
+    width: 30,
+    height: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "transparent",
   },
 
 

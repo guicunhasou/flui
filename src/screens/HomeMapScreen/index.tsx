@@ -6,7 +6,6 @@ import React, {
   useState,
 } from "react";
 import {
-  PanResponder,
   Animated,
   Image,
   Platform,
@@ -52,6 +51,12 @@ import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
 
 const FEEDBACK_DURATION = 1500;
 const SHEET_VISIBLE_HANDLE = 30;
+const QUICK_FILTERS_CONTENT_HEIGHT = 56;
+const HANDLE_HINT_DISTANCE = 4;
+
+const chevronControleBaixoXml = `<svg width="28" height="12" viewBox="0 0 28 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 4.25L14 8.25L22 4.25" stroke="#BECAC5" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+const chevronControleCimaXml = `<svg width="28" height="12" viewBox="0 0 28 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 7.75L14 3.75L22 7.75" stroke="#BECAC5" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
 const logoFluiXml = `
 <svg width="1115" height="516" viewBox="0 0 1115 516" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -697,6 +702,8 @@ export default function HomeMapScreen() {
   const currentMapRegionRef = useRef<Region | null>(null);
   const sheetTranslateY = useRef(new Animated.Value(0)).current;
   const quickFiltersProgress = useRef(new Animated.Value(0)).current;
+  const quickFiltersHintTranslateY = useRef(new Animated.Value(0)).current;
+  const sheetHintTranslateY = useRef(new Animated.Value(0)).current;
   const sheetPositionRef = useRef(0);
   const [localizacaoUsuario, setLocalizacaoUsuario] =
     useState<UserLocation | null>(LOCALIZACAO_DEMO_FIAP);
@@ -704,6 +711,9 @@ export default function HomeMapScreen() {
   const [isSheetCollapsed, setIsSheetCollapsed] = useState(false);
   const [sheetHeight, setSheetHeight] = useState(0);
   const [atalhosRapidosAbertos, setAtalhosRapidosAbertos] = useState(false);
+  const [hasInteractedWithQuickFilters, setHasInteractedWithQuickFilters] =
+    useState(false);
+  const [hasInteractedWithSheet, setHasInteractedWithSheet] = useState(false);
   const [filtrosRapidos, setFiltrosRapidos] = useState<FiltrosRapidos>(
     filtrosRapidosIniciais,
   );
@@ -734,7 +744,7 @@ export default function HomeMapScreen() {
 
   const alturaAtalhosRapidos = quickFiltersProgress.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 56],
+    outputRange: [0, QUICK_FILTERS_CONTENT_HEIGHT],
   });
 
   const sheetCollapsedTranslateY = useMemo(() => {
@@ -745,13 +755,93 @@ export default function HomeMapScreen() {
     setSearchTerm(routeSearchTerm);
   }, [routeSearchTerm]);
 
+  const animarAtalhosRapidos = useCallback(
+    (shouldOpen: boolean) => {
+      const nextProgress = shouldOpen ? 1 : 0;
+
+      quickFiltersProgress.stopAnimation();
+      setAtalhosRapidosAbertos(shouldOpen);
+
+      Animated.timing(quickFiltersProgress, {
+        toValue: nextProgress,
+        duration: 220,
+        useNativeDriver: false,
+      }).start();
+    },
+    [quickFiltersProgress],
+  );
+
   useEffect(() => {
-    Animated.timing(quickFiltersProgress, {
-      toValue: atalhosRapidosAbertos ? 1 : 0,
-      duration: 220,
-      useNativeDriver: false,
-    }).start();
-  }, [atalhosRapidosAbertos, quickFiltersProgress]);
+    if (hasInteractedWithQuickFilters) {
+      quickFiltersHintTranslateY.stopAnimation();
+      quickFiltersHintTranslateY.setValue(0);
+      return;
+    }
+
+    const hintOffset = atalhosRapidosAbertos
+      ? -HANDLE_HINT_DISTANCE
+      : HANDLE_HINT_DISTANCE;
+    const hintAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(quickFiltersHintTranslateY, {
+          toValue: hintOffset,
+          duration: 420,
+          useNativeDriver: true,
+        }),
+        Animated.timing(quickFiltersHintTranslateY, {
+          toValue: 0,
+          duration: 520,
+          useNativeDriver: true,
+        }),
+        Animated.delay(1300),
+      ]),
+    );
+
+    hintAnimation.start();
+
+    return () => {
+      hintAnimation.stop();
+      quickFiltersHintTranslateY.setValue(0);
+    };
+  }, [
+    atalhosRapidosAbertos,
+    hasInteractedWithQuickFilters,
+    quickFiltersHintTranslateY,
+  ]);
+
+  useEffect(() => {
+    if (hasInteractedWithSheet) {
+      sheetHintTranslateY.stopAnimation();
+      sheetHintTranslateY.setValue(0);
+      return;
+    }
+
+    const hintOffset = isSheetCollapsed
+      ? -HANDLE_HINT_DISTANCE
+      : HANDLE_HINT_DISTANCE;
+    const hintAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(sheetHintTranslateY, {
+          toValue: hintOffset,
+          duration: 420,
+          useNativeDriver: true,
+        }),
+        Animated.timing(sheetHintTranslateY, {
+          toValue: 0,
+          duration: 520,
+          useNativeDriver: true,
+        }),
+        Animated.delay(1400),
+      ]),
+    );
+
+    hintAnimation.start();
+
+    return () => {
+      hintAnimation.stop();
+      sheetHintTranslateY.setValue(0);
+    };
+  }, [hasInteractedWithSheet, isSheetCollapsed, sheetHintTranslateY]);
 
   const appliedFilters = useMemo(() => {
     return parseRouteFilters(filtersParam);
@@ -895,41 +985,6 @@ export default function HomeMapScreen() {
     [sheetCollapsedTranslateY, sheetTranslateY],
   );
 
-  const sheetPanResponder = useMemo(() => {
-    return PanResponder.create({
-      onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponder: (_, gesture) => {
-        return (
-          Math.abs(gesture.dy) > 6 &&
-          Math.abs(gesture.dy) > Math.abs(gesture.dx)
-        );
-      },
-      onPanResponderMove: (_, gesture) => {
-        const nextValue = Math.min(
-          Math.max(sheetPositionRef.current + gesture.dy, 0),
-          sheetCollapsedTranslateY,
-        );
-
-        sheetTranslateY.setValue(nextValue);
-      },
-      onPanResponderRelease: (_, gesture) => {
-        const nextValue = sheetPositionRef.current + gesture.dy;
-        const shouldCollapse =
-          gesture.vy > 0.5 || nextValue > sheetCollapsedTranslateY * 0.38;
-
-        alternarModalDePontos(shouldCollapse);
-      },
-      onPanResponderTerminate: () => {
-        alternarModalDePontos(isSheetCollapsed);
-      },
-    });
-  }, [
-    alternarModalDePontos,
-    isSheetCollapsed,
-    sheetCollapsedTranslateY,
-    sheetTranslateY,
-  ]);
-
   useEffect(() => {
     if (isSheetCollapsed && sheetHeight > 0) {
       sheetTranslateY.setValue(sheetCollapsedTranslateY);
@@ -972,40 +1027,19 @@ export default function HomeMapScreen() {
   };
 
   const alternarAtalhosRapidos = () => {
-    setAtalhosRapidosAbertos((isOpen) => !isOpen);
+    setHasInteractedWithQuickFilters(true);
+    animarAtalhosRapidos(!atalhosRapidosAbertos);
   };
 
-  const quickFiltersPanResponder = useMemo(() => {
-    return PanResponder.create({
-      onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponder: (_, gesture) => {
-        return (
-          Math.abs(gesture.dy) > 6 &&
-          Math.abs(gesture.dy) > Math.abs(gesture.dx)
-        );
-      },
-      onPanResponderRelease: (_, gesture) => {
-        if (gesture.dy > 8) {
-          setAtalhosRapidosAbertos(true);
-          return;
-        }
-
-        if (gesture.dy < -8) {
-          setAtalhosRapidosAbertos(false);
-        }
-      },
-      onPanResponderTerminate: (_, gesture) => {
-        if (gesture.dy > 8) {
-          setAtalhosRapidosAbertos(true);
-          return;
-        }
-
-        if (gesture.dy < -8) {
-          setAtalhosRapidosAbertos(false);
-        }
-      },
-    });
-  }, []);
+  const renderizarChevronDeControle = (apontaParaCima: boolean) => {
+    return (
+      <SvgXml
+        xml={apontaParaCima ? chevronControleCimaXml : chevronControleBaixoXml}
+        width={28}
+        height={12}
+      />
+    );
+  };
 
   const renderizarPuxadorDeAtalhos = () => {
     return (
@@ -1016,13 +1050,19 @@ export default function HomeMapScreen() {
             ? "Recolher atalhos de filtro"
             : "Mostrar atalhos de filtro"
         }
-        accessibilityHint="Arraste para abrir ou recolher filtros rápidos do mapa."
+        accessibilityHint="Toque para abrir ou recolher os filtros rápidos do mapa."
         accessibilityState={{ expanded: atalhosRapidosAbertos }}
+        hitSlop={{ top: 8, right: 32, bottom: 8, left: 32 }}
         style={styles.quickFiltersHandleArea}
         onPress={alternarAtalhosRapidos}
-        {...quickFiltersPanResponder.panHandlers}
       >
-        <View style={styles.quickFiltersHandle} />
+        <Animated.View
+          style={{ transform: [{ translateY: quickFiltersHintTranslateY }] }}
+        >
+          <View style={styles.quickFiltersChevronButton}>
+            {renderizarChevronDeControle(atalhosRapidosAbertos)}
+          </View>
+        </Animated.View>
       </Pressable>
     );
   };
@@ -1329,12 +1369,21 @@ export default function HomeMapScreen() {
               accessibilityLabel={
                 isSheetCollapsed ? "Puxar pontos para cima" : "Ocultar pontos"
               }
-              accessibilityHint="Arraste ou toque para alternar a lista de pontos."
+              accessibilityHint="Toque para abrir ou recolher a lista de pontos."
+              hitSlop={{ top: 10, right: 44, bottom: 10, left: 44 }}
               style={styles.sheetHandleArea}
-              onPress={() => alternarModalDePontos(!isSheetCollapsed)}
-              {...sheetPanResponder.panHandlers}
+              onPress={() => {
+                setHasInteractedWithSheet(true);
+                alternarModalDePontos(!isSheetCollapsed);
+              }}
             >
-              <View style={styles.sheetHandle} />
+              <Animated.View
+                style={{ transform: [{ translateY: sheetHintTranslateY }] }}
+              >
+                <View style={styles.sheetChevronButton}>
+                  {renderizarChevronDeControle(isSheetCollapsed)}
+                </View>
+              </Animated.View>
             </Pressable>
             <View style={styles.sheetHeader}>
               <Text style={styles.sheetTitle}>{sheetTitle}</Text>
