@@ -1391,14 +1391,17 @@ export default function HomeMapScreen() {
               setSheetHeight(event.nativeEvent.layout.height);
             }}
           >
-            <Pressable
+            <PressableScale
               accessibilityRole="button"
               accessibilityLabel={
-                isSheetCollapsed ? "Puxar pontos para cima" : "Ocultar pontos"
+                isSheetCollapsed
+                  ? "Mostrar lista de pontos"
+                  : "Recolher lista de pontos"
               }
-              accessibilityHint="Toque para abrir ou recolher a lista de pontos."
+              accessibilityHint="Toque para alternar a lista de pontos recomendados."
               accessibilityState={{ expanded: !isSheetCollapsed }}
               hitSlop={{ top: 10, right: 44, bottom: 10, left: 44 }}
+              pressedScale={0.94}
               style={styles.sheetHandleArea}
               onPress={() => {
                 setHasInteractedWithSheet(true);
@@ -1412,7 +1415,7 @@ export default function HomeMapScreen() {
                   {renderizarChevronDeControle(isSheetCollapsed)}
                 </View>
               </Animated.View>
-            </Pressable>
+            </PressableScale>
             <View style={styles.sheetHeader}>
               <Text style={styles.sheetTitle}>{sheetTitle}</Text>
             </View>
