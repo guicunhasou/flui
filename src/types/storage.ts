@@ -30,7 +30,6 @@ export type UserPreferences = {
   preferredAmenities: Amenity[];
   preferredRouteApp: PreferredRouteApp;
   savedFilters: StationFilters;
-  hasSeenSplash: boolean;
   hasSeenOnboarding: boolean;
   appearanceMode: AppearanceMode;
   fontSize: FontSizePreference;

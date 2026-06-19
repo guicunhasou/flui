@@ -49,7 +49,6 @@ const defaultUserPreferences: UserPreferences = {
     rating: { ...defaultFilters.rating },
     onlyOpenNow: defaultFilters.onlyOpenNow,
   },
-  hasSeenSplash: false,
   hasSeenOnboarding: false,
   appearanceMode: "light",
   fontSize: "default",
