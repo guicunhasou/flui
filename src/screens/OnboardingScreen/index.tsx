@@ -11,7 +11,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import {
   Heart,
   MapPinned,
@@ -66,6 +66,7 @@ export default function OnboardingScreen() {
   const scrollRef = useRef<ScrollView | null>(null);
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [isFinishing, setIsFinishing] = useState(false);
+  const { from } = useLocalSearchParams<{ from?: string }>();
 
   const { width } = useWindowDimensions();
   const { appearanceMode, fontScale, theme } = useAppPreferences();
@@ -77,8 +78,13 @@ export default function OnboardingScreen() {
 
   const cardWidth = Math.max(width - 48, 280);
   const isLastStep = activeStepIndex === onboardingSteps.length - 1;
+  const shouldReturnToSettings = from === "settings";
+  const finishTarget = shouldReturnToSettings ? "/settings" : "/map";
+  const lastStepButtonLabel = shouldReturnToSettings
+    ? "Voltar às configurações"
+    : "Começar pelo mapa";
 
-  const goToMap = async () => {
+  const finishOnboarding = async () => {
     if (isFinishing) {
       return;
     }
@@ -87,13 +93,13 @@ export default function OnboardingScreen() {
       setIsFinishing(true);
       await fluiStorage.updateUserPreferences({ hasSeenOnboarding: true });
     } finally {
-      router.replace("/map");
+      router.replace(finishTarget);
     }
   };
 
   const goToNextStep = () => {
     if (isLastStep) {
-      void goToMap();
+      void finishOnboarding();
       return;
     }
 
@@ -134,7 +140,7 @@ export default function OnboardingScreen() {
               accessibilityRole="button"
               accessibilityLabel="Pular apresentação"
               disabled={isFinishing}
-              onPress={goToMap}
+              onPress={finishOnboarding}
               style={styles.skipButton}
             >
               <Text style={styles.skipButtonText}>Pular</Text>
@@ -196,14 +202,18 @@ export default function OnboardingScreen() {
           <PressableScale
             accessibilityRole="button"
             accessibilityLabel={
-              isLastStep ? "Começar a usar o mapa" : "Avançar apresentação"
+              isLastStep
+                ? shouldReturnToSettings
+                  ? "Voltar para configurações"
+                  : "Começar a usar o mapa"
+                : "Avançar apresentação"
             }
             disabled={isFinishing}
             onPress={goToNextStep}
             style={styles.primaryButton}
           >
             <Text style={styles.primaryButtonText}>
-              {isLastStep ? "Começar pelo mapa" : "Continuar"}
+              {isLastStep ? lastStepButtonLabel : "Continuar"}
             </Text>
           </PressableScale>
         </View>

@@ -140,7 +140,7 @@ export default function SettingsScreen() {
   };
 
   const openOnboarding = () => {
-    router.push("/onboarding");
+    router.push("/onboarding?from=settings");
   };
 
   const renderOptionCheck = (isSelected: boolean) => {
