@@ -365,6 +365,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
+  zoomPillButtonActive: {
+    backgroundColor: colors.primarySoft,
+  },
+
   zoomPillDivider: {
     width: 28,
     height: 1,
@@ -383,10 +387,14 @@ const styles = StyleSheet.create({
     ...shadow,
   },
 
+  mapControlButtonActive: {
+    backgroundColor: colors.primarySoft,
+    borderColor: colors.primarySoftStrong,
+  },
+
   mapControlButtonLoading: {
     opacity: 0.68,
   },
-
 
   mapControlText: {
     color: colors.primary,

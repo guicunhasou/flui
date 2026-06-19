@@ -127,6 +127,8 @@ const estiloEscuroDoMapa: EstiloMapa = [
 
 type FiltroRapidoId = "openNow" | "ccs2" | "fast" | "restroom";
 
+type ControleMapaAtivo = "aproximar" | "afastar" | "centralizar" | null;
+
 type FiltrosRapidos = Record<FiltroRapidoId, boolean>;
 
 const filtrosRapidosIniciais: FiltrosRapidos = {
@@ -724,6 +726,8 @@ export default function HomeMapScreen() {
   const [mapFeedbackMessage, setMapFeedbackMessage] = useState<string | null>(
     null,
   );
+  const [controleMapaAtivo, setControleMapaAtivo] =
+    useState<ControleMapaAtivo>(null);
 
   const mapFeedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -1316,43 +1320,65 @@ export default function HomeMapScreen() {
 
           <View pointerEvents="box-none" style={styles.fixedMapControls}>
             <View style={styles.zoomPill}>
-              <Pressable
+              <PressableScale
                 accessibilityRole="button"
                 accessibilityLabel="Aumentar zoom do mapa"
                 accessibilityHint="Aproxima a visualização do mapa."
-                style={styles.zoomPillButton}
+                pressedScale={0.92}
+                style={[
+                  styles.zoomPillButton,
+                  controleMapaAtivo === "aproximar"
+                    ? styles.zoomPillButtonActive
+                    : null,
+                ]}
+                onPressIn={() => setControleMapaAtivo("aproximar")}
+                onPressOut={() => setControleMapaAtivo(null)}
                 onPress={() => alterarZoomMapa("aproximar")}
               >
                 <Text style={styles.mapControlText}>+</Text>
-              </Pressable>
+              </PressableScale>
 
               <View style={styles.zoomPillDivider} />
 
-              <Pressable
+              <PressableScale
                 accessibilityRole="button"
                 accessibilityLabel="Diminuir zoom do mapa"
                 accessibilityHint="Afasta a visualização do mapa."
-                style={styles.zoomPillButton}
+                pressedScale={0.92}
+                style={[
+                  styles.zoomPillButton,
+                  controleMapaAtivo === "afastar"
+                    ? styles.zoomPillButtonActive
+                    : null,
+                ]}
+                onPressIn={() => setControleMapaAtivo("afastar")}
+                onPressOut={() => setControleMapaAtivo(null)}
                 onPress={() => alterarZoomMapa("afastar")}
               >
                 <Text style={styles.mapControlText}>−</Text>
-              </Pressable>
+              </PressableScale>
             </View>
 
-            <Pressable
+            <PressableScale
               accessibilityRole="button"
               accessibilityLabel="Centralizar localização na FIAP"
               accessibilityHint="Centraliza o mapa em uma localização próxima à FIAP."
               accessibilityState={{ busy: isLocatingUser }}
+              pressedScale={0.94}
               style={[
                 styles.mapControlButton,
+                controleMapaAtivo === "centralizar"
+                  ? styles.mapControlButtonActive
+                  : null,
                 isLocatingUser ? styles.mapControlButtonLoading : null,
               ]}
+              onPressIn={() => setControleMapaAtivo("centralizar")}
+              onPressOut={() => setControleMapaAtivo(null)}
               onPress={centralizarLocalizacaoUsuario}
               disabled={isLocatingUser}
             >
               <Crosshair size={25} color={colors.primary} strokeWidth={2.2} />
-            </Pressable>
+            </PressableScale>
           </View>
 
           <Animated.View
