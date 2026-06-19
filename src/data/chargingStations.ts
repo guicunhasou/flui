@@ -82,7 +82,7 @@ export const chargingStations: ChargingStation[] = [
         cleaning: 5,
         availability: 5,
         amenities: 5,
-        comment: 'Boa sinalização, ambiente limpo e conexão estável no CCS2 durante o teste.',
+        comment: 'Boa sinalização, ambiente limpo e conexão estável no CCS2 durante a recarga.',
         wouldReturn: true,
         recommend: true,
         createdAt: '2026-05-20',
