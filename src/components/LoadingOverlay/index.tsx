@@ -21,7 +21,7 @@ export default function LoadingOverlay({
   message = 'Carregando...',
 }: LoadingOverlayProps) {
   const pulse = useRef(new Animated.Value(0)).current;
-  const { styles } = useTelaComPreferencias(baseStyles, overlayColors);
+  const { styles, colors } = useTelaComPreferencias(baseStyles, overlayColors);
 
   useEffect(() => {
     if (!visible) {
@@ -73,6 +73,11 @@ export default function LoadingOverlay({
     outputRange: [0.96, 1.06],
   });
 
+  const themedLogoFluiFXml = logoFluiFXml.replace(
+    'fill="#2B0055"',
+    `fill="${colors.primary}"`,
+  );
+
   return (
     <View
       accessibilityRole="alert"
@@ -98,7 +103,7 @@ export default function LoadingOverlay({
           <Animated.View
             style={[styles.loaderCore, { transform: [{ scale: coreScale }] }]}
           >
-            <SvgXml xml={logoFluiFXml} width={22} height={16} />
+            <SvgXml xml={themedLogoFluiFXml} width={22} height={16} />
           </Animated.View>
         </View>
 

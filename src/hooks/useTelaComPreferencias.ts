@@ -28,8 +28,8 @@ const propriedadesDeCor = new Set([
 ]);
 
 const valoresClaros = {
-  background: new Set(["#F7F4EC", "#F3F8F4", "#F8F6FF"]),
-  surface: new Set(["#FFFFFF", "#FCFEFA", "#FAF8FF"]),
+  background: new Set(["#F7F4EC", "#F3F8F4", "#F8F6FF", "#E8F1EB"]),
+  surface: new Set(["#FFFFFF", "#FCFEFA", "#FAF8FF", "#FCFBFF"]),
   text: new Set(["#10162F", "#10221E", "#17142A", "#383354"]),
   textMuted: new Set(["#4F5878", "#3F554F", "#5F6078"]),
   textLight: new Set(["#63766F", "#7C829A", "#7C8C86", "#8FA19B"]),
@@ -45,7 +45,7 @@ const valoresClaros = {
   border: new Set(["#ECE8DF", "#DDE8E3", "#C9C2DA", "#BBD0C7"]),
   shadow: new Set(["#1E1230", "#12302A", "#080A12"]),
   success: new Set(["#23B24B", "#1FA971", "#18A957"]),
-  successSoft: new Set(["#DFF4D8", "#DDF6E8"]),
+  successSoft: new Set(["#DFF4D8", "#DDF6E8", "#D8EEDC", "#EAF8EF"]),
   yellow: new Set(["#FFF2C7"]),
   yellowDark: new Set(["#F3B512", "#F4B942", "#D99721"]),
   dangerSoft: new Set(["#FBE5E2"]),
