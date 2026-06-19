@@ -1,134 +1,467 @@
-# Flui Charge Map Cup — Etapa 1
+<p align="center">
+  <img src="src/assets/images/icon.png" width="160"/>
+</p>
 
-## Integrantes
+<h1 align="center">Flui Charge Map Cup</h1>
 
-| Nome completo | RM |
-|---|---|
-| GUILHERME VICTOR CUNHA DE SOUZA | 565727 |
-| ISAMARA ALVES DE BRITO | 565161 |
-| KAUANE CRISTINY BOMFIM SILVA CAVALCANTE | 563886 |
-| MIRNA L MARINHO CARNEIRO ANDRADE | 564052 |
+<h3 align="center">
+  <i>Encontre, compare e escolha onde carregar com mais clareza.</i>
+</h3>
 
-## Contextualização do projeto
+<p align="center">
+  Aplicativo mobile para motoristas de veículos elétricos localizarem, avaliarem e escolherem pontos de recarga.
+</p>
 
-O Flui Charge Map Cup é um aplicativo mobile voltado para motoristas de veículos elétricos. A proposta é ajudar o usuário a localizar, comparar e escolher pontos de recarga de forma simples, clara e confiável.
+<p align="center">
+  Enterprise Challenge · FIAP · Flui · Google · 2TWDOA · 2026
+</p>
 
-O desafio parte de um problema real da mobilidade elétrica: encontrar um ponto de recarga não depende apenas de saber onde ele está. O motorista também precisa entender se o carregador está disponível, qual é a potência, quais conectores são aceitos, se há comodidades por perto, qual o horário de funcionamento e se o local oferece uma boa experiência durante a espera.
+---
 
-Por isso, o app foi pensado como um guia de pontos de recarga. A experiência não se limita ao mapa: ela organiza informações úteis para apoiar a tomada de decisão do motorista.
+O **Flui Charge Map Cup** foi criado para tornar a experiência de recarga de veículos elétricos mais clara, confiável e confortável.
 
-## Objetivo da Etapa 1
+A proposta do app é ajudar o motorista a decidir onde parar antes mesmo de chegar ao ponto de recarga, reunindo mapa, filtros, ficha detalhada, avaliações, comodidades, favoritos e histórico em uma experiência mobile funcional.
 
-O objetivo da Etapa 1 foi estruturar um protótipo mobile navegável em código, com as principais telas exigidas para a experiência inicial:
+Projeto desenvolvido para o **Enterprise Challenge — Charge Map Cup**, parceria entre **FIAP, Flui e Google**.
 
-- mapa de pontos de recarga;
-- tela de busca;
-- ficha detalhada do ponto;
-- navegação funcional entre as telas;
-- identidade visual aplicada;
-- dados simulados para representar pontos de recarga.
+---
 
-## Tecnologias utilizadas
+## ⚡ O desafio
 
-O projeto foi desenvolvido com:
+A mobilidade elétrica está crescendo no Brasil, mas encontrar um bom ponto de recarga ainda pode ser uma tarefa incerta.
 
-- React Native;
-- Expo;
-- TypeScript;
-- Expo Router;
-- AsyncStorage;
-- React Native SVG;
-- Lucide React Native.
+Nem sempre o motorista sabe:
 
-A escolha por React Native com Expo permitiu criar um protótipo mobile funcional de forma ágil, com navegação real entre telas e estrutura preparada para evoluções futuras.
+- se o carregador está disponível;
+- qual potência o ponto oferece;
+- quais conectores são compatíveis;
+- se o local possui banheiro, café, cobertura ou estacionamento;
+- quais horários costumam ser mais tranquilos;
+- se outros usuários tiveram uma boa experiência ali.
 
-## Fluxo principal do protótipo
+O Flui Charge Map Cup nasce para responder essas dúvidas de forma simples, visual e organizada.
+
+Mais do que mostrar pontos no mapa, o app funciona como um guia de escolha para recargas.
+
+---
+
+## ✨ Funcionalidades da versão atual
+
+A versão funcional do Flui apresenta os principais recursos da experiência proposta para a Etapa 1.
+
+### 🗺️ Mapa interativo
+
+Apresenta pontos de recarga simulados em São Paulo, com marcadores personalizados, status visual, controles de zoom, centralização, filtros rápidos e painel inferior com melhores escolhas.
+
+### 🔎 Busca e filtros
+
+Permite buscar pontos por texto e ajustar critérios como conector, potência mínima, raio de busca, comodidades, avaliação mínima e funcionamento no momento.
+
+### 📍 Ficha detalhada do ponto
+
+Reúne as informações mais importantes para a decisão do motorista: imagem da estação, endereço, status, potência, conectores, horários, períodos menos cheios, comodidades, tempo estimado de carga, comentários e avaliações.
+
+### ⭐ Avaliações
+
+Permite avaliar um ponto com nota geral, critérios específicos, comentário, recomendação e intenção de retorno. A avaliação é salva localmente e pode ser editada.
+
+Quando o usuário escreve um comentário, ele também aparece na ficha detalhada do respectivo ponto.
+
+### 💜 Favoritos e histórico
+
+Os pontos favoritos, o histórico de navegação e as avaliações enviadas ficam concentrados no Perfil, mantendo a navegação mais simples e sem tabbar fixa.
+
+### 👤 Perfil do motorista
+
+Apresenta dados simulados do usuário, veículo cadastrado, favoritos, histórico, avaliações enviadas e atalhos úteis.
+
+### ⚙️ Configurações
+
+Permite ajustar tema, tamanho da fonte, rota preferida e rever a introdução do app.
+
+### 🌱 Onboarding
+
+Introduz a proposta do app em quatro passos: encontrar pontos próximos, comparar antes de parar, escolher com confiança e salvar favoritos.
+
+---
+
+## 📱 Telas do projeto
+
+A versão atual conta com as seguintes telas e áreas principais:
+
+### ⚡ Splash Screen
+
+Apresentação inicial da identidade Flui.
+
+### 🌱 Onboarding
+
+Introdução visual aos principais recursos do app.
+
+### 🗺️ Mapa
+
+Tela principal da experiência, com pontos simulados, filtros rápidos, controles do mapa e painel de recomendações.
+
+### 🔎 Busca e filtros
+
+Área para pesquisar estações e ajustar critérios de escolha.
+
+### 📍 Ficha do ponto
+
+Tela detalhada com dados técnicos, contexto de uso, comodidades e avaliações.
+
+### ⭐ Avaliação
+
+Fluxo para registrar ou editar a experiência do usuário em um ponto de recarga.
+
+### 👤 Perfil
+
+Centraliza favoritos, histórico, avaliações enviadas, dados do motorista e veículo.
+
+### ⚙️ Configurações
+
+Área de preferências visuais e comportamentais do app.
+
+---
+
+## 🎯 Objetivo
+
+Ajudar motoristas de veículos elétricos a escolher pontos de recarga com mais confiança.
+
+O app busca reduzir incertezas comuns da jornada de recarga, oferecendo informações úteis antes da parada e valorizando a experiência do motorista durante a escolha do ponto.
+
+---
+
+## 🧭 Jornada principal
+
+```txt
+⚡ Abertura do app
+       ↓
+🌱 Introdução da experiência
+       ↓
+🗺️ Mapa de pontos de recarga
+       ↓
+🔎 Busca e filtros
+       ↓
+📍 Ficha detalhada do ponto
+       ↓
+⭐ Avaliação da experiência
+       ↓
+👤 Histórico e favoritos no Perfil
+```
+
+### Fluxo de primeiro uso
+
+```txt
+Splash → Onboarding → Mapa
+```
+
+### Fluxo de uso recorrente
 
 ```txt
 Splash → Mapa
-Mapa → Busca
-Busca → Mapa
-Busca → Ficha do ponto
-Mapa → Ficha do ponto
-Ficha do ponto → Mapa
 ```
 
-## Telas principais
+### Fluxo pelas configurações
 
-### Mapa
+```txt
+Configurações → Ver introdução → Onboarding → Configurações
+```
 
-A tela de mapa é a entrada principal da experiência. Ela apresenta pontos de recarga simulados, marcadores visuais e cards de recomendação. A partir dela, o usuário pode abrir a busca ou acessar a ficha detalhada de um ponto.
+---
 
-### Busca
+## ⚒️ Tecnologias utilizadas
 
-A tela de busca possui campo textual, sugestões rápidas e resultados simulados. Ela permite que o usuário procure por bairro, estação, potência ou tipo de conector. Os filtros visuais apoiam a experiência, mas não foram tratados como funcionalidade completa nesta etapa.
+![React Native](https://img.shields.io/badge/React%20Native-20232A?style=flat-rounded&logo=react&logoColor=61DAFB)  
+![Expo](https://img.shields.io/badge/Expo-000020?style=flat-rounded&logo=expo&logoColor=white)  
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-rounded&logo=typescript&logoColor=white)  
+![Expo Router](https://img.shields.io/badge/Expo%20Router-000020?style=flat-rounded&logo=expo&logoColor=white)  
+![AsyncStorage](https://img.shields.io/badge/AsyncStorage-FFCA28?style=flat-rounded&logo=react&logoColor=black)  
+![React Native Maps](https://img.shields.io/badge/React%20Native%20Maps-34A853?style=flat-rounded&logo=googlemaps&logoColor=white)  
+![React Native SVG](https://img.shields.io/badge/React%20Native%20SVG-61DAFB?style=flat-rounded&logo=react&logoColor=20232A)  
+![Lucide](https://img.shields.io/badge/Lucide%20Icons-111827?style=flat-rounded&logo=lucide&logoColor=white)  
 
-### Ficha detalhada do ponto
+A escolha por React Native com Expo permitiu desenvolver um protótipo mobile funcional, com navegação real, persistência local, componentes reutilizáveis e estrutura preparada para evoluções futuras.
 
-A ficha detalhada reúne as informações mais importantes para a escolha do ponto de recarga: nome da estação, endereço, disponibilidade simulada, potência, conectores, horário de funcionamento, períodos de menor movimento, comodidades, avaliações simuladas e informações úteis ao motorista.
+---
 
-Também foi adicionada uma área de guia do ponto, com recomendação, espera estimada, tempo aproximado de carga e perfil do local.
+## ⚙️ Como rodar o projeto
 
-## Justificativa das tomadas de decisão
+### 1. Instalar dependências
+
+```bash
+npm install
+```
+
+### 2. Iniciar o projeto
+
+```bash
+npm run start
+```
+
+### 3. Rodar no Android
+
+```bash
+npm run android
+```
+
+### 4. Rodar no iOS
+
+```bash
+npm run ios
+```
+
+### 5. Rodar no navegador
+
+```bash
+npm run web
+```
+
+---
+
+## 📄 Scripts disponíveis
+
+```bash
+npm run start
+```
+
+Inicia o servidor de desenvolvimento do Expo.
+
+```bash
+npm run android
+```
+
+Abre o app no emulador Android.
+
+```bash
+npm run ios
+```
+
+Abre o app no iOS Simulator.
+
+```bash
+npm run web
+```
+
+Abre o app no navegador.
+
+```bash
+npm run typecheck
+```
+
+Executa a verificação de tipos do TypeScript.
+
+```bash
+npm run lint
+```
+
+Executa a verificação de lint do projeto.
+
+---
+
+## 📃 Estrutura principal
+
+```txt
+app/
+  _layout.tsx
+  index.tsx
+  map.tsx
+  search.tsx
+  filters.tsx
+  point-details.tsx
+  review.tsx
+  profile.tsx
+  settings.tsx
+  onboarding.tsx
+
+src/
+  assets/
+    images/
+    onboarding/
+    stations/
+    user/
+
+  components/
+  context/
+  data/
+  hooks/
+  screens/
+  storage/
+  theme/
+  types/
+  utils/
+```
+
+---
+
+## 🎨 Design e identidade visual
+
+> **"Encontre, compare e escolha onde carregar com mais clareza."**
+
+O Flui Charge Map Cup foi pensado para unir tecnologia, sustentabilidade e confiança.
+
+A interface busca transmitir uma sensação de clareza e controle para o motorista, usando informações objetivas, cards organizados, microinterações discretas e uma identidade visual conectada à mobilidade elétrica.
+
+### ✨ Princípios de design
+
+- Reduzir a incerteza antes da recarga;
+- Organizar informações técnicas de forma simples;
+- Valorizar a experiência real do motorista;
+- Criar uma interface clara, moderna e confiável;
+- Usar feedbacks visuais discretos;
+- Manter consistência entre mapa, busca, ficha, avaliação e perfil;
+- Priorizar legibilidade, contraste e acessibilidade.
+
+### 🌿 Paleta visual
+
+A identidade visual combina tons associados a tecnologia limpa, energia e confiança.
+
+- **Verdes suaves** — sustentabilidade, mobilidade limpa e status positivo;
+- **Roxo Flui** — identidade, destaque e personalidade visual;
+- **Azul elétrico** — tecnologia, recarga e inovação;
+- **Tons claros e escuros** — suporte a tema claro, escuro e automático;
+- **Cores de status** — ajudam a diferenciar disponibilidade, ocupação, manutenção e indisponibilidade.
+
+### 🔤 Experiência de leitura
+
+O app foi construído com hierarquia visual clara, cards bem definidos, textos objetivos e suporte a ajuste de tamanho de fonte nas configurações.
+
+A intenção é que o motorista consiga entender rapidamente se um ponto atende às suas necessidades antes de iniciar a rota.
+
+---
+
+## ♿ Acessibilidade
+
+O projeto inclui cuidados de acessibilidade, como:
+
+- labels acessíveis em botões importantes;
+- hints em ações principais;
+- estados acessíveis em filtros, favoritos e botões desabilitados;
+- status indicados por texto, não apenas por cor;
+- contraste visual adequado;
+- áreas de toque confortáveis;
+- textos claros e hierarquia consistente;
+- suporte a variação de tamanho de fonte;
+- elementos decorativos ocultos de leitores de tela quando necessário;
+- feedbacks visuais e táteis em interações importantes.
+
+---
+
+## 🧠 Decisões de projeto
 
 ### Desenvolvimento em código
 
-O grupo optou por desenvolver a Etapa 1 em código, em vez de construir apenas um protótipo no Figma. Essa decisão permite demonstrar navegação real, organização de componentes, dados simulados e uma base técnica mais próxima de um aplicativo mobile funcional.
-
-### Mapa visual com pontos simulados
-
-Nesta etapa, o mapa foi construído como uma experiência visual simulada. A integração real com Google Maps não foi priorizada, pois o foco da Etapa 1 é validar a navegação, a estrutura das telas principais e a clareza da experiência.
-
-Essa abordagem reduz complexidade técnica inicial e mantém o projeto preparado para uma futura integração com mapa real.
-
-### Ficha detalhada rica
-
-A ficha do ponto foi tratada como uma das telas centrais do projeto. Ela apresenta informações como nome da estação, endereço, disponibilidade simulada, potência, conectores, horário de funcionamento, períodos de menor movimento, comodidades e informações úteis ao motorista.
-
-Também foi adicionada uma área de guia do ponto, que resume a recomendação, a espera estimada, o tempo aproximado de carga e o perfil do local. Essa decisão reforça a proposta de não apenas mostrar onde carregar, mas ajudar o motorista a escolher melhor.
-
-### Tela de busca com resultados simulados
-
-A tela de busca inclui campo textual, sugestões rápidas e resultados simulados. Os filtros visuais aparecem como apoio à experiência, mas não foram tratados como funcionalidade completa obrigatória nesta etapa.
-
-Essa decisão mantém o protótipo convincente para avaliação sem desviar o foco para regras complexas de filtragem.
-
-### Identidade visual
-
-A identidade visual foi construída com cores associadas a tecnologia, energia limpa e confiança. A paleta combina tons claros esverdeados, roxo institucional, azul elétrico e verde de status positivo.
-
-A interface usa cards, botões arredondados, hierarquia tipográfica clara e elementos visuais que remetem à mobilidade elétrica.
+O grupo optou por desenvolver um app funcional em React Native, em vez de entregar apenas um protótipo visual. Essa decisão permite demonstrar navegação real, persistência local, filtros, avaliações e uma experiência mais próxima de um produto mobile.
 
 ### Dados simulados
 
-Os pontos de recarga são fictícios, mas foram estruturados com informações plausíveis: nome, endereço, região, potência, conectores, status, comodidades, avaliações simuladas e coordenadas.
+Os pontos de recarga são fictícios, mas estruturados com informações plausíveis: nome, endereço, região, potência, conectores, status, comodidades, avaliações, imagens e coordenadas.
 
-Essa organização permite que o app pareça completo na Etapa 1 e facilita futuras implementações, como mapa real, filtros funcionais e localização do usuário.
+Essa escolha mantém o protótipo estável e testável, sem depender de APIs externas durante a avaliação.
 
-## Recursos de acessibilidade presentes
+### Localização demo
 
-O app possui recursos básicos de acessibilidade implementados no código:
+A localização do usuário foi mantida como uma posição simulada em São Paulo, próxima ao contexto do desafio. Isso evita variações por permissão, GPS ou localização real do avaliador e garante uma demonstração consistente.
 
-- contraste adequado entre texto, fundo e elementos interativos;
-- textos legíveis e hierarquia visual clara;
-- botões principais com boa área de toque;
-- navegação simples entre mapa, busca e ficha;
-- feedbacks visuais em ações importantes;
-- status dos pontos indicados por texto, não apenas por cor;
-- labels acessíveis em botões importantes;
-- hints acessíveis em ações principais;
-- estados acessíveis em filtros selecionados, favoritos e botões desabilitados;
-- campo de busca com nome acessível;
-- elementos decorativos ocultos do leitor de tela quando necessário.
+### Ficha detalhada como centro da decisão
 
-Esses recursos ajudam a tornar o protótipo mais compreensível, previsível e utilizável.
+A ficha do ponto foi tratada como uma das telas mais importantes do app. Ela reúne dados técnicos, contexto de uso, comodidades e comentários para transformar a escolha do ponto em uma decisão mais segura.
 
-## Link do repositório público
+### Avaliações locais
 
-https://github.com/guicunhasou/flui-charge-map
+O sistema de avaliação usa armazenamento local. Assim, o usuário consegue enviar, editar e visualizar avaliações sem backend. Essa abordagem atende ao escopo da etapa e demonstra o fluxo principal de forma funcional.
 
-## Considerações finais
+### Navegação simplificada
 
-A Etapa 1 do Flui Charge Map Cup entrega uma base navegável e coerente para a experiência principal do aplicativo. O protótipo já permite transitar entre mapa, busca e ficha detalhada do ponto, apresentando dados simulados suficientes para demonstrar a proposta.
+O app não utiliza tabbar fixa. A navegação foi simplificada para manter foco no mapa, na busca, na ficha e no perfil. Favoritos, histórico e avaliações ficam organizados dentro do Perfil.
 
-As próximas evoluções podem incluir mapa real, localização do usuário, filtros funcionais, sistema completo de avaliação, imagens dos pontos e melhorias no perfil e nas configurações.
+---
+
+## 🚘 Próximas rotas
+
+O Flui Charge Map Cup foi desenvolvido como uma base funcional para evoluções futuras.
+
+### 🗺️ Mapa e localização
+
+- Integração completa com APIs reais de eletropostos;
+- Localização real do usuário;
+- Rotas reais com Google Maps;
+- Dados em tempo real sobre disponibilidade dos carregadores.
+
+### ⭐ Comunidade e avaliações
+
+- Backend para avaliações;
+- Sincronização em nuvem;
+- Perfis reais de usuários;
+- Moderação de comentários;
+- Histórico completo de recargas.
+
+### ⚡ Experiência de recarga
+
+- Estimativa personalizada de tempo de carga;
+- Sugestões com base no veículo do usuário;
+- Planejamento de rota com múltiplas paradas;
+- Alertas sobre ocupação, manutenção e indisponibilidade.
+
+### ♿ Acessibilidade e inclusão
+
+- Modo de alto contraste;
+- Redução avançada de animações;
+- Preferências refinadas de leitura;
+- Testes com leitores de tela em mais dispositivos.
+
+---
+
+## 👥 Equipe
+
+Equipe responsável pelo desenvolvimento do Flui Charge Map Cup para o Enterprise Challenge — Charge Map Cup.
+
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="docs/readme/guilherme.webp" width="140px"><br>
+      <strong>Guilherme Victor</strong><br>
+      RM 565727
+    </td>
+    <td align="center">
+      <img src="docs/readme/isamara.webp" width="140px"><br>
+      <strong>Isamara Alves</strong><br>
+      RM 565161
+    </td>
+    <td align="center">
+      <img src="docs/readme/kauane.webp" width="140px"><br>
+      <strong>Kauane Cristiny</strong><br>
+      RM 563886
+    </td>
+    <td align="center">
+      <img src="docs/readme/mirna.webp" width="140px"><br>
+      <strong>Mirna Carneiro</strong><br>
+      RM 564052
+    </td>
+  </tr>
+</table>
+
+---
+
+## ⚡ Central da Recarga
+
+<p align="center">
+  <a href="https://github.com/guicunhasou/flui-charge-map">
+    <img src="https://img.shields.io/badge/⚡_Repositório_GitHub-181717?style=flat-rounded" />
+  </a>
+
+  <a href="#">
+    <img src="https://img.shields.io/badge/🎬_Vídeo_Pitch-FF0000?style=flat-rounded" />
+  </a>
+
+  <a href="#">
+    <img src="https://img.shields.io/badge/📄_PDF_da_Entrega-2B0055?style=flat-rounded" />
+  </a>
+</p>
+
+---
+
+## ✅ Status
+
+Projeto funcional para a entrega da Etapa 1 do **Enterprise Challenge — Charge Map Cup**.
+
+O app possui mapa interativo, busca com filtros, ficha detalhada, sistema de avaliação local, favoritos, histórico, perfil, configurações, onboarding, tema claro/escuro, persistência local e refinamentos de acessibilidade e microinterações.
