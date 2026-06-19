@@ -79,7 +79,6 @@ export default function OnboardingScreen() {
   const cardWidth = Math.max(width - 48, 280);
   const isLastStep = activeStepIndex === onboardingSteps.length - 1;
   const shouldReturnToSettings = from === "settings";
-  const finishTarget = shouldReturnToSettings ? "/settings" : "/map";
   const lastStepButtonLabel = shouldReturnToSettings
     ? "Voltar às configurações"
     : "Começar pelo mapa";
@@ -93,7 +92,12 @@ export default function OnboardingScreen() {
       setIsFinishing(true);
       await fluiStorage.updateUserPreferences({ hasSeenOnboarding: true });
     } finally {
-      router.replace(finishTarget);
+      if (shouldReturnToSettings) {
+        router.back();
+        return;
+      }
+
+      router.replace("/map");
     }
   };
 
