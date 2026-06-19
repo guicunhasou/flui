@@ -65,7 +65,7 @@ const logoFluiXml = `
 </svg>
 `;
 
-const imagemPerfilUsuario = require("../../assets/user/profile2.webp");
+const imagemPerfilUsuario = require("../../assets/user/profile1.webp");
 
 const criarLogoFluiXml = (corPrincipal: string, corPonto: string) => {
   return logoFluiXml

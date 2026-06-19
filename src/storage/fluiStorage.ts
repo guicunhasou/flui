@@ -51,6 +51,7 @@ function createDefaultUserPreferences(): UserPreferences {
       onlyOpenNow: defaultFilters.onlyOpenNow,
     },
     hasSeenSplash: false,
+    hasSeenOnboarding: false,
     appearanceMode: "light",
     fontSize: "default",
   };

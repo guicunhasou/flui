@@ -2,7 +2,14 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ScrollView, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { ArrowLeft, Check, Moon, Sun, Type } from "lucide-react-native";
+import {
+  ArrowLeft,
+  Check,
+  Moon,
+  Sparkles,
+  Sun,
+  Type,
+} from "lucide-react-native";
 
 import {
   LoadingOverlay,
@@ -132,6 +139,10 @@ export default function SettingsScreen() {
     }
   };
 
+  const openOnboarding = () => {
+    router.push("/onboarding");
+  };
+
   const renderOptionCheck = (isSelected: boolean) => {
     return isSelected ? (
       <View style={styles.checkCircle}>
@@ -239,6 +250,38 @@ export default function SettingsScreen() {
                   </PressableScale>
                 );
               })}
+            </View>
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Introdução</Text>
+            <Text style={styles.sectionText}>
+              Reveja o tour inicial do app no tema visual ativo agora.
+            </Text>
+
+            <View style={styles.optionsList}>
+              <PressableScale
+                accessibilityRole="button"
+                accessibilityLabel="Ver introdução do app"
+                accessibilityHint="Abre novamente o onboarding inicial do Flui."
+                style={styles.optionButton}
+                onPress={openOnboarding}
+              >
+                <View style={styles.optionIconBox}>
+                  <Sparkles
+                    size={21}
+                    color={theme.primary}
+                    strokeWidth={2.1}
+                  />
+                </View>
+
+                <View style={styles.optionInfo}>
+                  <Text style={styles.optionTitle}>Ver introdução</Text>
+                  <Text style={styles.optionDescription}>
+                    Acesse novamente os recursos principais do Flui.
+                  </Text>
+                </View>
+              </PressableScale>
             </View>
           </View>
         </ScrollView>

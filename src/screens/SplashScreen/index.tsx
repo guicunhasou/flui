@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
 import { SvgXml } from 'react-native-svg';
 
+import { fluiStorage } from "../../storage";
 import baseStyles from './styles';
 
 const logoFluiXml = `
@@ -21,7 +22,14 @@ export default function SplashScreen() {
   const logoScale = useRef(new Animated.Value(0.94)).current;
 
   useEffect(() => {
-    const route = '/map' as Href;
+    let isMounted = true;
+
+    const routePromise = fluiStorage
+      .getUserPreferences()
+      .then((preferences) => {
+        return (preferences.hasSeenOnboarding ? "/map" : "/onboarding") as Href;
+      })
+      .catch(() => "/onboarding" as Href);
 
     Animated.parallel([
       Animated.timing(logoOpacity, {
@@ -48,11 +56,16 @@ export default function SplashScreen() {
 
     ]).start(({ finished }) => {
       if (finished) {
-        router.replace(route);
+        void routePromise.then((route) => {
+          if (isMounted) {
+            router.replace(route);
+          }
+        });
       }
     });
 
     return () => {
+      isMounted = false;
       logoOpacity.stopAnimation();
       logoScale.stopAnimation();
     };

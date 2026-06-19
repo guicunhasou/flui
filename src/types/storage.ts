@@ -31,6 +31,7 @@ export type UserPreferences = {
   preferredRouteApp: PreferredRouteApp;
   savedFilters: StationFilters;
   hasSeenSplash: boolean;
+  hasSeenOnboarding: boolean;
   appearanceMode: AppearanceMode;
   fontSize: FontSizePreference;
 };
