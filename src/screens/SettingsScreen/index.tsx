@@ -159,7 +159,12 @@ export default function SettingsScreen() {
 
       <ScreenTransition style={styles.screen}>
         <View style={styles.header}>
-          <PressableScale style={styles.backButton} onPress={() => router.back()}>
+          <PressableScale
+            accessibilityRole="button"
+            accessibilityLabel="Voltar"
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
             <ArrowLeft size={22} color={theme.primary} strokeWidth={2.2} />
           </PressableScale>
 
@@ -194,6 +199,9 @@ export default function SettingsScreen() {
                 return (
                   <PressableScale
                     key={option.value}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Selecionar tema ${option.label.toLowerCase()}`}
+                    accessibilityState={{ selected: isSelected }}
                     style={[
                       styles.optionButton,
                       isSelected ? styles.optionButtonSelected : null,
@@ -229,6 +237,9 @@ export default function SettingsScreen() {
                 return (
                   <PressableScale
                     key={option.value}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Selecionar ${option.label.toLowerCase()}`}
+                    accessibilityState={{ selected: isSelected }}
                     style={[
                       styles.optionButton,
                       isSelected ? styles.optionButtonSelected : null,
@@ -264,6 +275,7 @@ export default function SettingsScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="Ver introdução do app"
                 accessibilityHint="Abre novamente o onboarding inicial do Flui."
+                accessibilityState={{ selected: false }}
                 style={styles.optionButton}
                 onPress={openOnboarding}
               >

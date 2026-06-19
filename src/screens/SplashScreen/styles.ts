@@ -3,7 +3,6 @@ import { StyleSheet } from 'react-native';
 export const colors = {
   background: '#2B0055',
   primary: '#F7F4EC',
-  primarySoft: '#E8DFFF',
 };
 
 const styles = StyleSheet.create({
@@ -25,27 +24,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  footer: {
-    position: 'absolute',
-    left: 28,
-    right: 28,
-    bottom: 54,
-    alignItems: 'center',
-  },
-
-  loadingTrack: {
-    width: 132,
-    height: 5,
-    borderRadius: 999,
-    overflow: 'hidden',
-    backgroundColor: colors.primarySoft,
-  },
-
-  loadingFill: {
-    height: '100%',
-    borderRadius: 999,
-    backgroundColor: colors.primary,
-  },
 });
 
 export default styles;
