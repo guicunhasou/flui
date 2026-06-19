@@ -1186,12 +1186,13 @@ export default function HomeMapScreen() {
                   const Icon = filter.icon;
 
                   return (
-                    <Pressable
+                    <PressableScale
                       key={filter.id}
                       accessibilityRole="button"
                       accessibilityLabel={`${filter.label}${filter.active ? ", filtro ativo" : ""}`}
                       accessibilityHint="Filtra os pontos do mapa em tempo real."
                       accessibilityState={{ selected: filter.active }}
+                      pressedScale={0.96}
                       style={[
                         styles.chip,
                         filter.active ? styles.chipActive : null,
@@ -1212,7 +1213,7 @@ export default function HomeMapScreen() {
                       >
                         {filter.label}
                       </Text>
-                    </Pressable>
+                    </PressableScale>
                   );
                 })}
               </ScrollView>
