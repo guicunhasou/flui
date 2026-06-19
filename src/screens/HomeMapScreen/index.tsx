@@ -26,7 +26,7 @@ import { SvgXml } from "react-native-svg";
 import { router, type Href, useLocalSearchParams } from "expo-router";
 import {
   ChevronRight,
-  Clock,
+  Clock3,
   Coffee,
   Crosshair,
   Navigation,
@@ -143,7 +143,7 @@ const pointLabels = [
   { id: "best", title: "Melhor avaliado", icon: Star },
   { id: "comfort", title: "Mais confortável", icon: Coffee },
   { id: "fast", title: "Carga rápida", icon: Zap },
-  { id: "open", title: "Aberto agora", icon: Clock },
+  { id: "open", title: "Aberto agora", icon: Clock3 },
 ];
 
 type Station = (typeof chargingStations)[number];
@@ -866,7 +866,7 @@ export default function HomeMapScreen() {
       {
         id: "openNow" as const,
         label: "Aberto agora",
-        icon: Clock,
+        icon: Clock3,
         active: filtrosRapidos.openNow,
       },
       {

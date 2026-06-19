@@ -17,6 +17,7 @@ import {
   Coffee,
   Heart,
   MapPin,
+  Plug,
   ShieldCheck,
   Star,
   Toilet,
@@ -560,7 +561,7 @@ export default function PointDetailsScreen() {
 
             <View style={styles.infoCard}>
               <View style={styles.infoIconBox}>
-                <Zap size={22} color={colors.primaryBright} strokeWidth={2.2} />
+                <Plug size={22} color={colors.primaryBright} strokeWidth={2.2} />
               </View>
 
               <View style={styles.infoTextBox}>
@@ -625,7 +626,7 @@ export default function PointDetailsScreen() {
             {station.connectors.map((connector) => (
               <View key={connector.id} style={styles.connectorRow}>
                 <View style={styles.connectorIconBox}>
-                  <Zap
+                  <Plug
                     size={18}
                     color={colors.primaryBright}
                     strokeWidth={2.2}

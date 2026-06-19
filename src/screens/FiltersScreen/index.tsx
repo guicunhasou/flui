@@ -20,6 +20,7 @@ import {
   Plug,
   RotateCcw,
   Search,
+  ShieldCheck,
   Star,
   Toilet,
   Umbrella,
@@ -144,7 +145,7 @@ function getAmenityIcone(value: Amenity) {
     coveredArea: Umbrella,
     market: MapPin,
     wifi: Wifi,
-    security: MapPin,
+    security: ShieldCheck,
   };
 
   return icones[value];
