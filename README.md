@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="src/assets/images/icon.png" width="160"/>
+  <img src="src/assets/images/icon2.png" width="160"/>
 </p>
 
 <h1 align="center">Flui Charge Map Cup</h1>
@@ -172,12 +172,12 @@ Configurações → Ver introdução → Onboarding → Configurações
 ## ⚒️ Tecnologias utilizadas
 
 ![React Native](https://img.shields.io/badge/React%20Native-20232A?style=flat-rounded&logo=react&logoColor=61DAFB)  
-![Expo](https://img.shields.io/badge/Expo-000020?style=flat-rounded&logo=expo&logoColor=white)  
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-rounded&logo=typescript&logoColor=white)  
-![Expo Router](https://img.shields.io/badge/Expo%20Router-000020?style=flat-rounded&logo=expo&logoColor=white)  
-![AsyncStorage](https://img.shields.io/badge/AsyncStorage-FFCA28?style=flat-rounded&logo=react&logoColor=black)  
 ![React Native Maps](https://img.shields.io/badge/React%20Native%20Maps-34A853?style=flat-rounded&logo=googlemaps&logoColor=white)  
 ![React Native SVG](https://img.shields.io/badge/React%20Native%20SVG-61DAFB?style=flat-rounded&logo=react&logoColor=20232A)  
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-rounded&logo=typescript&logoColor=white)  
+![Expo](https://img.shields.io/badge/Expo-000020?style=flat-rounded&logo=expo&logoColor=white)  
+![Expo Router](https://img.shields.io/badge/Expo%20Router-000020?style=flat-rounded&logo=expo&logoColor=white)  
+![AsyncStorage](https://img.shields.io/badge/AsyncStorage-FFCA28?style=flat-rounded&logo=react&logoColor=black)  
 ![Lucide](https://img.shields.io/badge/Lucide%20Icons-111827?style=flat-rounded&logo=lucide&logoColor=white)  
 
 A escolha por React Native com Expo permitiu desenvolver um protótipo mobile funcional, com navegação real, persistência local, componentes reutilizáveis e estrutura preparada para evoluções futuras.
@@ -419,7 +419,7 @@ Equipe responsável pelo desenvolvimento do Flui Charge Map Cup para o Enterpris
   <tr>
     <td align="center">
       <img src="docs/readme/guilherme.webp" width="140px"><br>
-      <strong>Guilherme Victor</strong><br>
+      <strong>Guilherme Cunha</strong><br>
       RM 565727
     </td>
     <td align="center">
@@ -439,24 +439,6 @@ Equipe responsável pelo desenvolvimento do Flui Charge Map Cup para o Enterpris
     </td>
   </tr>
 </table>
-
----
-
-## ⚡ Central da Recarga
-
-<p align="center">
-  <a href="https://github.com/guicunhasou/flui-charge-map">
-    <img src="https://img.shields.io/badge/⚡_Repositório_GitHub-181717?style=flat-rounded" />
-  </a>
-
-  <a href="#">
-    <img src="https://img.shields.io/badge/🎬_Vídeo_Pitch-FF0000?style=flat-rounded" />
-  </a>
-
-  <a href="#">
-    <img src="https://img.shields.io/badge/📄_PDF_da_Entrega-2B0055?style=flat-rounded" />
-  </a>
-</p>
 
 ---
 
