@@ -1370,6 +1370,7 @@ export default function HomeMapScreen() {
                 isSheetCollapsed ? "Puxar pontos para cima" : "Ocultar pontos"
               }
               accessibilityHint="Toque para abrir ou recolher a lista de pontos."
+              accessibilityState={{ expanded: !isSheetCollapsed }}
               hitSlop={{ top: 10, right: 44, bottom: 10, left: 44 }}
               style={styles.sheetHandleArea}
               onPress={() => {

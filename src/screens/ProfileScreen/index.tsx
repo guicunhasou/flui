@@ -246,6 +246,9 @@ export default function ProfileScreen() {
     return (
       <View key={title} style={styles.shortcutItem}>
         <PressableScale
+          accessibilityRole="button"
+          accessibilityLabel={`Abrir ${title.toLowerCase()}`}
+          accessibilityHint={description}
           style={styles.shortcutCard}
           onPress={() => abrirRota(route)}
         >
@@ -272,6 +275,9 @@ export default function ProfileScreen() {
     return (
       <PressableScale
         key={`${variant}-${stationId}-${index}`}
+        accessibilityRole="button"
+        accessibilityLabel={`${stationName}. ${stationAddress}. Nota ${rating}. Potência ${power}.`}
+        accessibilityHint="Abre a ficha detalhada do ponto de recarga."
         style={styles.stationCard}
         onPress={() => openStationDetails(stationId)}
       >
@@ -345,6 +351,9 @@ export default function ProfileScreen() {
     return (
       <PressableScale
         key={`review-${stationId}-${review.id ?? index}`}
+        accessibilityRole="button"
+        accessibilityLabel={`Avaliação de ${stationName}. Nota ${rating} estrelas.`}
+        accessibilityHint="Abre a ficha detalhada do ponto avaliado."
         style={styles.reviewCard}
         onPress={() => openStationDetails(stationId)}
       >
@@ -395,6 +404,8 @@ export default function ProfileScreen() {
       <ScreenTransition style={styles.screen}>
         <View style={styles.header}>
           <PressableScale
+            accessibilityRole="button"
+            accessibilityLabel="Voltar"
             style={styles.backButton}
             onPress={() => router.back()}
           >
@@ -463,6 +474,8 @@ export default function ProfileScreen() {
           <View style={styles.profileActionsRow}>
             <View style={styles.profileActionItem}>
               <PressableScale
+                accessibilityRole="button"
+                accessibilityLabel="Abrir configurações"
                 style={styles.settingsButton}
                 onPress={openSettingsScreen}
               >
@@ -477,6 +490,9 @@ export default function ProfileScreen() {
 
             <View style={styles.profileActionItem}>
               <PressableScale
+                accessibilityRole="button"
+                accessibilityLabel="Sair da conta"
+                accessibilityHint="Exibe um aviso visual, sem encerrar a sessão nesta versão."
                 style={styles.logoutButton}
                 onPress={() => showProfileFeedback("Logout apenas visual")}
               >
@@ -513,6 +529,9 @@ export default function ProfileScreen() {
           <View style={styles.segmentedControl}>
             <View style={styles.segmentItem}>
               <PressableScale
+                accessibilityRole="button"
+                accessibilityLabel="Mostrar favoritos"
+                accessibilityState={{ selected: activeTab === "favorites" }}
                 style={[
                   styles.segmentButton,
                   activeTab === "favorites" ? styles.segmentButtonActive : null,
@@ -540,6 +559,9 @@ export default function ProfileScreen() {
 
             <View style={styles.segmentItem}>
               <PressableScale
+                accessibilityRole="button"
+                accessibilityLabel="Mostrar histórico"
+                accessibilityState={{ selected: activeTab === "history" }}
                 style={[
                   styles.segmentButton,
                   activeTab === "history" ? styles.segmentButtonActive : null,
