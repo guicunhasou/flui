@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   Alert,
+  Image,
   Linking,
   StatusBar,
   Pressable,
@@ -8,7 +9,12 @@ import {
   Text,
   View,
 } from "react-native";
-import { router, type Href, useLocalSearchParams } from "expo-router";
+import {
+  router,
+  type Href,
+  useFocusEffect,
+  useLocalSearchParams,
+} from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   ArrowLeft,
@@ -38,6 +44,8 @@ import { useFluiStorage } from "../../hooks/useFluiStorage";
 import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
 import { getStationImageSource } from "../../assets/stations";
 
+const imagemPerfilUsuario = require("../../assets/user/profile1.webp");
+
 type Station = (typeof chargingStations)[number];
 
 type StatusInfo = {
@@ -46,6 +54,10 @@ type StatusInfo = {
 };
 
 type RouteProvider = "google" | "waze";
+
+type ReviewCardData = NonNullable<Station["reviews"]>[number];
+
+const nomeMotorista = "Caio Duarte";
 
 function normalizeParam(value?: string | string[]) {
   if (Array.isArray(value)) {
@@ -221,10 +233,21 @@ export default function PointDetailsScreen() {
     return chargingStations.find((item) => item.id === selectedStationId);
   }, [selectedStationId]);
 
-  const { favoriteStationIds, isLoadingStorage, toggleFavoriteStation } =
-    useFluiStorage();
+  const {
+    favoriteStationIds,
+    sentReviews,
+    isLoadingStorage,
+    reloadStorage,
+    toggleFavoriteStation,
+  } = useFluiStorage();
 
   const [isLoadingAction, setIsLoadingAction] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      void reloadStorage();
+    }, [reloadStorage]),
+  );
 
   const isFavorite = station ? favoriteStationIds.includes(station.id) : false;
 
@@ -405,7 +428,30 @@ export default function PointDetailsScreen() {
     availableChargers,
   );
   const perfilDoPonto = montarPerfilDoPonto(station);
-  const stationReviews = station.reviews ?? [];
+  const userStationReview = sentReviews.find(
+    (review) => review.stationId === station.id,
+  );
+  const userReviewComment = userStationReview?.comment.trim() ?? "";
+  const userReviewCard: ReviewCardData | null =
+    userStationReview && userReviewComment.length > 0
+      ? {
+          id: `local-${userStationReview.id}`,
+          stationId: userStationReview.stationId,
+          userName: nomeMotorista,
+          rating: userStationReview.rating,
+          quality: userStationReview.quality,
+          cleaning: userStationReview.cleaning,
+          availability: userStationReview.availability,
+          amenities: userStationReview.amenities,
+          comment: userReviewComment,
+          wouldReturn: userStationReview.wouldReturn,
+          recommend: userStationReview.recommend,
+          createdAt: userStationReview.createdAt,
+        }
+      : null;
+  const stationReviews = userReviewCard
+    ? [userReviewCard, ...(station.reviews ?? [])]
+    : (station.reviews ?? []);
   const statusColor =
     station.status === "available"
       ? colors.success
@@ -747,11 +793,20 @@ export default function PointDetailsScreen() {
               <View style={styles.userReviewsList}>
                 {stationReviews.map((review) => (
                   <View key={review.id} style={styles.userReviewCard}>
-                    <View style={styles.avatar}>
-                      <Text style={styles.avatarText}>
-                        {getUserInitials(review.userName)}
-                      </Text>
-                    </View>
+                    {review.id.startsWith("local-") ? (
+                      <Image
+                        source={imagemPerfilUsuario}
+                        style={styles.avatarImage}
+                        accessible={false}
+                        accessibilityIgnoresInvertColors
+                      />
+                    ) : (
+                      <View style={styles.avatar}>
+                        <Text style={styles.avatarText}>
+                          {getUserInitials(review.userName)}
+                        </Text>
+                      </View>
+                    )}
 
                     <View style={styles.userReviewContent}>
                       <Text style={styles.userName}>{review.userName}</Text>

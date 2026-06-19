@@ -664,6 +664,16 @@ export const styles = StyleSheet.create({
     fontWeight: "800",
   },
 
+  avatarImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: "#DDE8E3",
+    backgroundColor: "#EAF1FF",
+  },
+
   userReviewContent: {
     flex: 1,
   },
