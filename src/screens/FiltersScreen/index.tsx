@@ -529,7 +529,7 @@ export default function FiltersScreen() {
               <View style={styles.sectionIconBox}>
                 <MapPin color={colors.primaryDark} size={18} strokeWidth={2.4} />
               </View>
-              <Text style={styles.sectionTitle}>Distância mínima</Text>
+              <Text style={styles.sectionTitle}>Raio de busca</Text>
             </View>
 
             <View style={styles.chipRow}>

@@ -361,6 +361,8 @@ export default function ReviewScreen() {
             </Text>
 
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Voltar para o mapa"
               style={styles.primaryFallbackButton}
               onPress={handleGoToMap}
             >
@@ -370,6 +372,8 @@ export default function ReviewScreen() {
             </Pressable>
 
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Voltar para a tela anterior"
               style={styles.secondaryFallbackButton}
               onPress={() => router.back()}
             >
@@ -478,6 +482,14 @@ export default function ReviewScreen() {
               </View>
 
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={
+                  isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"
+                }
+                accessibilityState={{
+                  selected: isFavorite,
+                  disabled: isFavoriteLoading || isLoadingStorage,
+                }}
                 style={({ pressed }) => [
                   styles.heartButton,
                   pressed ? styles.buttonPressed : null,
@@ -581,6 +593,8 @@ export default function ReviewScreen() {
                 </View>
 
                 <TextInput
+                  accessibilityLabel="Comentário da avaliação"
+                  accessibilityHint="Campo opcional para contar como foi a recarga, o acesso, o tempo de espera ou a estrutura do local."
                   style={styles.commentInput}
                   value={comment}
                   maxLength={maxCommentLength}
@@ -609,6 +623,7 @@ export default function ReviewScreen() {
                   <View style={styles.toggleChoiceRow}>
                     <Pressable
                       accessibilityRole="button"
+                      accessibilityLabel="Voltaria aqui: sim"
                       accessibilityState={{ selected: wouldReturn }}
                       style={[
                         styles.toggleChoiceButton,
@@ -636,6 +651,7 @@ export default function ReviewScreen() {
 
                     <Pressable
                       accessibilityRole="button"
+                      accessibilityLabel="Voltaria aqui: não"
                       accessibilityState={{ selected: !wouldReturn }}
                       style={[
                         styles.toggleChoiceButton,
@@ -675,6 +691,7 @@ export default function ReviewScreen() {
                   <View style={styles.toggleChoiceRow}>
                     <Pressable
                       accessibilityRole="button"
+                      accessibilityLabel="Recomendo este ponto: sim"
                       accessibilityState={{ selected: recommend }}
                       style={[
                         styles.toggleChoiceButton,
@@ -700,6 +717,7 @@ export default function ReviewScreen() {
 
                     <Pressable
                       accessibilityRole="button"
+                      accessibilityLabel="Recomendo este ponto: não"
                       accessibilityState={{ selected: !recommend }}
                       style={[
                         styles.toggleChoiceButton,
@@ -772,6 +790,14 @@ export default function ReviewScreen() {
 
           <SafeAreaView edges={["bottom"]} style={styles.bottomActions}>
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={
+                isEditingReview ? "Editar avaliação" : "Enviar avaliação"
+              }
+              accessibilityState={{
+                disabled:
+                  isSubmitting || isSuccessFeedbackVisible || isLoadingStorage,
+              }}
               style={({ pressed }) => [
                 styles.submitButton,
                 pressed ? styles.primaryButtonPressed : null,
