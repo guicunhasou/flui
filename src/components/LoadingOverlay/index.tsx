@@ -1,9 +1,9 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, Easing, Text, View } from 'react-native';
-import { SvgXml } from 'react-native-svg';
+import React, { useEffect, useRef } from "react";
+import { Animated, Easing, Text, View } from "react-native";
+import { SvgXml } from "react-native-svg";
 
-import { useTelaComPreferencias } from '../../hooks/useTelaComPreferencias';
-import { overlayColors, styles as baseStyles } from './styles';
+import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
+import { styles as baseStyles, overlayColors } from "./styles";
 
 const logoFluiFXml = `
 <svg width="360" height="360" viewBox="-18 -16 744 548" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -18,7 +18,7 @@ type LoadingOverlayProps = {
 
 export default function LoadingOverlay({
   visible,
-  message = 'Carregando...',
+  message = "Carregando...",
 }: LoadingOverlayProps) {
   const pulse = useRef(new Animated.Value(0)).current;
   const { styles, colors } = useTelaComPreferencias(baseStyles, overlayColors);

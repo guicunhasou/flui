@@ -693,6 +693,15 @@ export const styles = StyleSheet.create({
       },
     ],
   },
+
+  toggleChoiceButtonPressed: {
+    opacity: 0.82,
+    transform: [{ scale: 0.97 }],
+  },
+
+  hoverFeedback: {
+    opacity: 0.92,
+  },
 });
 
 export default styles;

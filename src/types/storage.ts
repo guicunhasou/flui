@@ -33,6 +33,8 @@ export type UserPreferences = {
   hasSeenOnboarding: boolean;
   appearanceMode: AppearanceMode;
   fontSize: FontSizePreference;
+  vehicleRangeKm: number;
+  batteryPercent: number;
 };
 
 export type FluiStorageSnapshot = {

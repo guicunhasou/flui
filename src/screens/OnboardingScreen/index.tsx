@@ -1,3 +1,10 @@
+import { router, useLocalSearchParams } from "expo-router";
+import {
+  Heart,
+  MapPinned,
+  ShieldCheck,
+  SlidersHorizontal,
+} from "lucide-react-native";
 import React, { useMemo, useRef, useState } from "react";
 import {
   Image,
@@ -11,13 +18,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router, useLocalSearchParams } from "expo-router";
-import {
-  Heart,
-  MapPinned,
-  ShieldCheck,
-  SlidersHorizontal,
-} from "lucide-react-native";
 
 import { PressableScale, ScreenTransition } from "../../components";
 import { useAppPreferences } from "../../context/PreferencesContext";
@@ -97,7 +97,7 @@ export default function OnboardingScreen() {
         return;
       }
 
-      router.replace("/map");
+      router.replace("/loading");
     }
   };
 
@@ -117,9 +117,7 @@ export default function OnboardingScreen() {
     setActiveStepIndex(nextStepIndex);
   };
 
-  const updateActiveStep = (
-    event: NativeSyntheticEvent<NativeScrollEvent>,
-  ) => {
+  const updateActiveStep = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offsetX = event.nativeEvent.contentOffset.x;
     const nextStepIndex = Math.round(offsetX / cardWidth);
 

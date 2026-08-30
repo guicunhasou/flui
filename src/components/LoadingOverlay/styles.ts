@@ -1,35 +1,35 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet } from "react-native";
 
-import { colors } from '../../theme/colors';
-import { radius } from '../../theme/radius';
-import { shadows } from '../../theme/shadows';
-import { spacing } from '../../theme/spacing';
-import { typography } from '../../theme/typography';
+import { colors } from "../../theme/colors";
+import { radius } from "../../theme/radius";
+import { shadows } from "../../theme/shadows";
+import { spacing } from "../../theme/spacing";
+import { typography } from "../../theme/typography";
 
 export const overlayColors = colors;
 
 export const styles = StyleSheet.create({
   overlay: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     right: 0,
     bottom: 0,
     left: 0,
     zIndex: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(8, 10, 18, 0.26)',
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(8, 10, 18, 0.26)",
   },
 
   card: {
     minWidth: 220,
-    maxWidth: '82%',
+    maxWidth: "82%",
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderRadius: radius.lg,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: spacing.sm,
     backgroundColor: colors.surface,
     borderWidth: 1,
@@ -40,12 +40,12 @@ export const styles = StyleSheet.create({
   loader: {
     width: 42,
     height: 42,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   loaderHalo: {
-    position: 'absolute',
+    position: "absolute",
     width: 42,
     height: 42,
     borderRadius: 21,
@@ -56,8 +56,8 @@ export const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: colors.primarySoft,
     borderWidth: 1,
     borderColor: colors.border,

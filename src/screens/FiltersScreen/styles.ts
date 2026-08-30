@@ -497,4 +497,8 @@ export const styles = StyleSheet.create({
     opacity: 0.86,
     transform: [{ scale: 0.98 }],
   },
+
+  hoverFeedback: {
+    opacity: 0.92,
+  },
 });

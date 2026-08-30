@@ -14,21 +14,27 @@ import {
   StatusBar,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MapView, {
   Marker,
-  PROVIDER_DEFAULT,
+  PROVIDER_GOOGLE,
   type Region,
 } from "react-native-maps";
-import { SvgXml } from "react-native-svg";
+import Svg, { Circle, G, Path, SvgXml } from "react-native-svg";
 import { router, type Href, useLocalSearchParams } from "expo-router";
 import {
+  BatteryFull,
+  BatteryLow,
+  BatteryMedium,
+  BatteryWarning,
   ChevronRight,
   Clock3,
   Coffee,
   Crosshair,
+  Maximize2,
   Navigation,
   Plug,
   Search,
@@ -41,6 +47,8 @@ import {
 import { chargingStations } from "../../data";
 import { defaultFilters } from "../../data/filterOptions";
 import { StationFilters } from "../../types";
+import { filtrarEstacoes } from "../../utils/filtrarEstacoes";
+import { avaliarAlcance } from "../../utils/autonomia";
 import {
   LoadingOverlay,
   PressableScale,
@@ -48,9 +56,11 @@ import {
 } from "../../components";
 import baseStyles, { colors as baseColors } from "./styles";
 import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
+import { useAppPreferences } from "../../context/PreferencesContext";
 
 const FEEDBACK_DURATION = 1500;
 const SHEET_VISIBLE_HANDLE = 30;
+const SHEET_OCULTO_MARGEM_EXTRA = 40;
 const QUICK_FILTERS_CONTENT_HEIGHT = 56;
 const HANDLE_HINT_DISTANCE = 4;
 
@@ -66,6 +76,102 @@ const logoFluiXml = `
 `;
 
 const imagemPerfilUsuario = require("../../assets/user/profile1.webp");
+
+const MARKER_ICON_CANVAS_SIZE = 44;
+const MARKER_ICON_BORDER_COLOR = "#FCFEFA";
+const USER_LOCATION_ICON_CANVAS_SIZE = 54;
+const USER_LOCATION_ICON_KEY = "user-location";
+
+const plugIconPaths = [
+  "M12 22v-5",
+  "M15 8V2",
+  "M17 8a1 1 0 0 1 1 1v4a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1z",
+  "M9 8V2",
+];
+
+type GeradorDeIconeDeMarcadorProps = {
+  markerKey: string;
+  tamanhoCanvas: number;
+  onPronto: (markerKey: string, uri: string) => void;
+  children: React.ReactNode;
+};
+
+const GeradorDeIconeDeMarcador = ({
+  markerKey,
+  tamanhoCanvas,
+  onPronto,
+  children,
+}: GeradorDeIconeDeMarcadorProps) => {
+  const svgRef = useRef<Svg | null>(null);
+
+  const capturarIcone = useCallback(() => {
+    requestAnimationFrame(() => {
+      svgRef.current?.toDataURL((base64) => {
+        onPronto(markerKey, `data:image/png;base64,${base64}`);
+      });
+    });
+  }, [markerKey, onPronto]);
+
+  return (
+    <View
+      pointerEvents="none"
+      style={{ position: "absolute", top: -9999, left: -9999 }}
+    >
+      <Svg
+        ref={svgRef}
+        width={tamanhoCanvas}
+        height={tamanhoCanvas}
+        viewBox={`0 0 ${tamanhoCanvas} ${tamanhoCanvas}`}
+        onLayout={capturarIcone}
+      >
+        {children}
+      </Svg>
+    </View>
+  );
+};
+
+const ConteudoIconeEstacao = ({ cor }: { cor: string }) => (
+  <>
+    <Circle
+      cx={MARKER_ICON_CANVAS_SIZE / 2}
+      cy={MARKER_ICON_CANVAS_SIZE / 2}
+      r={MARKER_ICON_CANVAS_SIZE / 2 - 3}
+      fill={cor}
+      stroke={MARKER_ICON_BORDER_COLOR}
+      strokeWidth={3}
+    />
+    <G
+      transform="translate(12, 12) scale(0.8333)"
+      fill="none"
+      stroke={MARKER_ICON_BORDER_COLOR}
+      strokeWidth={2.4}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {plugIconPaths.map((d) => (
+        <Path key={d} d={d} />
+      ))}
+    </G>
+  </>
+);
+
+const ConteudoIconeLocalizacaoUsuario = ({ cor }: { cor: string }) => {
+  const centro = USER_LOCATION_ICON_CANVAS_SIZE / 2;
+
+  return (
+    <>
+      <Circle cx={centro} cy={centro} r={centro} fill="rgba(31, 169, 113, 0.18)" />
+      <Circle
+        cx={centro}
+        cy={centro}
+        r={12}
+        fill={cor}
+        stroke={MARKER_ICON_BORDER_COLOR}
+        strokeWidth={5}
+      />
+    </>
+  );
+};
 
 const criarLogoFluiXml = (corPrincipal: string, corPonto: string) => {
   return logoFluiXml
@@ -143,7 +249,7 @@ const pointLabels = [
   { id: "best", title: "Melhor avaliado", icon: Star },
   { id: "comfort", title: "Mais confortável", icon: Coffee },
   { id: "fast", title: "Carga rápida", icon: Zap },
-  { id: "open", title: "Aberto agora", icon: Clock3 },
+  { id: "open", title: "Recomendado", icon: Clock3 },
 ];
 
 type Station = (typeof chargingStations)[number];
@@ -154,6 +260,9 @@ const isRecord = (value: unknown): value is Record<string, unknown> => {
 type MapColorTokens = typeof baseColors & {
   dangerBorder?: string;
   success?: string;
+  successSoft?: string;
+  dangerSoft?: string;
+  warningLight?: string;
 };
 
 type UserLocation = {
@@ -262,6 +371,11 @@ const parseRouteFilters = (param: unknown): StationFilters => {
         "onlyOpenNow",
         defaultFilters.onlyOpenNow,
       ),
+      onlyOpen24h: readBoolean(
+        parsedRecord,
+        "onlyOpen24h",
+        defaultFilters.onlyOpen24h,
+      ),
     };
   } catch {
     return defaultFilters;
@@ -276,7 +390,8 @@ const hasActiveFilters = (filters: StationFilters) => {
     filters.power.minKw > 0 ||
     filters.distance.maxKm !== defaultFilters.distance.maxKm ||
     filters.rating.minRating > 0 ||
-    filters.onlyOpenNow
+    filters.onlyOpenNow ||
+    filters.onlyOpen24h
   );
 };
 
@@ -300,6 +415,7 @@ const combinarFiltrosRapidos = (
     distance: filters.distance,
     rating: filters.rating,
     onlyOpenNow: filters.onlyOpenNow || filtrosRapidos.openNow,
+    onlyOpen24h: filters.onlyOpen24h,
   };
 };
 
@@ -401,22 +517,6 @@ const getStationDistanceNumber = (station: Station, index: number) => {
   return readNumber(station, "distanceKm", 0.45 + index * 0.8);
 };
 
-const getStationDistance = (station: Station, index: number) => {
-  const customLabel = readString(station, "distanceLabel");
-
-  if (customLabel) {
-    return customLabel;
-  }
-
-  const distance = getStationDistanceNumber(station, index);
-
-  if (distance < 1) {
-    return `2 min · ${Math.round(distance * 1000)} m`;
-  }
-
-  return `${distance.toFixed(1).replace(".", ",")} km`;
-};
-
 const criarRegiaoDoMapa = (
   station: Station | undefined,
   aproxima: boolean,
@@ -433,12 +533,13 @@ const criarRegiaoComFocoVisivel = (
   latitude: number,
   longitude: number,
   aproxima = true,
+  fracaoDeDeslocamento = 0.08,
 ): Region => {
   const latitudeDelta = aproxima ? 0.014 : 0.026;
   const longitudeDelta = aproxima ? 0.014 : 0.026;
 
   return {
-    latitude: latitude - latitudeDelta * 0.08,
+    latitude: latitude - latitudeDelta * fracaoDeDeslocamento,
     longitude,
     latitudeDelta,
     longitudeDelta,
@@ -466,6 +567,86 @@ const getStationMarkerColor = (station: Station, colorSet: MapColorTokens) => {
 
   return colorSet.green ?? colorSet.success ?? colorSet.primary;
 };
+
+const NIVEIS_DE_BATERIA_VEICULO = [20, 40, 60, 80, 100];
+
+function obterIconeDeBateriaAtual(percentual: number) {
+  if (percentual >= 60) {
+    return BatteryFull;
+  }
+
+  if (percentual >= 25) {
+    return BatteryMedium;
+  }
+
+  return BatteryLow;
+}
+
+function obterCorDeBateriaAtual(percentual: number, colorSet: MapColorTokens) {
+  if (percentual >= 60) {
+    return colorSet.green ?? colorSet.success ?? colorSet.primary;
+  }
+
+  if (percentual >= 25) {
+    return colorSet.yellowDark;
+  }
+
+  return colorSet.dangerBorder ?? colorSet.yellowDark;
+}
+
+function obterCorDoAlcance(
+  nivel: ReturnType<typeof avaliarAlcance>["nivel"],
+  colorSet: MapColorTokens,
+) {
+  if (nivel === "tranquilo") {
+    return colorSet.green ?? colorSet.success ?? colorSet.primary;
+  }
+
+  if (nivel === "apertado") {
+    return colorSet.yellowDark;
+  }
+
+  return colorSet.dangerBorder ?? colorSet.yellowDark;
+}
+
+function obterFundoDoAlcance(
+  nivel: ReturnType<typeof avaliarAlcance>["nivel"],
+  colorSet: MapColorTokens,
+) {
+  if (nivel === "tranquilo") {
+    return colorSet.successSoft ?? colorSet.primarySoft;
+  }
+
+  if (nivel === "apertado") {
+    return colorSet.warningLight ?? colorSet.yellow;
+  }
+
+  return colorSet.dangerSoft ?? colorSet.warningLight ?? colorSet.yellow;
+}
+
+function obterRotuloDoAlcance(nivel: ReturnType<typeof avaliarAlcance>["nivel"]) {
+  if (nivel === "tranquilo") {
+    return "Confortável";
+  }
+
+  if (nivel === "apertado") {
+    return "Limitada";
+  }
+
+  return "Insuficiente";
+}
+
+function obterIconeDoAlcance(nivel: ReturnType<typeof avaliarAlcance>["nivel"]) {
+  if (nivel === "foraDeAlcance") {
+    return BatteryWarning;
+  }
+
+  if (nivel === "apertado") {
+    return BatteryLow;
+  }
+
+  return BatteryFull;
+}
 
 const getStationConnectors = (station: Station) => {
   return [
@@ -501,48 +682,6 @@ const getStationAmenities = (station: Station) => {
     .filter(Boolean);
 };
 
-const getComfortMeta = (station: Station) => {
-  const amenities = getStationAmenities(station);
-  const labels: Record<string, string> = {
-    restaurant: "Restaurante",
-    coffee: "Café",
-    restroom: "Banheiro",
-    parking: "Estacionamento",
-    coveredarea: "Área coberta",
-    market: "Mercado",
-    wifi: "Wi-Fi",
-    security: "Segurança",
-  };
-
-  const firstAmenity = amenities[0];
-
-  if (!firstAmenity) {
-    return "Conforto";
-  }
-
-  return labels[firstAmenity] ?? firstAmenity;
-};
-
-const criarMetaDoCard = (cardId: string, station: Station, index: number) => {
-  if (cardId === "best") {
-    return getStationRating(station);
-  }
-
-  if (cardId === "comfort") {
-    return getComfortMeta(station);
-  }
-
-  if (cardId === "fast") {
-    return getStationPower(station);
-  }
-
-  if (cardId === "open") {
-    return getStationStatus(station);
-  }
-
-  return getStationDistance(station, index);
-};
-
 const stationIsOpenNow = (station: Station) => {
   const status = getRawStationStatus(station);
 
@@ -561,73 +700,6 @@ const stationHasAvailableCharger = (station: Station) => {
   });
 };
 
-const stationMatchesSearch = (station: Station, query: string) => {
-  const normalizedQuery = query.trim().toLowerCase();
-
-  if (!normalizedQuery) {
-    return true;
-  }
-
-  const searchableContent = [
-    getStationName(station),
-    getStationAddress(station),
-    readString(station, "neighborhood"),
-    readString(station, "city"),
-    getStationConnectors(station).join(" "),
-  ]
-    .join(" ")
-    .toLowerCase();
-
-  return searchableContent.includes(normalizedQuery);
-};
-
-const stationMatchesFilters = (
-  station: Station,
-  index: number,
-  filters: StationFilters,
-) => {
-  const connectors = getStationConnectors(station);
-  const amenities = getStationAmenities(station);
-  const stationStatus = getRawStationStatus(station);
-  const stationPower = getStationPowerNumber(station);
-  const stationRating = getStationRatingNumber(station);
-  const stationDistance = getStationDistanceNumber(station, index);
-
-  const matchesConnector =
-    filters.connectorTypes.length === 0 ||
-    filters.connectorTypes.some((connectorType) =>
-      connectors.some((connector) =>
-        connector.includes(connectorType.toLowerCase()),
-      ),
-    );
-
-  const matchesStatus =
-    filters.statuses.length === 0 ||
-    filters.statuses.some((status) => stationStatus === status);
-
-  const matchesAmenities =
-    filters.amenities.length === 0 ||
-    filters.amenities.every((amenity) =>
-      amenities.includes(amenity.toLowerCase()),
-    );
-
-  const matchesPower = stationPower >= filters.power.minKw;
-  const matchesDistance = stationDistance <= filters.distance.maxKm;
-  const matchesRating = stationRating >= filters.rating.minRating;
-  const matchesOpenNow =
-    !filters.onlyOpenNow ||
-    (stationIsOpenNow(station) && stationHasAvailableCharger(station));
-
-  return (
-    matchesConnector &&
-    matchesStatus &&
-    matchesAmenities &&
-    matchesPower &&
-    matchesDistance &&
-    matchesRating &&
-    matchesOpenNow
-  );
-};
 
 const calcularPontuacaoDosFiltrosRapidos = (
   station: Station,
@@ -692,10 +764,30 @@ const ordenarPorFiltrosRapidos = (
   });
 };
 
+const TABLET_BREAKPOINT = 700;
+const MAX_CONTENT_WIDTH = 560;
+
 export default function HomeMapScreen() {
   const { styles, colors, isDarkMode } = useTelaComPreferencias(
     baseStyles,
     baseColors,
+  );
+  const { userPreferences, updateBatteryPercent } = useAppPreferences();
+  const batteryPercent = userPreferences.batteryPercent;
+  const vehicleRangeKm = userPreferences.vehicleRangeKm;
+  const [seletorBateriaAberto, setSeletorBateriaAberto] = useState(false);
+  const { width: larguraJanela, height: alturaJanela } =
+    useWindowDimensions();
+  const isTelaLarga = larguraJanela >= TABLET_BREAKPOINT;
+  const margemHorizontalConteudo = isTelaLarga
+    ? Math.max(16, (larguraJanela - MAX_CONTENT_WIDTH) / 2)
+    : 20;
+  const margemHorizontalSheet = isTelaLarga
+    ? Math.max(16, (larguraJanela - MAX_CONTENT_WIDTH) / 2)
+    : 16;
+  const alturaMaximaListaPontos = Math.max(
+    180,
+    Math.min(320, alturaJanela * 0.32),
   );
   const routeParams = useLocalSearchParams();
   const filtersParam = routeParams.filters;
@@ -710,8 +802,15 @@ export default function HomeMapScreen() {
   const [localizacaoUsuario, setLocalizacaoUsuario] =
     useState<UserLocation | null>(LOCALIZACAO_DEMO_FIAP);
   const [isLocatingUser, setIsLocatingUser] = useState(false);
+  const [rastrearAlteracoesDosMarcadores, setRastrearAlteracoesDosMarcadores] =
+    useState(true);
+  const [iconesDeMarcadorPorCor, setIconesDeMarcadorPorCor] = useState<
+    Record<string, string>
+  >({});
   const [isSheetCollapsed, setIsSheetCollapsed] = useState(false);
+  const [painelTotalmenteOculto, setPainelTotalmenteOculto] = useState(false);
   const [sheetHeight, setSheetHeight] = useState(0);
+  const [mapAreaHeight, setMapAreaHeight] = useState(0);
   const [atalhosRapidosAbertos, setAtalhosRapidosAbertos] = useState(false);
   const [hasInteractedWithQuickFilters, setHasInteractedWithQuickFilters] =
     useState(false);
@@ -752,12 +851,13 @@ export default function HomeMapScreen() {
   });
 
   const sheetCollapsedTranslateY = useMemo(() => {
-    return Math.max(sheetHeight - SHEET_VISIBLE_HANDLE, 280);
+    return Math.max(sheetHeight - SHEET_VISIBLE_HANDLE, 0);
   }, [sheetHeight]);
 
   useEffect(() => {
     setSearchTerm(routeSearchTerm);
   }, [routeSearchTerm]);
+
 
   const animarAtalhosRapidos = useCallback(
     (shouldOpen: boolean) => {
@@ -891,37 +991,109 @@ export default function HomeMapScreen() {
   }, [filtrosRapidos]);
 
   const visibleStations = useMemo(() => {
-    const estacoesFiltradas = chargingStations
-      .map((station, index) => ({ station, index }))
-      .filter((item) => stationMatchesSearch(item.station, searchTerm))
-      .filter((item) =>
-        stationMatchesFilters(item.station, item.index, filtrosDoMapa),
-      );
+    const filtradas = filtrarEstacoes({
+      estacoes: chargingStations,
+      filtros: filtrosDoMapa,
+      termoBusca: searchTerm,
+    });
 
-    return ordenarPorFiltrosRapidos(estacoesFiltradas, filtrosRapidos);
+    return ordenarPorFiltrosRapidos(
+      filtradas.map((station) => ({
+        station,
+        index: chargingStations.indexOf(station),
+      })),
+      filtrosRapidos,
+    );
   }, [filtrosDoMapa, filtrosRapidos, searchTerm]);
 
+  useEffect(() => {
+    setRastrearAlteracoesDosMarcadores(true);
+
+    const timeoutId = setTimeout(() => {
+      setRastrearAlteracoesDosMarcadores(false);
+    }, 700);
+
+    return () => clearTimeout(timeoutId);
+  }, [visibleStations.length]);
+
+  const coresDosMarcadores = useMemo(() => {
+    const cores = new Set<string>();
+
+    visibleStations.forEach((item) => {
+      cores.add(getStationMarkerColor(item.station, colors));
+    });
+
+    return Array.from(cores);
+  }, [colors, visibleStations]);
+
+  const iconeLocalizacaoUsuarioUri =
+    iconesDeMarcadorPorCor[USER_LOCATION_ICON_KEY];
+
+  const registrarIconeDeMarcador = useCallback((cor: string, uri: string) => {
+    setIconesDeMarcadorPorCor((atual) => {
+      if (atual[cor] === uri) {
+        return atual;
+      }
+
+      return { ...atual, [cor]: uri };
+    });
+  }, []);
+
+  const estacoesRecomendadas = useMemo(() => {
+    return visibleStations.filter((item) => {
+      return (
+        getRawStationStatus(item.station) === "available" &&
+        stationHasAvailableCharger(item.station)
+      );
+    });
+  }, [visibleStations]);
+
   const points = useMemo(() => {
-    return visibleStations.map((item, cardIndex) => {
+    return estacoesRecomendadas.map((item, cardIndex) => {
       const label = pointLabels[cardIndex];
       const cardId = label?.id ?? `station-${cardIndex}`;
 
       return {
         id: cardId,
         stationId: getStationId(item.station, item.index),
-        title: label?.title ?? getStationName(item.station),
+        criterioLabel: label?.title ?? "Recomendado",
+        criterioIcon: label?.icon ?? Zap,
+        nomeEstacao: getStationName(item.station),
         address: getStationAddress(item.station),
         status: getStationStatus(item.station),
         statusColor: getStationMarkerColor(item.station, colors),
-        meta: criarMetaDoCard(cardId, item.station, item.index),
+        rating: getStationRating(item.station),
         power: getStationPower(item.station),
-        icon: label?.icon ?? Zap,
+        alcance: avaliarAlcance(
+          getStationDistanceNumber(item.station, item.index),
+          vehicleRangeKm,
+          batteryPercent,
+        ),
       };
     });
-  }, [colors, visibleStations]);
+  }, [batteryPercent, colors, estacoesRecomendadas, vehicleRangeKm]);
 
-  const hasNoResults = visibleStations.length === 0;
+  const hasNoResults = estacoesRecomendadas.length === 0;
   const hasSearchTerm = searchTerm.trim().length > 0;
+
+  const fracaoDeDeslocamentoVertical = useMemo(() => {
+    if (mapAreaHeight <= 0) {
+      return 0.08;
+    }
+
+    if (painelTotalmenteOculto) {
+      return 0;
+    }
+
+    const alturaObstruida = isSheetCollapsed
+      ? SHEET_VISIBLE_HANDLE
+      : sheetHeight;
+
+    return limitarValor(alturaObstruida / 2 / mapAreaHeight, 0, 0.4);
+  }, [isSheetCollapsed, mapAreaHeight, painelTotalmenteOculto, sheetHeight]);
+
+  const fracaoDeDeslocamentoVerticalRef = useRef(fracaoDeDeslocamentoVertical);
+  fracaoDeDeslocamentoVerticalRef.current = fracaoDeDeslocamentoVertical;
 
   const mapRegion = useMemo(() => {
     const firstVisibleStation =
@@ -935,16 +1107,65 @@ export default function HomeMapScreen() {
       return criarRegiaoComFocoVisivel(
         localizacaoUsuario.latitude,
         localizacaoUsuario.longitude,
+        true,
+        fracaoDeDeslocamentoVerticalRef.current,
       );
     }
 
     return criarRegiaoDoMapa(firstVisibleStation, false);
+    // fracaoDeDeslocamentoVertical é lido via ref de propósito: ela só
+    // reflete o layout (sheet/mapArea) se estabilizando, e recalcular a
+    // região a cada ajuste fazia o mapa reanimar várias vezes seguidas
+    // logo na abertura, deixando o carregamento visivelmente mais lento.
   }, [hasFiltersApplied, hasSearchTerm, localizacaoUsuario, visibleStations]);
+
+  const isPrimeiraRegiaoRef = useRef(true);
 
   useEffect(() => {
     currentMapRegionRef.current = mapRegion;
+
+    if (isPrimeiraRegiaoRef.current) {
+      isPrimeiraRegiaoRef.current = false;
+      return;
+    }
+
     mapRef.current?.animateToRegion(mapRegion, 450);
   }, [mapRegion]);
+
+  const ajusteInicialDeCentralizacaoRef = useRef(false);
+
+  useEffect(() => {
+    if (ajusteInicialDeCentralizacaoRef.current) {
+      return;
+    }
+
+    if (mapAreaHeight <= 0 || sheetHeight <= 0) {
+      return;
+    }
+
+    if (hasFiltersApplied || hasSearchTerm || !localizacaoUsuario) {
+      return;
+    }
+
+    ajusteInicialDeCentralizacaoRef.current = true;
+
+    const regiaoCentralizada = criarRegiaoComFocoVisivel(
+      localizacaoUsuario.latitude,
+      localizacaoUsuario.longitude,
+      true,
+      fracaoDeDeslocamentoVertical,
+    );
+
+    currentMapRegionRef.current = regiaoCentralizada;
+    mapRef.current?.animateToRegion(regiaoCentralizada, 400);
+  }, [
+    fracaoDeDeslocamentoVertical,
+    hasFiltersApplied,
+    hasSearchTerm,
+    localizacaoUsuario,
+    mapAreaHeight,
+    sheetHeight,
+  ]);
 
   const alterarZoomMapa = (direction: "aproximar" | "afastar") => {
     const currentRegion = currentMapRegionRef.current ?? mapRegion;
@@ -969,33 +1190,65 @@ export default function HomeMapScreen() {
   };
 
   const sheetTitle = hasNoResults
-    ? "Nenhum ponto encontrado"
+    ? "Nenhum ponto disponível"
     : "Melhores escolhas";
 
-  const alternarModalDePontos = useCallback(
-    (shouldCollapse: boolean) => {
-      const nextValue = shouldCollapse ? sheetCollapsedTranslateY : 0;
+  const IconeBateriaAtual = obterIconeDeBateriaAtual(batteryPercent);
+  const corBateriaAtual = obterCorDeBateriaAtual(batteryPercent, colors);
+  const autonomiaAtualKm = Math.round((vehicleRangeKm * batteryPercent) / 100);
 
-      setIsSheetCollapsed(shouldCollapse);
-      sheetPositionRef.current = nextValue;
+  const selecionarNivelDeBateria = (percentual: number) => {
+    setSeletorBateriaAberto(false);
+    void updateBatteryPercent(percentual);
+  };
+
+  const moverPainelDePontosPara = useCallback(
+    (destino: number) => {
+      sheetPositionRef.current = destino;
 
       Animated.spring(sheetTranslateY, {
-        toValue: nextValue,
+        toValue: destino,
         useNativeDriver: true,
         friction: 8,
         tension: 58,
       }).start();
     },
-    [sheetCollapsedTranslateY, sheetTranslateY],
+    [sheetTranslateY],
   );
 
+  const alternarModalDePontos = useCallback(
+    (shouldCollapse: boolean) => {
+      setPainelTotalmenteOculto(false);
+      setIsSheetCollapsed(shouldCollapse);
+      moverPainelDePontosPara(shouldCollapse ? sheetCollapsedTranslateY : 0);
+    },
+    [moverPainelDePontosPara, sheetCollapsedTranslateY],
+  );
+
+  const ocultarPainelDePontosCompletamente = useCallback(() => {
+    setPainelTotalmenteOculto(true);
+    moverPainelDePontosPara(sheetHeight + SHEET_OCULTO_MARGEM_EXTRA);
+  }, [moverPainelDePontosPara, sheetHeight]);
+
   useEffect(() => {
-    if (isSheetCollapsed && sheetHeight > 0) {
+    if (sheetHeight <= 0) {
+      return;
+    }
+
+    if (painelTotalmenteOculto) {
+      const destinoOculto = sheetHeight + SHEET_OCULTO_MARGEM_EXTRA;
+      sheetTranslateY.setValue(destinoOculto);
+      sheetPositionRef.current = destinoOculto;
+      return;
+    }
+
+    if (isSheetCollapsed) {
       sheetTranslateY.setValue(sheetCollapsedTranslateY);
       sheetPositionRef.current = sheetCollapsedTranslateY;
     }
   }, [
     isSheetCollapsed,
+    painelTotalmenteOculto,
     sheetCollapsedTranslateY,
     sheetHeight,
     sheetTranslateY,
@@ -1047,7 +1300,7 @@ export default function HomeMapScreen() {
 
   const renderizarPuxadorDeAtalhos = () => {
     return (
-      <Pressable
+      <PressableScale
         accessibilityRole="button"
         accessibilityLabel={
           atalhosRapidosAbertos
@@ -1057,6 +1310,7 @@ export default function HomeMapScreen() {
         accessibilityHint="Toque para abrir ou recolher os filtros rápidos do mapa."
         accessibilityState={{ expanded: atalhosRapidosAbertos }}
         hitSlop={{ top: 8, right: 32, bottom: 8, left: 32 }}
+        pressedScale={0.9}
         style={styles.quickFiltersHandleArea}
         onPress={alternarAtalhosRapidos}
       >
@@ -1067,7 +1321,7 @@ export default function HomeMapScreen() {
             {renderizarChevronDeControle(atalhosRapidosAbertos)}
           </View>
         </Animated.View>
-      </Pressable>
+      </PressableScale>
     );
   };
 
@@ -1099,11 +1353,20 @@ export default function HomeMapScreen() {
     setLocalizacaoUsuario(nextLocation);
 
     mapRef.current?.animateToRegion(
-      criarRegiaoComFocoVisivel(nextLocation.latitude, nextLocation.longitude),
+      criarRegiaoComFocoVisivel(
+        nextLocation.latitude,
+        nextLocation.longitude,
+        true,
+        fracaoDeDeslocamentoVertical,
+      ),
       500,
     );
 
     showLocationFeedback("Localização centralizada na FIAP");
+
+    if (isSheetCollapsed || painelTotalmenteOculto) {
+      alternarModalDePontos(false);
+    }
 
     setTimeout(() => {
       setIsLocatingUser(false);
@@ -1115,9 +1378,35 @@ export default function HomeMapScreen() {
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
 
       <ScreenTransition style={styles.screen}>
-        <View style={styles.topArea}>
+        <View
+          style={[
+            styles.topArea,
+            { paddingHorizontal: margemHorizontalConteudo },
+          ]}
+        >
           <View style={styles.header}>
             <SvgXml xml={logoFluiDoTema} width={76} height={36} />
+
+            <PressableScale
+              accessibilityRole="button"
+              accessibilityLabel={`Bateria do veículo: ${batteryPercent} por cento, cerca de ${autonomiaAtualKm} quilômetros de autonomia`}
+              accessibilityHint="Toque para ajustar o nível de bateria e ver o alcance nos pontos."
+              style={[
+                styles.batteryPill,
+                { borderColor: corBateriaAtual + "55" },
+              ]}
+              onPress={() => setSeletorBateriaAberto(true)}
+            >
+              <View
+                style={[
+                  styles.batteryPillIconWrap,
+                  { backgroundColor: corBateriaAtual + "1F" },
+                ]}
+              >
+                <IconeBateriaAtual size={14} color={corBateriaAtual} strokeWidth={2.6} />
+              </View>
+              <Text style={styles.batteryPillText}>{batteryPercent}%</Text>
+            </PressableScale>
 
             <PressableScale
               accessibilityRole="button"
@@ -1223,11 +1512,39 @@ export default function HomeMapScreen() {
           </View>
         </View>
 
-        <View style={styles.mapArea}>
+        <View
+          style={styles.mapArea}
+          onLayout={(event) => {
+            setMapAreaHeight(event.nativeEvent.layout.height);
+          }}
+        >
+          {coresDosMarcadores
+            .filter((cor) => !iconesDeMarcadorPorCor[cor])
+            .map((cor) => (
+              <GeradorDeIconeDeMarcador
+                key={cor}
+                markerKey={cor}
+                tamanhoCanvas={MARKER_ICON_CANVAS_SIZE}
+                onPronto={registrarIconeDeMarcador}
+              >
+                <ConteudoIconeEstacao cor={cor} />
+              </GeradorDeIconeDeMarcador>
+            ))}
+
+          {localizacaoUsuario && !iconesDeMarcadorPorCor[USER_LOCATION_ICON_KEY] ? (
+            <GeradorDeIconeDeMarcador
+              markerKey={USER_LOCATION_ICON_KEY}
+              tamanhoCanvas={USER_LOCATION_ICON_CANVAS_SIZE}
+              onPronto={registrarIconeDeMarcador}
+            >
+              <ConteudoIconeLocalizacaoUsuario cor={colors.primary} />
+            </GeradorDeIconeDeMarcador>
+          ) : null}
+
           <MapView
             ref={mapRef}
             style={styles.realMap}
-            provider={PROVIDER_DEFAULT}
+            provider={PROVIDER_GOOGLE}
             initialRegion={mapRegion}
             showsUserLocation={false}
             showsMyLocationButton={false}
@@ -1249,11 +1566,23 @@ export default function HomeMapScreen() {
                 title="Você na FIAP"
                 description="Localização simulada para demonstração."
                 anchor={{ x: 0.5, y: 0.5 }}
+                icon={
+                  iconeLocalizacaoUsuarioUri
+                    ? { uri: iconeLocalizacaoUsuarioUri }
+                    : undefined
+                }
+                tracksViewChanges={
+                  iconeLocalizacaoUsuarioUri
+                    ? false
+                    : rastrearAlteracoesDosMarcadores
+                }
               >
-                <View style={styles.userLocationMarker}>
-                  <View style={styles.userLocationPulse} />
-                  <View style={styles.userLocationDot} />
-                </View>
+                {iconeLocalizacaoUsuarioUri ? null : (
+                  <View collapsable={false} style={styles.userLocationMarker}>
+                    <View style={styles.userLocationPulse} />
+                    <View style={styles.userLocationDot} />
+                  </View>
+                )}
               </Marker>
             ) : null}
 
@@ -1261,6 +1590,7 @@ export default function HomeMapScreen() {
               const stationId = getStationId(item.station, item.index);
               const markerColor = getStationMarkerColor(item.station, colors);
               const markerContentColor = "#FCFEFA";
+              const markerIconUri = iconesDeMarcadorPorCor[markerColor];
 
               return (
                 <Marker
@@ -1272,40 +1602,34 @@ export default function HomeMapScreen() {
                   title={getStationName(item.station)}
                   description={`${getStationStatus(item.station)} • ${getStationPower(item.station)}`}
                   onPress={() => openStationDetails(stationId)}
-                  anchor={{ x: 0.5, y: 1 }}
-                  tracksViewChanges={false}
+                  anchor={{ x: 0.5, y: 0.5 }}
+                  accessible
+                  accessibilityRole="button"
+                  accessibilityLabel={`Abrir ficha de ${getStationNameById(stationId)}`}
+                  accessibilityHint="Mostra detalhes, disponibilidade e comodidades do ponto."
+                  icon={markerIconUri ? { uri: markerIconUri } : undefined}
+                  tracksViewChanges={
+                    markerIconUri ? false : rastrearAlteracoesDosMarcadores
+                  }
                 >
-                  <View
-                    accessible
-                    accessibilityRole="button"
-                    accessibilityLabel={`Abrir ficha de ${getStationNameById(stationId)}`}
-                    accessibilityHint="Mostra detalhes, disponibilidade e comodidades do ponto."
-                    style={styles.realMapMarker}
-                  >
+                  {markerIconUri ? null : (
                     <View
+                      collapsable={false}
                       style={[
-                        styles.realMapMarkerTail,
-                        { borderTopColor: markerColor },
-                      ]}
-                    />
-
-                    <View
-                      style={[
-                        styles.realMapMarkerBody,
+                        styles.realMapMarker,
                         {
                           backgroundColor: markerColor,
                           borderColor: markerContentColor,
                         },
                       ]}
                     >
-                      <Zap
+                      <Plug
                         size={19}
                         color={markerContentColor}
-                        fill={markerContentColor}
-                        strokeWidth={2.2}
+                        strokeWidth={2.4}
                       />
                     </View>
-                  </View>
+                  )}
                 </Marker>
               );
             })}
@@ -1385,7 +1709,11 @@ export default function HomeMapScreen() {
           <Animated.View
             style={[
               styles.bottomSheet,
-              { transform: [{ translateY: sheetTranslateY }] },
+              {
+                left: margemHorizontalSheet,
+                right: margemHorizontalSheet,
+                transform: [{ translateY: sheetTranslateY }],
+              },
             ]}
             onLayout={(event) => {
               setSheetHeight(event.nativeEvent.layout.height);
@@ -1393,19 +1721,14 @@ export default function HomeMapScreen() {
           >
             <PressableScale
               accessibilityRole="button"
-              accessibilityLabel={
-                isSheetCollapsed
-                  ? "Mostrar lista de pontos"
-                  : "Recolher lista de pontos"
-              }
-              accessibilityHint="Toque para alternar a lista de pontos recomendados."
-              accessibilityState={{ expanded: !isSheetCollapsed }}
+              accessibilityLabel="Minimizar melhores escolhas para ver o mapa inteiro"
+              accessibilityHint="Esconde completamente o painel, deixando só um atalho para trazê-lo de volta."
               hitSlop={{ top: 10, right: 44, bottom: 10, left: 44 }}
               pressedScale={0.94}
               style={styles.sheetHandleArea}
               onPress={() => {
                 setHasInteractedWithSheet(true);
-                alternarModalDePontos(!isSheetCollapsed);
+                ocultarPainelDePontosCompletamente();
               }}
             >
               <Animated.View
@@ -1441,98 +1764,144 @@ export default function HomeMapScreen() {
               </View>
             ) : (
               <ScrollView
-                style={styles.pointsScroll}
+                style={[
+                  styles.pointsScroll,
+                  { maxHeight: alturaMaximaListaPontos },
+                ]}
                 contentContainerStyle={styles.pointsScrollContent}
                 showsVerticalScrollIndicator={points.length > 3}
                 nestedScrollEnabled
               >
                 {points.map((point) => {
-                  const Icon = point.icon;
-                  const isRating = point.id === "best";
-                  const isComfort = point.id === "comfort";
+                  const CriterioIcon = point.criterioIcon;
+                  const IconeAlcance = obterIconeDoAlcance(point.alcance.nivel);
+                  const corAlcance = obterCorDoAlcance(
+                    point.alcance.nivel,
+                    colors,
+                  );
+                  const corFundoAlcance = obterFundoDoAlcance(
+                    point.alcance.nivel,
+                    colors,
+                  );
+                  const textoAlcance = obterRotuloDoAlcance(point.alcance.nivel);
+                  const legendaAlcance =
+                    point.alcance.nivel === "foraDeAlcance"
+                      ? `Fora do alcance atual, faltariam ${point.alcance.kmFaltantes} km`
+                      : `Chegada estimada com ${point.alcance.bateriaAoChegarPercent}% de bateria`;
 
                   return (
                     <PressableScale
                       key={`${point.id}-${point.stationId}`}
                       accessibilityRole="button"
-                      accessibilityLabel={`${point.title}. ${point.address}. ${point.status}. ${point.power}.`}
+                      accessibilityLabel={`${point.nomeEstacao}. ${point.criterioLabel}. ${point.address}. ${point.status}. Nota ${point.rating}. ${point.power}. ${legendaAlcance}.`}
                       accessibilityHint="Abre a ficha detalhada do ponto de recarga."
                       style={styles.pointCard}
                       onPress={() => openStationDetails(point.stationId)}
                     >
-                      <View style={styles.pointIconCircle}>
-                        <Icon
-                          size={22}
-                          color={colors.primary}
-                          fill={isRating ? colors.primarySoft : "none"}
-                          strokeWidth={2}
+                      <View style={styles.pointCardTopRow}>
+                        <View style={styles.pointBadge}>
+                          <CriterioIcon
+                            size={12}
+                            color={colors.primary}
+                            strokeWidth={2.4}
+                          />
+                          <Text style={styles.pointBadgeText}>
+                            {point.criterioLabel}
+                          </Text>
+                        </View>
+
+                        <ChevronRight
+                          size={18}
+                          color={colors.textLight}
+                          strokeWidth={2.2}
                         />
                       </View>
 
-                      <View style={styles.pointInfo}>
-                        <Text style={styles.pointTitle}>{point.title}</Text>
-                        <Text style={styles.pointAddress}>{point.address}</Text>
+                      <Text style={styles.pointStationName}>
+                        {point.nomeEstacao}
+                      </Text>
+                      <Text style={styles.pointAddress}>{point.address}</Text>
 
-                        <View style={styles.statusRow}>
+                      <View style={styles.pointInlineMetaRow}>
+                        <View style={styles.metaRow}>
                           <View
                             style={[
                               styles.statusDot,
                               { backgroundColor: point.statusColor },
                             ]}
                           />
-                          <Text style={styles.statusText}>{point.status}</Text>
+                          <Text style={styles.metaText}>{point.status}</Text>
                         </View>
-                      </View>
 
-                      <View style={styles.pointMeta}>
                         <View style={styles.metaRow}>
-                          {isRating ? (
-                            <Star
-                              size={14}
-                              color={colors.yellowDark}
-                              fill={colors.yellowDark}
-                              strokeWidth={2}
-                            />
-                          ) : null}
-
-                          {isComfort ? (
-                            <Coffee
-                              size={14}
-                              color={colors.primary}
-                              strokeWidth={2}
-                            />
-                          ) : null}
-
-                          <Text style={styles.metaText}>
-                            {String(point.meta)}
-                          </Text>
+                          <Star
+                            size={12}
+                            color={colors.yellowDark}
+                            fill={colors.yellowDark}
+                            strokeWidth={2}
+                          />
+                          <Text style={styles.metaText}>{point.rating}</Text>
                         </View>
 
                         <View style={styles.metaRow}>
                           <Zap
-                            size={13}
-                            color={colors.primary}
-                            fill={colors.primary}
+                            size={12}
+                            color={colors.textLight}
+                            fill={colors.textLight}
                             strokeWidth={2}
                           />
-
-                          <Text style={styles.metaText}>
-                            {String(point.power)}
-                          </Text>
+                          <Text style={styles.metaText}>{point.power}</Text>
                         </View>
                       </View>
 
-                      <ChevronRight
-                        size={24}
-                        color={colors.primary}
-                        strokeWidth={2.2}
-                      />
+                      <View
+                        style={[
+                          styles.pointAutonomiaChip,
+                          { backgroundColor: corFundoAlcance },
+                        ]}
+                      >
+                        <IconeAlcance
+                          size={13}
+                          color={corAlcance}
+                          strokeWidth={2.4}
+                        />
+
+                        <Text
+                          style={[
+                            styles.pointAutonomiaChipText,
+                            { color: corAlcance },
+                          ]}
+                        >
+                          {textoAlcance}
+                        </Text>
+                      </View>
                     </PressableScale>
                   );
                 })}
               </ScrollView>
             )}
           </Animated.View>
+
+          {painelTotalmenteOculto ? (
+            <View
+              pointerEvents="box-none"
+              style={styles.restaurarPainelWrapper}
+            >
+              <PressableScale
+                accessibilityRole="button"
+                accessibilityLabel="Mostrar melhores escolhas"
+                accessibilityHint="Traz de volta a lista de pontos recomendados."
+                pressedScale={0.94}
+                style={styles.restaurarPainelPill}
+                onPress={() => alternarModalDePontos(false)}
+              >
+                <Maximize2 size={16} color={colors.primary} strokeWidth={2.3} />
+                <Text style={styles.restaurarPainelPillText}>
+                  Melhores escolhas
+                </Text>
+              </PressableScale>
+            </View>
+          ) : null}
         </View>
         <LoadingOverlay
           visible={isOpeningDetails}
@@ -1544,6 +1913,94 @@ export default function HomeMapScreen() {
             <View style={styles.feedbackToastCard}>
               <Crosshair size={18} color={colors.primary} strokeWidth={2.4} />
               <Text style={styles.feedbackToastText}>{mapFeedbackMessage}</Text>
+            </View>
+          </View>
+        ) : null}
+
+        {seletorBateriaAberto ? (
+          <View style={styles.batterySheetOverlay}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Fechar seletor de bateria"
+              style={styles.batterySheetBackdrop}
+              onPress={() => setSeletorBateriaAberto(false)}
+            />
+
+            <View style={styles.batterySheetCard}>
+              <View style={styles.batterySheetHandle} />
+
+              <View style={styles.batterySheetHeaderRow}>
+                <View
+                  style={[
+                    styles.batterySheetPreviewIcon,
+                    { backgroundColor: corBateriaAtual + "1F" },
+                  ]}
+                >
+                  <IconeBateriaAtual
+                    size={26}
+                    color={corBateriaAtual}
+                    strokeWidth={2.4}
+                  />
+                </View>
+
+                <View style={styles.batterySheetHeaderText}>
+                  <Text style={styles.batterySheetTitle}>
+                    Bateria do veículo
+                  </Text>
+                  <Text style={styles.batterySheetSubtitle}>
+                    ≈{autonomiaAtualKm} km de autonomia agora
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.batterySheetOptionsRow}>
+                {NIVEIS_DE_BATERIA_VEICULO.map((percentual) => {
+                  const OpcaoIcone = obterIconeDeBateriaAtual(percentual);
+                  const corOpcao = obterCorDeBateriaAtual(percentual, colors);
+                  const selecionado = percentual === batteryPercent;
+                  const kmDaOpcao = Math.round(
+                    (vehicleRangeKm * percentual) / 100,
+                  );
+
+                  return (
+                    <PressableScale
+                      key={percentual}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Definir bateria em ${percentual} por cento, cerca de ${kmDaOpcao} quilômetros`}
+                      accessibilityState={{ selected: selecionado }}
+                      pressedScale={0.92}
+                      style={[
+                        styles.batterySheetOption,
+                        { borderColor: corOpcao },
+                        selecionado
+                          ? {
+                              backgroundColor: corOpcao,
+                              borderColor: corOpcao,
+                            }
+                          : null,
+                      ]}
+                      onPress={() => selecionarNivelDeBateria(percentual)}
+                    >
+                      <OpcaoIcone
+                        size={18}
+                        color={selecionado ? colors.white : corOpcao}
+                        strokeWidth={2.4}
+                      />
+
+                      <Text
+                        style={[
+                          styles.batterySheetOptionText,
+                          selecionado
+                            ? styles.batterySheetOptionTextActive
+                            : { color: corOpcao },
+                        ]}
+                      >
+                        {percentual}%
+                      </Text>
+                    </PressableScale>
+                  );
+                })}
+              </View>
             </View>
           </View>
         ) : null}

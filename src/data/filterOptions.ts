@@ -93,6 +93,7 @@ export const defaultFilters: StationFilters = {
     minRating: 0,
   },
   onlyOpenNow: false,
+  onlyOpen24h: false,
 };
 
 export const powerOptions = [22, 50, 60, 120, 150];

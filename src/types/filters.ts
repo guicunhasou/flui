@@ -20,6 +20,7 @@ export type StationFilters = {
   distance: DistanceFilter;
   rating: RatingFilter;
   onlyOpenNow: boolean;
+  onlyOpen24h: boolean;
 };
 
 export type FilterOption<TValue extends string> = {

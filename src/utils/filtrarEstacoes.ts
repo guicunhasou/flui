@@ -51,6 +51,10 @@ function pontoEstaAbertoAgora(estacao: ChargingStation) {
   return estacao.status === "available" || estacao.status === "busy";
 }
 
+function pontoFunciona24Horas(estacao: ChargingStation) {
+  return normalizarTexto(estacao.openingHours).includes("24 hora");
+}
+
 function atendeBusca(estacao: ChargingStation, termoBusca?: string) {
   const termoNormalizado = normalizarTexto(termoBusca ?? "");
 
@@ -101,6 +105,14 @@ function atendeDisponibilidade(estacao: ChargingStation, filtros: StationFilters
   return pontoEstaAbertoAgora(estacao) && pontoTemCarregadorLivre(estacao);
 }
 
+function atendeFuncionamento24h(estacao: ChargingStation, filtros: StationFilters) {
+  if (!filtros.onlyOpen24h) {
+    return true;
+  }
+
+  return pontoFunciona24Horas(estacao);
+}
+
 export function filtrarEstacoes({
   estacoes,
   filtros,
@@ -117,6 +129,7 @@ export function filtrarEstacoes({
       atendeStatus(estacao, filtros) &&
       atendeComodidades(estacao, filtros) &&
       atendeDisponibilidade(estacao, filtros) &&
+      atendeFuncionamento24h(estacao, filtros) &&
       atendePotencia &&
       atendeDistancia &&
       atendeAvaliacao

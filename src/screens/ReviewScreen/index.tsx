@@ -32,6 +32,7 @@ import { useFluiStorage } from "../../hooks/useFluiStorage";
 import { styles as baseStyles, colors as baseColors } from "./styles";
 import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
 import { getStationImageSource } from "../../assets/stations";
+import { triggerImpact, type PressableVisualState } from "../../utils/interaction";
 
 type CriteriaKey = "quality" | "cleaning" | "availability" | "amenities";
 
@@ -135,13 +136,17 @@ function StarRatingInput({
         return (
           <Pressable
             key={rating}
-            style={({ pressed }) => [
+            style={({ pressed, hovered }: PressableVisualState) => [
               styles.starButton,
+              hovered && !pressed ? styles.hoverFeedback : null,
               pressed ? styles.starButtonPressed : null,
             ]}
             accessibilityRole="button"
             accessibilityLabel={`${accessibilityLabel}: ${rating} estrelas`}
-            onPress={() => onChange(rating)}
+            onPress={() => {
+              triggerImpact();
+              onChange(rating);
+            }}
           >
             <Star
               size={size}
@@ -254,6 +259,7 @@ export default function ReviewScreen() {
     }
 
     try {
+      triggerImpact();
       setIsFavoriteLoading(true);
       await toggleFavoriteStation(station.id);
     } catch {
@@ -363,7 +369,11 @@ export default function ReviewScreen() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Voltar para o mapa"
-              style={styles.primaryFallbackButton}
+              style={({ pressed, hovered }: PressableVisualState) => [
+                styles.primaryFallbackButton,
+                hovered && !pressed ? styles.hoverFeedback : null,
+                pressed ? styles.primaryButtonPressed : null,
+              ]}
               onPress={handleGoToMap}
             >
               <Text style={styles.primaryFallbackButtonText}>
@@ -374,7 +384,11 @@ export default function ReviewScreen() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Voltar para a tela anterior"
-              style={styles.secondaryFallbackButton}
+              style={({ pressed, hovered }: PressableVisualState) => [
+                styles.secondaryFallbackButton,
+                hovered && !pressed ? styles.hoverFeedback : null,
+                pressed ? styles.buttonPressed : null,
+              ]}
               onPress={() => router.back()}
             >
               <Text style={styles.secondaryFallbackButtonText}>Voltar</Text>
@@ -423,8 +437,9 @@ export default function ReviewScreen() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Voltar"
-              style={({ pressed }) => [
+              style={({ pressed, hovered }: PressableVisualState) => [
                 styles.backButton,
+                hovered && !pressed ? styles.hoverFeedback : null,
                 pressed ? styles.buttonPressed : null,
               ]}
               onPress={() => router.back()}
@@ -490,8 +505,9 @@ export default function ReviewScreen() {
                   selected: isFavorite,
                   disabled: isFavoriteLoading || isLoadingStorage,
                 }}
-                style={({ pressed }) => [
+                style={({ pressed, hovered }: PressableVisualState) => [
                   styles.heartButton,
+                  hovered && !pressed ? styles.hoverFeedback : null,
                   pressed ? styles.buttonPressed : null,
                 ]}
                 disabled={isFavoriteLoading || isLoadingStorage}
@@ -625,11 +641,16 @@ export default function ReviewScreen() {
                       accessibilityRole="button"
                       accessibilityLabel="Voltaria aqui: sim"
                       accessibilityState={{ selected: wouldReturn }}
-                      style={[
+                      style={({ pressed, hovered }: PressableVisualState) => [
                         styles.toggleChoiceButton,
                         wouldReturn ? styles.toggleChoiceButtonSelected : null,
+                        hovered && !pressed ? styles.hoverFeedback : null,
+                        pressed ? styles.toggleChoiceButtonPressed : null,
                       ]}
-                      onPress={() => setWouldReturn(true)}
+                      onPress={() => {
+                        triggerImpact();
+                        setWouldReturn(true);
+                      }}
                     >
                       <ThumbsUp
                         size={17}
@@ -653,11 +674,16 @@ export default function ReviewScreen() {
                       accessibilityRole="button"
                       accessibilityLabel="Voltaria aqui: não"
                       accessibilityState={{ selected: !wouldReturn }}
-                      style={[
+                      style={({ pressed, hovered }: PressableVisualState) => [
                         styles.toggleChoiceButton,
                         !wouldReturn ? styles.toggleChoiceButtonSelected : null,
+                        hovered && !pressed ? styles.hoverFeedback : null,
+                        pressed ? styles.toggleChoiceButtonPressed : null,
                       ]}
-                      onPress={() => setWouldReturn(false)}
+                      onPress={() => {
+                        triggerImpact();
+                        setWouldReturn(false);
+                      }}
                     >
                       <ThumbsDown
                         size={17}
@@ -693,11 +719,16 @@ export default function ReviewScreen() {
                       accessibilityRole="button"
                       accessibilityLabel="Recomendo este ponto: sim"
                       accessibilityState={{ selected: recommend }}
-                      style={[
+                      style={({ pressed, hovered }: PressableVisualState) => [
                         styles.toggleChoiceButton,
                         recommend ? styles.toggleChoiceButtonSelected : null,
+                        hovered && !pressed ? styles.hoverFeedback : null,
+                        pressed ? styles.toggleChoiceButtonPressed : null,
                       ]}
-                      onPress={() => setRecommend(true)}
+                      onPress={() => {
+                        triggerImpact();
+                        setRecommend(true);
+                      }}
                     >
                       <ThumbsUp
                         size={17}
@@ -719,11 +750,16 @@ export default function ReviewScreen() {
                       accessibilityRole="button"
                       accessibilityLabel="Recomendo este ponto: não"
                       accessibilityState={{ selected: !recommend }}
-                      style={[
+                      style={({ pressed, hovered }: PressableVisualState) => [
                         styles.toggleChoiceButton,
                         !recommend ? styles.toggleChoiceButtonSelected : null,
+                        hovered && !pressed ? styles.hoverFeedback : null,
+                        pressed ? styles.toggleChoiceButtonPressed : null,
                       ]}
-                      onPress={() => setRecommend(false)}
+                      onPress={() => {
+                        triggerImpact();
+                        setRecommend(false);
+                      }}
                     >
                       <ThumbsDown
                         size={17}
@@ -798,14 +834,18 @@ export default function ReviewScreen() {
                 disabled:
                   isSubmitting || isSuccessFeedbackVisible || isLoadingStorage,
               }}
-              style={({ pressed }) => [
+              style={({ pressed, hovered }: PressableVisualState) => [
                 styles.submitButton,
+                hovered && !pressed ? styles.hoverFeedback : null,
                 pressed ? styles.primaryButtonPressed : null,
               ]}
               disabled={
                 isSubmitting || isSuccessFeedbackVisible || isLoadingStorage
               }
-              onPress={handleSubmitReview}
+              onPress={() => {
+                triggerImpact();
+                handleSubmitReview();
+              }}
             >
               <Text style={styles.submitButtonText}>
                 {isSubmitting

@@ -33,6 +33,7 @@ type PreferencesContextValue = {
   reloadPreferences: () => Promise<UserPreferences | null>;
   updateAppearanceMode: (appearanceMode: AppearanceMode) => Promise<void>;
   updateFontSize: (fontSize: FontSizePreference) => Promise<void>;
+  updateBatteryPercent: (batteryPercent: number) => Promise<void>;
   scale: (size: number) => number;
 };
 
@@ -48,10 +49,13 @@ const defaultUserPreferences: UserPreferences = {
     distance: { ...defaultFilters.distance },
     rating: { ...defaultFilters.rating },
     onlyOpenNow: defaultFilters.onlyOpenNow,
+    onlyOpen24h: defaultFilters.onlyOpen24h,
   },
   hasSeenOnboarding: false,
   appearanceMode: "light",
   fontSize: "default",
+  vehicleRangeKm: 400,
+  batteryPercent: 70,
 };
 
 const PreferencesContext = createContext<PreferencesContextValue | null>(null);
@@ -120,6 +124,15 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
     [savePreferences],
   );
 
+  const updateBatteryPercent = useCallback(
+    async (batteryPercent: number) => {
+      await savePreferences({
+        batteryPercent: Math.min(100, Math.max(0, batteryPercent)),
+      });
+    },
+    [savePreferences],
+  );
+
   const appearanceMode = userPreferences.appearanceMode;
   const fontSize = userPreferences.fontSize;
 
@@ -146,6 +159,7 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
       reloadPreferences,
       updateAppearanceMode,
       updateFontSize,
+      updateBatteryPercent,
       scale,
     }),
     [
@@ -160,6 +174,7 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
       reloadPreferences,
       updateAppearanceMode,
       updateFontSize,
+      updateBatteryPercent,
       scale,
     ],
   );

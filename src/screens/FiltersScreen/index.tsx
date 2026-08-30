@@ -10,6 +10,7 @@ import {
 import { router, type Href } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
+  AlarmClock,
   ArrowLeft,
   BatteryCharging,
   Car,
@@ -47,6 +48,7 @@ import { LoadingOverlay, ScreenTransition } from "../../components";
 import { colors as baseColors } from "../../theme/colors";
 import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
 import { filtrarEstacoes } from "../../utils/filtrarEstacoes";
+import { triggerImpact, type PressableVisualState } from "../../utils/interaction";
 
 type IconeFiltro = typeof Search;
 
@@ -74,7 +76,7 @@ const initialFilters: StationFilters = {
 };
 
 const visibleConnectorOptions = connectorOptions
-  .filter((option) => ["ccs2", "chademo", "type2"].includes(option.value))
+  .filter((option) => ["ccs2", "chademo", "type2", "gbt"].includes(option.value))
   .map((option) => ({
     ...option,
     label: option.value === "type2" ? "Tipo 2" : option.label,
@@ -107,7 +109,7 @@ const visibleAmenityOptions = amenityOptions
     };
   });
 
-const powerOptions = [50, 100, 150, 250];
+const powerOptions = [22, 50, 100, 150, 250];
 const ratingOptions = [4, 4.5];
 const distanceOptions = [0.5, 1, 5];
 const sugestoesRapidas = [
@@ -176,13 +178,17 @@ function Chip({
       accessibilityLabel={`${label}${selected ? ", selecionado" : ""}`}
       accessibilityHint="Toque para ajustar este critério de busca."
       accessibilityState={{ selected }}
-      style={({ pressed }) => [
+      style={({ pressed, hovered }: PressableVisualState) => [
         styles.chip,
         styles[`${size}Chip`],
         selected ? styles.selectedChip : null,
+        hovered && !pressed ? styles.hoverFeedback : null,
         pressed ? styles.pressedChip : null,
       ]}
-      onPress={onPress}
+      onPress={() => {
+        triggerImpact();
+        onPress();
+      }}
     >
       {Icone ? (
         <Icone
@@ -235,7 +241,7 @@ export default function FiltersScreen() {
     setFilters((currentFilters) => ({
       ...currentFilters,
       power: {
-        minKw,
+        minKw: currentFilters.power.minKw === minKw ? 0 : minKw,
       },
     }));
   }
@@ -244,6 +250,13 @@ export default function FiltersScreen() {
     setFilters((currentFilters) => ({
       ...currentFilters,
       onlyOpenNow: !currentFilters.onlyOpenNow,
+    }));
+  }
+
+  function handleToggleOpen24h() {
+    setFilters((currentFilters) => ({
+      ...currentFilters,
+      onlyOpen24h: !currentFilters.onlyOpen24h,
     }));
   }
 
@@ -315,8 +328,9 @@ export default function FiltersScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Voltar ao mapa"
-            style={({ pressed }) => [
+            style={({ pressed, hovered }: PressableVisualState) => [
               styles.backButton,
+              hovered && !pressed ? styles.hoverFeedback : null,
               pressed ? styles.buttonPressed : null,
             ]}
             onPress={() => router.replace("/map" as Href)}
@@ -356,7 +370,11 @@ export default function FiltersScreen() {
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Limpar campo de busca"
-                  style={styles.searchClearButton}
+                  style={({ pressed, hovered }: PressableVisualState) => [
+                    styles.searchClearButton,
+                    hovered && !pressed ? styles.hoverFeedback : null,
+                    pressed ? styles.pressedChip : null,
+                  ]}
                   onPress={() => setTermoBusca("")}
                 >
                   <X color={colors.primaryDark} size={17} strokeWidth={2.6} />
@@ -376,14 +394,18 @@ export default function FiltersScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={`Buscar por ${sugestao}`}
                   accessibilityState={{ selected: termoBusca === sugestao }}
-                  style={({ pressed }) => [
+                  style={({ pressed, hovered }: PressableVisualState) => [
                     styles.quickSearchChip,
                     termoBusca === sugestao
                       ? styles.quickSearchChipSelected
                       : null,
+                    hovered && !pressed ? styles.hoverFeedback : null,
                     pressed ? styles.pressedChip : null,
                   ]}
-                  onPress={() => selecionarSugestao(sugestao)}
+                  onPress={() => {
+                    triggerImpact();
+                    selecionarSugestao(sugestao);
+                  }}
                 >
                   <Text
                     style={[
@@ -475,6 +497,16 @@ export default function FiltersScreen() {
                 onPress={handleToggleAvailableChargers}
                 size="large"
               />
+
+              <Chip
+                styles={styles}
+                colors={colors}
+                label="Aberto 24h"
+                Icone={AlarmClock}
+                selected={filters.onlyOpen24h}
+                onPress={handleToggleOpen24h}
+                size="large"
+              />
             </View>
           </View>
 
@@ -555,11 +587,15 @@ export default function FiltersScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Limpar busca e filtros"
-            style={({ pressed }) => [
+            style={({ pressed, hovered }: PressableVisualState) => [
               styles.clearButton,
+              hovered && !pressed ? styles.hoverFeedback : null,
               pressed ? styles.buttonPressed : null,
             ]}
-            onPress={handleClearFilters}
+            onPress={() => {
+              triggerImpact();
+              handleClearFilters();
+            }}
           >
             <RotateCcw
               color={colors.primaryDark}
@@ -574,12 +610,16 @@ export default function FiltersScreen() {
             accessibilityRole="button"
             accessibilityLabel="Ver pontos encontrados no mapa"
             accessibilityState={{ disabled: isApplying }}
-            style={({ pressed }) => [
+            style={({ pressed, hovered }: PressableVisualState) => [
               styles.applyButton,
+              hovered && !pressed ? styles.hoverFeedback : null,
               pressed ? styles.primaryButtonPressed : null,
             ]}
             disabled={isApplying}
-            onPress={abrirMapaComBusca}
+            onPress={() => {
+              triggerImpact();
+              abrirMapaComBusca();
+            }}
           >
             <Text style={styles.applyButtonText}>{textoBotaoMapa}</Text>
             <ChevronRight color={colors.white} size={20} strokeWidth={2.5} />

@@ -76,6 +76,130 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
 
+  batteryPill: {
+    height: 40,
+    paddingHorizontal: 8,
+    paddingRight: 14,
+    borderRadius: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: colors.white,
+    borderWidth: 1.5,
+    ...softShadow,
+  },
+
+  batteryPillIconWrap: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  batteryPillText: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: "800",
+  },
+
+  batterySheetOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 40,
+    justifyContent: "flex-end",
+  },
+
+  batterySheetBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(16, 34, 30, 0.35)",
+  },
+
+  batterySheetCard: {
+    paddingHorizontal: 22,
+    paddingTop: 12,
+    paddingBottom: 36,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    backgroundColor: colors.background,
+    borderTopWidth: 1,
+    borderColor: colors.border,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+
+  batterySheetHandle: {
+    width: 40,
+    height: 4,
+    marginBottom: 18,
+    borderRadius: 2,
+    alignSelf: "center",
+    backgroundColor: colors.border,
+  },
+
+  batterySheetHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+
+  batterySheetPreviewIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  batterySheetHeaderText: {
+    flex: 1,
+  },
+
+  batterySheetTitle: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: "800",
+    letterSpacing: -0.25,
+  },
+
+  batterySheetSubtitle: {
+    marginTop: 3,
+    color: colors.textMuted,
+    fontSize: 13.5,
+    fontWeight: "700",
+  },
+
+  batterySheetOptionsRow: {
+    marginTop: 20,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: 10,
+  },
+
+  batterySheetOption: {
+    width: 58,
+    height: 66,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    backgroundColor: colors.white,
+    borderWidth: 1.5,
+    ...softShadow,
+  },
+
+  batterySheetOptionText: {
+    fontSize: 13.5,
+    fontWeight: "800",
+  },
+
+  batterySheetOptionTextActive: {
+    color: colors.white,
+  },
+
   searchBar: {
     height: 58,
     marginTop: 14,
@@ -193,36 +317,13 @@ const styles = StyleSheet.create({
   },
 
   realMapMarker: {
-    width: 50,
-    height: 58,
-    alignItems: "center",
-    justifyContent: "flex-start",
-  },
-
-  realMapMarkerBody: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 3,
     borderColor: colors.white,
-    zIndex: 2,
-    ...shadow,
-  },
-
-  realMapMarkerTail: {
-    position: "absolute",
-    top: 36,
-    left: 17,
-    width: 0,
-    height: 0,
-    borderLeftWidth: 8,
-    borderRightWidth: 8,
-    borderTopWidth: 14,
-    borderLeftColor: "transparent",
-    borderRightColor: "transparent",
-    zIndex: 1,
   },
 
   userLocationMarker: {
@@ -308,13 +409,8 @@ const styles = StyleSheet.create({
   },
 
   currentLocation: {
-    position: "absolute",
-    top: "45%",
-    left: "50%",
     width: 82,
     height: 82,
-    marginLeft: -41,
-    marginTop: -41,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -328,12 +424,10 @@ const styles = StyleSheet.create({
   },
 
   currentLocationDot: {
-    width: 23,
-    height: 23,
-    borderRadius: 12,
-    backgroundColor: colors.primary,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     borderWidth: 5,
-    borderColor: colors.white,
   },
 
   fixedMapControls: {
@@ -442,13 +536,42 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
 
-
   sheetHeader: {
     marginBottom: 8,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
+
+  restaurarPainelWrapper: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 20,
+    alignItems: "center",
+    zIndex: 15,
+  },
+
+  restaurarPainelPill: {
+    height: 46,
+    paddingHorizontal: 18,
+    borderRadius: 23,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadow,
+  },
+
+  restaurarPainelPillText: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: "800",
+  },
+
 
   sheetTitle: {
     flex: 1,
@@ -518,54 +641,63 @@ const styles = StyleSheet.create({
   },
 
   pointCard: {
-    minHeight: 74,
-    marginTop: 10,
-    paddingVertical: 11,
-    paddingLeft: 12,
-    paddingRight: 9,
-    borderRadius: 18,
+    marginTop: 14,
+    padding: 16,
+    borderRadius: 20,
     backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: colors.border,
-    flexDirection: "row",
-    alignItems: "center",
+    borderColor: colors.background,
+    alignItems: "flex-start",
     ...softShadow,
   },
 
-  pointIconCircle: {
-    width: 48,
-    height: 48,
-    marginRight: 12,
-    borderRadius: 24,
+  pointCardTopRow: {
+    width: "100%",
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "space-between",
+  },
+
+  pointBadge: {
+    alignSelf: "flex-start",
+    height: 22,
+    paddingHorizontal: 8,
+    borderRadius: 11,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
     backgroundColor: colors.primarySoft,
   },
 
-  pointInfo: {
-    flex: 1,
-    minWidth: 0,
+  pointBadgeText: {
+    color: colors.primary,
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+    textTransform: "uppercase",
   },
 
-  pointTitle: {
+  pointStationName: {
+    marginTop: 10,
     color: colors.text,
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: "800",
-    letterSpacing: -0.15,
+    letterSpacing: -0.3,
   },
 
   pointAddress: {
-    marginTop: 2,
-    color: colors.textMuted,
-    fontSize: 12.5,
+    marginTop: 3,
+    color: colors.textLight,
+    fontSize: 13,
     fontWeight: "500",
   },
 
-  statusRow: {
-    marginTop: 4,
+  pointInlineMetaRow: {
+    marginTop: 10,
     flexDirection: "row",
     alignItems: "center",
-    gap: 5,
+    flexWrap: "wrap",
+    gap: 14,
   },
 
   statusDot: {
@@ -575,28 +707,33 @@ const styles = StyleSheet.create({
     backgroundColor: colors.green,
   },
 
-  statusText: {
-    color: colors.textMuted,
-    fontSize: 12.5,
-    fontWeight: "500",
-  },
-
-  pointMeta: {
-    width: 92,
-    marginLeft: 8,
-    gap: 8,
-  },
-
   metaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+
+  metaText: {
+    color: colors.textMuted,
+    fontSize: 12,
+    fontWeight: "600",
+  },
+
+  pointAutonomiaChip: {
+    alignSelf: "flex-start",
+    marginTop: 12,
+    height: 26,
+    paddingHorizontal: 10,
+    borderRadius: 13,
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
   },
 
-  metaText: {
-    color: colors.textMuted,
-    fontSize: 12.5,
-    fontWeight: "700",
+  pointAutonomiaChipText: {
+    fontSize: 11.5,
+    fontWeight: "800",
+    letterSpacing: -0.1,
   },
 
   feedbackToastOverlay: {

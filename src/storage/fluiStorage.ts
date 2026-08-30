@@ -49,10 +49,13 @@ function createDefaultUserPreferences(): UserPreferences {
       distance: { ...defaultFilters.distance },
       rating: { ...defaultFilters.rating },
       onlyOpenNow: defaultFilters.onlyOpenNow,
+      onlyOpen24h: defaultFilters.onlyOpen24h,
     },
     hasSeenOnboarding: false,
     appearanceMode: "light",
     fontSize: "default",
+    vehicleRangeKm: 400,
+    batteryPercent: 70,
   };
 }
 
@@ -103,6 +106,15 @@ function normalizeUserPreferences(
     fontSize: isFontSizePreference(preferences.fontSize)
       ? preferences.fontSize
       : base.fontSize,
+    vehicleRangeKm:
+      typeof preferences.vehicleRangeKm === "number" &&
+      preferences.vehicleRangeKm > 0
+        ? preferences.vehicleRangeKm
+        : base.vehicleRangeKm,
+    batteryPercent:
+      typeof preferences.batteryPercent === "number"
+        ? Math.min(100, Math.max(0, preferences.batteryPercent))
+        : base.batteryPercent,
     savedFilters: {
       ...base.savedFilters,
       ...(savedFilters ?? {}),
@@ -123,6 +135,7 @@ function normalizeUserPreferences(
         ...(savedFilters?.rating ?? {}),
       },
       onlyOpenNow: savedFilters?.onlyOpenNow ?? base.savedFilters.onlyOpenNow,
+      onlyOpen24h: savedFilters?.onlyOpen24h ?? base.savedFilters.onlyOpen24h,
     },
   };
 }

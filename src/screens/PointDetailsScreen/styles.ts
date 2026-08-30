@@ -233,6 +233,25 @@ export const styles = StyleSheet.create({
     marginBottom: 12,
   },
 
+  alcanceBanner: {
+    minHeight: 52,
+    marginBottom: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 16,
+    borderWidth: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  alcanceBannerText: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: "800",
+    letterSpacing: -0.1,
+  },
+
   resumoEyebrow: {
     color: colors.primaryBright,
     fontSize: 12,
@@ -259,7 +278,7 @@ export const styles = StyleSheet.create({
 
   resumoInfoGrid: {
     flexDirection: "row",
-    gap: 8,
+    gap: 10,
   },
 
   resumoInfoItem: {
@@ -273,11 +292,17 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
+  resumoInfoLabelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginBottom: 5,
+  },
+
   resumoInfoLabel: {
     color: "#63766F",
     fontSize: 11,
     fontWeight: "700",
-    marginBottom: 5,
   },
 
   resumoInfoValue: {
@@ -288,32 +313,35 @@ export const styles = StyleSheet.create({
   },
 
   infoGrid: {
+    gap: 14,
+    marginBottom: 14,
+  },
+
+  infoRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginBottom: 10,
+    gap: 12,
   },
 
   infoCard: {
-    width: "48.5%",
+    flex: 1,
+    minWidth: 0,
     minHeight: 118,
     borderRadius: 18,
     padding: 14,
     backgroundColor: "#FCFEFA",
     borderWidth: 1,
     borderColor: "#DDE8E3",
-    flexDirection: "row",
     alignItems: "flex-start",
   },
 
   infoIconBox: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: "#EAF1FF",
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 12,
+    marginBottom: 10,
   },
 
   infoIcon: {
@@ -323,7 +351,7 @@ export const styles = StyleSheet.create({
   },
 
   infoTextBox: {
-    flex: 1,
+    width: "100%",
   },
 
   infoLabel: {
@@ -499,11 +527,13 @@ export const styles = StyleSheet.create({
   amenitiesGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 10,
+    justifyContent: "center",
+    rowGap: 16,
+    columnGap: 10,
   },
 
   amenityItem: {
-    width: "30.8%",
+    width: 92,
     alignItems: "center",
   },
 
@@ -856,6 +886,15 @@ export const styles = StyleSheet.create({
 
   inlineButtonPressed: {
     opacity: 0.62,
+  },
+
+  iconButtonPressed: {
+    opacity: 0.8,
+    transform: [{ scale: 0.94 }],
+  },
+
+  hoverFeedback: {
+    opacity: 0.92,
   },
 
   iconButtonSelected: {
