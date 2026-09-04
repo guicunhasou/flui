@@ -47,7 +47,7 @@ Mais do que mostrar pontos no mapa, o app funciona como um guia de escolha para 
 
 ## ✨ Funcionalidades da versão atual
 
-A versão funcional do Flui apresenta os principais recursos da experiência proposta para a Etapa 1.
+A versão funcional do Flui apresenta os principais recursos da experiência proposta para a Etapa 2.
 
 ### 🗺️ Mapa interativo
 
@@ -178,7 +178,7 @@ Configurações → Ver introdução → Onboarding → Configurações
 ![Expo](https://img.shields.io/badge/Expo-000020?style=flat-rounded&logo=expo&logoColor=white)  
 ![Expo Router](https://img.shields.io/badge/Expo%20Router-000020?style=flat-rounded&logo=expo&logoColor=white)  
 ![AsyncStorage](https://img.shields.io/badge/AsyncStorage-FFCA28?style=flat-rounded&logo=react&logoColor=black)  
-![Lucide](https://img.shields.io/badge/Lucide%20Icons-111827?style=flat-rounded&logo=lucide&logoColor=white)  
+![Lucide](https://img.shields.io/badge/Lucide%20Icons-111827?style=flat-rounded&logo=lucide&logoColor=white)
 
 A escolha por React Native com Expo permitiu desenvolver um protótipo mobile funcional, com navegação real, persistência local, componentes reutilizáveis e estrutura preparada para evoluções futuras.
 
@@ -444,6 +444,6 @@ Equipe responsável pelo desenvolvimento do Flui Charge Map Cup para o Enterpris
 
 ## ✅ Status
 
-Projeto funcional para a entrega da Etapa 1 do **Enterprise Challenge — Charge Map Cup**.
+Projeto funcional para a entrega da Etapa 2 do **Enterprise Challenge — Charge Map Cup**.
 
 O app possui mapa interativo, busca com filtros, ficha detalhada, sistema de avaliação local, favoritos, histórico, perfil, configurações, onboarding, tema claro/escuro, persistência local e refinamentos de acessibilidade e microinterações.
