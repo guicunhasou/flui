@@ -51,7 +51,7 @@ A versão funcional do Flui apresenta os principais recursos da experiência pro
 
 ### 🗺️ Mapa interativo
 
-Apresenta pontos de recarga simulados em São Paulo, com marcadores personalizados, status visual, controles de zoom, centralização, filtros rápidos e painel inferior com melhores escolhas.
+Apresenta pontos de recarga simulados em São Paulo, com marcadores personalizados, status visual, controles de zoom, centralização, filtros rápidos e painel inferior com melhores escolhas, considerando também a autonomia estimada do veículo até cada ponto.
 
 ### 🔎 Busca e filtros
 
@@ -59,7 +59,7 @@ Permite buscar pontos por texto e ajustar critérios como conector, potência m�
 
 ### 📍 Ficha detalhada do ponto
 
-Reúne as informações mais importantes para a decisão do motorista: imagem da estação, endereço, status, potência, conectores, horários, períodos menos cheios, comodidades, tempo estimado de carga, comentários e avaliações.
+Reúne as informações mais importantes para a decisão do motorista: imagem da estação, endereço, status, potência, conectores, horários, períodos menos cheios, comodidades, tempo estimado de carga, estimativa de autonomia até o ponto, comentários e avaliações.
 
 ### ⭐ Avaliações
 
@@ -299,7 +299,7 @@ src/
 
 O Flui Charge Map Cup foi pensado para unir tecnologia, sustentabilidade e confiança.
 
-A interface busca transmitir uma sensação de clareza e controle para o motorista, usando informações objetivas, cards organizados, microinterações discretas e uma identidade visual conectada à mobilidade elétrica.
+A interface busca transmitir uma sensação de clareza e controle para o motorista, usando informações objetivas, cards organizados, microinterações discretas — como transições animadas entre telas, uma tela de carregamento com ilustração animada e feedback tátil (haptics) ao tocar em botões e cards — e uma identidade visual conectada à mobilidade elétrica.
 
 ### ✨ Princípios de design
 
@@ -342,7 +342,7 @@ O projeto inclui cuidados de acessibilidade, como:
 - textos claros e hierarquia consistente;
 - suporte a variação de tamanho de fonte;
 - elementos decorativos ocultos de leitores de tela quando necessário;
-- feedbacks visuais e táteis em interações importantes.
+- feedbacks visuais e táteis (haptics) em interações importantes.
 
 ---
 
@@ -364,7 +364,7 @@ A localização do usuário foi mantida como uma posição simulada em São Paul
 
 ### Ficha detalhada como centro da decisão
 
-A ficha do ponto foi tratada como uma das telas mais importantes do app. Ela reúne dados técnicos, contexto de uso, comodidades e comentários para transformar a escolha do ponto em uma decisão mais segura.
+A ficha do ponto foi tratada como uma das telas mais importantes do app. Ela reúne dados técnicos, contexto de uso, comodidades, comentários e uma estimativa de autonomia até o ponto, para transformar a escolha do ponto em uma decisão mais segura e menos ansiosa quanto ao alcance da bateria.
 
 ### Avaliações locais
 
@@ -446,4 +446,4 @@ Equipe responsável pelo desenvolvimento do Flui Charge Map Cup para o Enterpris
 
 Projeto funcional para a entrega da Etapa 2 do **Enterprise Challenge — Charge Map Cup**.
 
-O app possui mapa interativo, busca com filtros, ficha detalhada, sistema de avaliação local, favoritos, histórico, perfil, configurações, onboarding, tema claro/escuro, persistência local e refinamentos de acessibilidade e microinterações.
+O app possui mapa interativo, busca com filtros, ficha detalhada com estimativa de autonomia, sistema de avaliação local, favoritos, histórico, perfil, configurações, onboarding, tema claro/escuro, persistência local e refinamentos de acessibilidade, motion design e microinterações com feedback tátil.
