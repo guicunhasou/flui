@@ -42,5 +42,10 @@ app-example
 # generated native folders
 /ios
 /android
+
+# local Expo Go bundles and validation output
+Expo-Go*.app/
+*.tar.app/
+.validation/
 # Prompts locais usados para gerar imagens fake dos pontos
 src/assets/stations/prompts.md

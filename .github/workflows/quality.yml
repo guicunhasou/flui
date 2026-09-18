@@ -1,0 +1,30 @@
+name: Quality
+
+on:
+  push:
+    branches: [fase-5, main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate types, lint and domain rules
+        run: npm run check
+
+      - name: Validate web export
+        run: npx expo export --platform web --output-dir /tmp/flui-web
