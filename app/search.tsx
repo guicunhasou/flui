@@ -1,5 +1,5 @@
-import FiltersScreen from '../src/screens/FiltersScreen';
+import SearchFiltersScreen from '../src/features/search/SearchFiltersScreen';
 
 export default function SearchRoute() {
-  return <FiltersScreen />;
+  return <SearchFiltersScreen />;
 }

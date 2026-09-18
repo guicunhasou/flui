@@ -31,7 +31,7 @@ import {
   Zap,
 } from "lucide-react-native";
 
-import { chargingStations } from "../../data/chargingStations";
+import { chargingStations } from "../../data";
 import {
   amenityOptions,
   connectorOptions,
@@ -42,7 +42,7 @@ import {
   ConnectorType,
   StationFilters,
 } from "../../types";
-import { styles as baseStyles } from "./styles";
+import { styles as baseStyles } from "./SearchFiltersScreen.styles";
 import { LoadingOverlay, ScreenTransition } from "../../components";
 import { colors as baseColors } from "../../theme/colors";
 import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
@@ -207,7 +207,7 @@ function Chip({
   );
 }
 
-export default function FiltersScreen() {
+export default function SearchFiltersScreen() {
   const { styles, colors, isDarkMode } = useTelaComPreferencias(
     baseStyles,
     baseColors,

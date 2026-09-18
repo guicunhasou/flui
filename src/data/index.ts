@@ -1,2 +1,2 @@
-export * from './chargingStations';
+export * from './fixtures/chargingStations';
 export * from './filterOptions';

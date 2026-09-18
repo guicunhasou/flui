@@ -1,1 +1,1 @@
-export { default } from '../src/screens/HomeMapScreen';
+export { default } from '../src/features/map/HomeMapScreen';

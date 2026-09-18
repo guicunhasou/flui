@@ -55,7 +55,7 @@ import {
   PressableScale,
   ScreenTransition,
 } from "../../components";
-import baseStyles, { colors as baseColors } from "./styles";
+import baseStyles, { colors as baseColors } from "./HomeMapScreen.styles";
 import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
 import { useAppPreferences } from "../../context/PreferencesContext";
