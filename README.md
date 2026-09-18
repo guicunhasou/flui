@@ -267,6 +267,18 @@ npm run lint
 
 Executa a verificação de lint do projeto.
 
+```bash
+npm test
+```
+
+Executa os testes automatizados das regras de filtros, horários e apresentação das estações.
+
+```bash
+npm run check
+```
+
+Executa, em sequência, TypeScript, lint e todos os testes. Este é o comando recomendado antes de abrir um pull request.
+
 ---
 
 ## 📃 Estrutura principal
@@ -277,7 +289,6 @@ app/
   index.tsx
   map.tsx
   search.tsx
-  filters.tsx
   point-details.tsx
   review.tsx
   profile.tsx
@@ -292,15 +303,31 @@ src/
     user/
 
   components/
+    MapSurface/
   context/
   data/
+  features/
+    map/
+    onboarding/
+    profile/
+    reviews/
+    search/
+    settings/
+    startup/
+    stations/
   hooks/
-  screens/
   storage/
   theme/
   types/
   utils/
+
+tests/
+
+.github/workflows/
+  quality.yml
 ```
+
+As rotas permanecem pequenas e delegam a interface às telas. Regras independentes da interface ficam em `features` e `utils`; componentes com implementação diferente por plataforma usam a resolução nativa do React Native, como `MapSurface/index.tsx` e `MapSurface/index.web.tsx`.
 
 ---
 
