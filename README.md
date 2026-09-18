@@ -189,28 +189,39 @@ A escolha por React Native com Expo permitiu desenvolver um protótipo mobile fu
 ### 1. Instalar dependências
 
 ```bash
-npm install
+npm ci
 ```
 
-### 2. Iniciar o projeto
+### 2. Testar com Expo Go (recomendado para a avaliação)
 
 ```bash
 npm run start
 ```
 
-### 3. Rodar no Android
+Abra o Expo Go no celular e leia o QR code exibido no terminal. Nesse modo, não é necessário configurar uma chave própria do Google Maps.
+
+### 3. Gerar um binário próprio (opcional)
+
+Para builds próprios de Android ou iOS, copie `.env.example` para `.env`, informe chaves restritas às credenciais de cada plataforma e mantenha o arquivo `.env` fora do versionamento.
+
+```env
+EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_ANDROID=sua_chave_android
+EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_IOS=sua_chave_ios
+```
+
+### 4. Rodar no Android
 
 ```bash
 npm run android
 ```
 
-### 4. Rodar no iOS
+### 5. Rodar no iOS
 
 ```bash
 npm run ios
 ```
 
-### 5. Rodar no navegador
+### 6. Rodar no navegador
 
 ```bash
 npm run web
@@ -342,6 +353,7 @@ O projeto inclui cuidados de acessibilidade, como:
 - textos claros e hierarquia consistente;
 - suporte a variação de tamanho de fonte;
 - elementos decorativos ocultos de leitores de tela quando necessário;
+- respeito à preferência de reduzir movimento configurada no sistema;
 - feedbacks visuais e táteis (haptics) em interações importantes.
 
 ---
@@ -405,7 +417,6 @@ O Flui Charge Map Cup foi desenvolvido como uma base funcional para evoluções 
 ### ♿ Acessibilidade e inclusão
 
 - Modo de alto contraste;
-- Redução avançada de animações;
 - Preferências refinadas de leitura;
 - Testes com leitores de tela em mais dispositivos.
 
