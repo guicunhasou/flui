@@ -42,8 +42,8 @@ import {
   Zap,
 } from "lucide-react-native";
 
-import { chargingStations } from "../../data/chargingStations";
-import { styles as baseStyles } from "./styles";
+import { chargingStations } from "../../data";
+import { styles as baseStyles } from "./PointDetailsScreen.styles";
 import {
   LoadingOverlay,
   ScreenTransition,

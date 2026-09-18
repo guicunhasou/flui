@@ -14,6 +14,26 @@ export type Amenity =
 
 export type StationStatus = 'available' | 'busy' | 'unavailable' | 'maintenance';
 
+export type Weekday =
+  | 'sun'
+  | 'mon'
+  | 'tue'
+  | 'wed'
+  | 'thu'
+  | 'fri'
+  | 'sat';
+
+export type StationOpeningPeriod = {
+  days: Weekday[];
+  opensAt: string;
+  closesAt: string;
+};
+
+export type StationOpeningSchedule = {
+  timeZone: string;
+  periods: StationOpeningPeriod[];
+};
+
 export type ChargingStationConnector = {
   id: string;
   type: ConnectorType;
@@ -55,6 +75,7 @@ export type ChargingStation = {
   connectors: ChargingStationConnector[];
   amenities: Amenity[];
   openingHours: string;
+  openingSchedule?: StationOpeningSchedule | null;
   lessBusyPeriods: string[];
   imageKey?: StationImageKey;
   imageUrl?: string;

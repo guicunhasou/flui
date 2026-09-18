@@ -29,7 +29,10 @@ import {
 import { chargingStations } from "../../data";
 import { LoadingOverlay, ScreenTransition } from "../../components";
 import { useFluiStorage } from "../../hooks/useFluiStorage";
-import { styles as baseStyles, colors as baseColors } from "./styles";
+import {
+  styles as baseStyles,
+  colors as baseColors,
+} from "./ReviewScreen.styles";
 import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
 import { getStationImageSource } from "../../assets/stations";
 import { triggerImpact, type PressableVisualState } from "../../utils/interaction";
