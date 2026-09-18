@@ -62,9 +62,13 @@ export function createSettingsStyles(colors: AppTheme, fontScale: number) {
       letterSpacing: -0.25,
     },
 
-    headerSpacer: {
+    hiddenResetButton: {
       width: 44,
       height: 44,
+    },
+
+    hiddenResetButtonContent: {
+      flex: 1,
     },
 
     content: {

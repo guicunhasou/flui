@@ -17,6 +17,7 @@ import {
   ScreenTransition,
 } from "../../components";
 import { useAppPreferences } from "../../context/PreferencesContext";
+import { fluiStorage } from "../../storage";
 import type { AppearanceMode, FontSizePreference } from "../../types";
 import { createSettingsStyles } from "./SettingsScreen.styles";
 
@@ -45,6 +46,7 @@ export default function SettingsScreen() {
     isLoadingPreferences,
     isSavingPreferences,
     preferencesError,
+    reloadPreferences,
     updateAppearanceMode,
     updateFontSize,
   } = useAppPreferences();
@@ -143,6 +145,20 @@ export default function SettingsScreen() {
     router.push("/onboarding?from=settings");
   };
 
+  const resetLocalData = async () => {
+    if (isSavingPreferences) {
+      return;
+    }
+
+    try {
+      await fluiStorage.clearAll();
+      await reloadPreferences();
+      router.replace("/onboarding");
+    } catch {
+      showSettingsFeedback("Não foi possível reiniciar os dados locais");
+    }
+  };
+
   const renderOptionCheck = (isSelected: boolean) => {
     return isSelected ? (
       <View style={styles.checkCircle}>
@@ -170,7 +186,18 @@ export default function SettingsScreen() {
 
           <Text style={styles.headerTitle}>Configurações</Text>
 
-          <View style={styles.headerSpacer} />
+          <PressableScale
+            accessibilityRole="button"
+            accessibilityLabel="Reiniciar dados locais do Flui"
+            accessibilityHint="Apaga preferências, favoritos, histórico e avaliações salvas neste dispositivo."
+            disabled={isSavingPreferences}
+            haptics={false}
+            pressedOpacity={1}
+            style={styles.hiddenResetButton}
+            onPress={resetLocalData}
+          >
+            <View style={styles.hiddenResetButtonContent} />
+          </PressableScale>
         </View>
 
         <ScrollView
