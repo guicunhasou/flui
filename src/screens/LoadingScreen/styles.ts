@@ -6,6 +6,7 @@ export const colors = {
   textMuted: "#3F554F",
   primary: "#2B0055",
   accent: "#9B35F5",
+  primarySoft: "#EFE4FA",
   shadow: "#12302A",
 };
 
@@ -17,31 +18,78 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
-  animationWrapper: {
+  loadingContent: {
     width: "100%",
-    height: "100%",
+    paddingHorizontal: 32,
     alignItems: "center",
     justifyContent: "center",
   },
 
-  animation: {
-    width: 220,
-    aspectRatio: 1,
+  logoStage: {
+    width: 144,
+    height: 144,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
-  captionArea: {
+  pulseHalo: {
     position: "absolute",
-    bottom: 96,
-    left: 32,
-    right: 32,
+    width: 118,
+    height: 118,
+    borderRadius: 59,
+    backgroundColor: colors.primarySoft,
+  },
+
+  logoCard: {
+    width: 92,
+    height: 92,
+    borderRadius: 30,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.primary,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.18,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+
+  copyArea: {
+    marginTop: 22,
     alignItems: "center",
   },
 
-  captionText: {
+  title: {
     color: colors.text,
-    fontSize: 15,
+    fontSize: 22,
+    lineHeight: 28,
+    fontWeight: "900",
+    letterSpacing: -0.4,
+    textAlign: "center",
+  },
+
+  subtitle: {
+    maxWidth: 290,
+    marginTop: 8,
+    color: colors.textMuted,
+    fontSize: 14,
+    lineHeight: 21,
     fontWeight: "600",
     textAlign: "center",
+  },
+
+  progressDots: {
+    marginTop: 28,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+  },
+
+  progressDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.accent,
   },
 });
 

@@ -19,16 +19,22 @@ export function createOnboardingStyles(
 
     screen: {
       flex: 1,
-      paddingTop: spacing.md,
       backgroundColor: theme.background,
     },
 
-    header: {
-      minHeight: 170,
+    topBar: {
+      minHeight: 48,
       paddingHorizontal: spacing.xl,
-      paddingTop: spacing.sm,
-      alignItems: "center",
+      alignItems: "flex-end",
       justifyContent: "center",
+    },
+
+    header: {
+      minHeight: 102,
+      paddingHorizontal: spacing.xl,
+      paddingBottom: spacing.lg,
+      alignItems: "center",
+      justifyContent: "flex-end",
     },
 
     eyebrow: {
@@ -52,13 +58,6 @@ export function createOnboardingStyles(
       textAlign: "center",
     },
 
-    skipButtonAnchor: {
-      position: "absolute",
-      top: spacing.sm,
-      right: spacing.xl,
-      zIndex: 5,
-    },
-
     skipButton: {
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.xs,
@@ -75,17 +74,21 @@ export function createOnboardingStyles(
       fontWeight: "800",
     },
 
+    carousel: {
+      flex: 1,
+    },
+
     carouselContent: {
       paddingHorizontal: spacing.xl,
-      paddingTop: spacing.md,
-      paddingBottom: spacing.md,
+      alignItems: "center",
     },
 
     slide: {
       width: cardWidth,
       paddingRight: spacing.md,
       alignItems: "center",
-      gap: spacing.xl,
+      justifyContent: "center",
+      gap: spacing.md,
     },
 
     visualCard: {
@@ -111,18 +114,6 @@ export function createOnboardingStyles(
       paddingHorizontal: spacing.sm,
     },
 
-    featureIconBubble: {
-      width: 64,
-      height: 64,
-      marginBottom: spacing.md,
-      borderRadius: 32,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: theme.primarySoft,
-      borderWidth: 1,
-      borderColor: theme.border,
-    },
-
     stepTitle: {
       color: theme.text,
       fontSize: scaleFontSize(24, fontScale),
@@ -145,7 +136,8 @@ export function createOnboardingStyles(
     footer: {
       paddingHorizontal: spacing.xl,
       paddingBottom: spacing.xl,
-      gap: spacing.lg,
+      paddingTop: spacing.lg,
+      gap: spacing.md,
     },
 
     dotsRow: {

@@ -1,10 +1,4 @@
 import { router, useLocalSearchParams } from "expo-router";
-import {
-  Heart,
-  MapPinned,
-  ShieldCheck,
-  SlidersHorizontal,
-} from "lucide-react-native";
 import React, { useMemo, useRef, useState } from "react";
 import {
   Image,
@@ -28,7 +22,6 @@ type OnboardingStep = {
   title: string;
   description: string;
   image: ImageSourcePropType;
-  icon: typeof MapPinned;
 };
 
 const onboardingSteps: OnboardingStep[] = [
@@ -37,28 +30,24 @@ const onboardingSteps: OnboardingStep[] = [
     description:
       "Veja estações no mapa, acompanhe disponibilidade e descubra pontos recomendados para a sua rota.",
     image: require("../../assets/onboarding/1.webp"),
-    icon: MapPinned,
   },
   {
     title: "Compare antes de parar",
     description:
       "Analise potência, conectores, horários e comodidades antes de escolher onde carregar.",
     image: require("../../assets/onboarding/2.webp"),
-    icon: SlidersHorizontal,
   },
   {
     title: "Escolha com confiança",
     description:
       "Use avaliações, comentários e critérios de experiência para evitar paradas ruins.",
     image: require("../../assets/onboarding/3.webp"),
-    icon: ShieldCheck,
   },
   {
     title: "Salve seus favoritos",
     description:
       "Guarde pontos preferidos, acompanhe histórico e encontre suas avaliações dentro do Perfil.",
     image: require("../../assets/onboarding/4.webp"),
-    icon: Heart,
   },
 ];
 
@@ -133,25 +122,26 @@ export default function OnboardingScreen() {
       />
 
       <ScreenTransition style={styles.screen} distance={14}>
+        <View style={styles.topBar}>
+          <PressableScale
+            accessibilityRole="button"
+            accessibilityLabel="Pular apresentação"
+            disabled={isFinishing}
+            onPress={finishOnboarding}
+            style={styles.skipButton}
+          >
+            <Text style={styles.skipButtonText}>Pular</Text>
+          </PressableScale>
+        </View>
+
         <View style={styles.header}>
           <Text style={styles.eyebrow}>Flui Charge Map</Text>
           <Text style={styles.title}>Carregue com mais clareza.</Text>
-
-          <View style={styles.skipButtonAnchor}>
-            <PressableScale
-              accessibilityRole="button"
-              accessibilityLabel="Pular apresentação"
-              disabled={isFinishing}
-              onPress={finishOnboarding}
-              style={styles.skipButton}
-            >
-              <Text style={styles.skipButtonText}>Pular</Text>
-            </PressableScale>
-          </View>
         </View>
 
         <ScrollView
           ref={scrollRef}
+          style={styles.carousel}
           horizontal
           pagingEnabled
           bounces={false}
@@ -162,30 +152,22 @@ export default function OnboardingScreen() {
           contentContainerStyle={styles.carouselContent}
           onMomentumScrollEnd={updateActiveStep}
         >
-          {onboardingSteps.map((step) => {
-            const Icon = step.icon;
-
-            return (
-              <View key={step.title} style={styles.slide}>
-                <View style={styles.visualCard}>
-                  <Image
-                    source={step.image}
-                    style={styles.visualImage}
-                    resizeMode="cover"
-                  />
-                </View>
-
-                <View style={styles.copyContent}>
-                  <View style={styles.featureIconBubble}>
-                    <Icon size={27} color={theme.primary} strokeWidth={2.2} />
-                  </View>
-
-                  <Text style={styles.stepTitle}>{step.title}</Text>
-                  <Text style={styles.stepDescription}>{step.description}</Text>
-                </View>
+          {onboardingSteps.map((step) => (
+            <View key={step.title} style={styles.slide}>
+              <View style={styles.visualCard}>
+                <Image
+                  source={step.image}
+                  style={styles.visualImage}
+                  resizeMode="cover"
+                />
               </View>
-            );
-          })}
+
+              <View style={styles.copyContent}>
+                <Text style={styles.stepTitle}>{step.title}</Text>
+                <Text style={styles.stepDescription}>{step.description}</Text>
+              </View>
+            </View>
+          ))}
         </ScrollView>
 
         <View style={styles.footer}>
