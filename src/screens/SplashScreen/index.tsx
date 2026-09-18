@@ -1,16 +1,18 @@
 import { router, type Href } from "expo-router";
 import LottieView from "lottie-react-native";
 import React, { useEffect } from "react";
-import { StatusBar, View } from "react-native";
+import { Image, StatusBar, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { fluiStorage } from "../../storage";
+import { useReducedMotion } from "../../hooks/useReducedMotion";
 import baseStyles from "./styles";
 
 const SPLASH_DURATION = 2800;
 
 export default function SplashScreen() {
   const styles = baseStyles;
+  const reduceMotionEnabled = useReducedMotion();
 
   useEffect(() => {
     let isMounted = true;
@@ -28,13 +30,13 @@ export default function SplashScreen() {
           router.replace(route);
         }
       });
-    }, SPLASH_DURATION);
+    }, reduceMotionEnabled ? 350 : SPLASH_DURATION);
 
     return () => {
       isMounted = false;
       clearTimeout(timeout);
     };
-  }, []);
+  }, [reduceMotionEnabled]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -42,12 +44,21 @@ export default function SplashScreen() {
 
       <View style={styles.screen}>
         <View style={styles.logoWrapper}>
-          <LottieView
-            source={require("../../assets/lottie/data.json")}
-            autoPlay
-            loop={false}
-            style={{ width: 300, height: 533 }}
-          />
+          {reduceMotionEnabled ? (
+            <Image
+              source={require("../../assets/images/splash-icon.png")}
+              style={styles.staticLogo}
+              resizeMode="contain"
+              accessible={false}
+            />
+          ) : (
+            <LottieView
+              source={require("../../assets/lottie/data.json")}
+              autoPlay
+              loop={false}
+              style={styles.animation}
+            />
+          )}
         </View>
       </View>
     </SafeAreaView>

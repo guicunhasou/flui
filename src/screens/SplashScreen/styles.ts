@@ -24,6 +24,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
+  animation: {
+    width: 300,
+    height: 533,
+  },
+
+  staticLogo: {
+    width: 220,
+    height: 220,
+  },
+
 });
 
 export default styles;

@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { Animated, Easing, Text, View } from "react-native";
 import { SvgXml } from "react-native-svg";
 
+import { useReducedMotion } from "../../hooks/useReducedMotion";
 import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
 import { styles as baseStyles, overlayColors } from "./styles";
 
@@ -22,13 +23,15 @@ export default function LoadingOverlay({
 }: LoadingOverlayProps) {
   const pulse = useRef(new Animated.Value(0)).current;
   const { styles, colors } = useTelaComPreferencias(baseStyles, overlayColors);
+  const reduceMotionEnabled = useReducedMotion();
 
   useEffect(() => {
-    if (!visible) {
+    pulse.stopAnimation();
+    pulse.setValue(0);
+
+    if (!visible || reduceMotionEnabled) {
       return undefined;
     }
-
-    pulse.setValue(0);
 
     const animation = Animated.loop(
       Animated.sequence([
@@ -52,7 +55,7 @@ export default function LoadingOverlay({
     return () => {
       animation.stop();
     };
-  }, [pulse, visible]);
+  }, [pulse, reduceMotionEnabled, visible]);
 
   if (!visible) {
     return null;

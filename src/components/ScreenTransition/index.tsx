@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleProp, ViewStyle } from 'react-native';
 
+import { useReducedMotion } from '../../hooks/useReducedMotion';
+
 type ScreenTransitionProps = {
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
@@ -16,9 +18,19 @@ export default function ScreenTransition({
 }: ScreenTransitionProps) {
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(distance)).current;
+  const reduceMotionEnabled = useReducedMotion();
 
   useEffect(() => {
-    Animated.parallel([
+    opacity.stopAnimation();
+    translateY.stopAnimation();
+
+    if (reduceMotionEnabled) {
+      opacity.setValue(1);
+      translateY.setValue(0);
+      return undefined;
+    }
+
+    const animation = Animated.parallel([
       Animated.timing(opacity, {
         toValue: 1,
         duration: 220,
@@ -31,8 +43,12 @@ export default function ScreenTransition({
         delay,
         useNativeDriver: true,
       }),
-    ]).start();
-  }, [delay, distance, opacity, translateY]);
+    ]);
+
+    animation.start();
+
+    return () => animation.stop();
+  }, [delay, distance, opacity, reduceMotionEnabled, translateY]);
 
   return (
     <Animated.View

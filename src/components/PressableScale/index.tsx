@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
+import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { triggerImpact } from '../../utils/interaction';
 
 type PressableScaleProps = PressableProps & {
@@ -35,8 +36,18 @@ export default function PressableScale({
   const opacity = useRef(new Animated.Value(1)).current;
   const isHoveredRef = useRef(false);
   const isPressedRef = useRef(false);
+  const reduceMotionEnabled = useReducedMotion();
 
   function animateTo(targetScale: number, targetOpacity: number) {
+    scale.stopAnimation();
+    opacity.stopAnimation();
+
+    if (reduceMotionEnabled) {
+      scale.setValue(1);
+      opacity.setValue(targetOpacity);
+      return;
+    }
+
     Animated.parallel([
       Animated.spring(scale, {
         toValue: targetScale,
@@ -67,13 +78,13 @@ export default function PressableScale({
   }
 
   useEffect(() => {
-    if (disabled) {
+    if (disabled || reduceMotionEnabled) {
       isHoveredRef.current = false;
       isPressedRef.current = false;
       scale.setValue(1);
       opacity.setValue(1);
     }
-  }, [disabled, opacity, scale]);
+  }, [disabled, opacity, reduceMotionEnabled, scale]);
 
   return (
     <Pressable
