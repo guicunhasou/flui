@@ -78,12 +78,11 @@ const logoFluiXml = `
 `;
 
 const imagemPerfilUsuario = require("../../assets/user/profile1.webp");
-const imagemCarroUsuario = require("../../assets/user/car1.webp");
+const imagemCarroUsuario = require("../../assets/user/car1.png");
 const iconeMarcadorVerde = require("../../assets/map/marker-green.png");
 const iconeMarcadorAmarelo = require("../../assets/map/marker-yellow.png");
 const iconeMarcadorVermelho = require("../../assets/map/marker-red.png");
 const iconeMarcadorCinza = require("../../assets/map/marker-gray.png");
-const iconeLocalizacaoUsuario = require("../../assets/map/user-location.png");
 
 const criarLogoFluiXml = (corPrincipal: string, corPonto: string) => {
   return logoFluiXml
@@ -732,6 +731,7 @@ export default function HomeMapScreen() {
   const quickFiltersProgress = useRef(new Animated.Value(0)).current;
   const quickFiltersHintTranslateY = useRef(new Animated.Value(0)).current;
   const sheetHintTranslateY = useRef(new Animated.Value(0)).current;
+  const userLocationPulseProgress = useRef(new Animated.Value(0)).current;
   const sheetPositionRef = useRef(0);
   const [localizacaoUsuario, setLocalizacaoUsuario] =
     useState<UserLocation | null>(LOCALIZACAO_DEMO_FIAP);
@@ -780,6 +780,16 @@ export default function HomeMapScreen() {
     outputRange: [0, QUICK_FILTERS_CONTENT_HEIGHT],
   });
 
+  const escalaPulsoLocalizacao = userLocationPulseProgress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.78, 1.18],
+  });
+
+  const opacidadePulsoLocalizacao = userLocationPulseProgress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.34, 0.1],
+  });
+
   const sheetCollapsedTranslateY = useMemo(() => {
     return Math.max(sheetHeight - SHEET_VISIBLE_HANDLE, 0);
   }, [sheetHeight]);
@@ -787,6 +797,36 @@ export default function HomeMapScreen() {
   useEffect(() => {
     setSearchTerm(routeSearchTerm);
   }, [routeSearchTerm]);
+
+  useEffect(() => {
+    if (reduceMotionEnabled) {
+      userLocationPulseProgress.stopAnimation();
+      userLocationPulseProgress.setValue(0.35);
+      return;
+    }
+
+    const pulseAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(userLocationPulseProgress, {
+          toValue: 1,
+          duration: 1400,
+          useNativeDriver: true,
+        }),
+        Animated.timing(userLocationPulseProgress, {
+          toValue: 0,
+          duration: 1400,
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+
+    pulseAnimation.start();
+
+    return () => {
+      pulseAnimation.stop();
+      userLocationPulseProgress.setValue(0);
+    };
+  }, [reduceMotionEnabled, userLocationPulseProgress]);
 
 
   const animarAtalhosRapidos = useCallback(
@@ -1517,9 +1557,21 @@ export default function HomeMapScreen() {
                 title="Você na FIAP"
                 description="Localização simulada para demonstração."
                 anchor={{ x: 0.5, y: 0.5 }}
-                icon={iconeLocalizacaoUsuario}
-                tracksViewChanges={false}
-              />
+                tracksViewChanges={!reduceMotionEnabled}
+              >
+                <View collapsable={false} style={styles.userLocationMarker}>
+                  <Animated.View
+                    style={[
+                      styles.userLocationPulse,
+                      {
+                        opacity: opacidadePulsoLocalizacao,
+                        transform: [{ scale: escalaPulsoLocalizacao }],
+                      },
+                    ]}
+                  />
+                  <View style={styles.userLocationDot} />
+                </View>
+              </Marker>
             ) : null}
 
             {visibleStations.map((item) => {

@@ -1,4 +1,5 @@
 <svg width="176" height="176" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
-  <path d="M28 3.5C17.23 3.5 8.5 12.23 8.5 23c0 14.62 19.5 29.5 19.5 29.5S47.5 37.62 47.5 23C47.5 12.23 38.77 3.5 28 3.5Z" fill="#63766F" stroke="#FCFEFA" stroke-width="3" stroke-linejoin="round"/>
+  <defs><filter id="marker-shadow" x="0" y="0" width="56" height="56" filterUnits="userSpaceOnUse"><feDropShadow dx="0" dy="2.5" stdDeviation="2.4" flood-color="#10221E" flood-opacity="0.38"/></filter></defs>
+  <path d="M28 3.5C17.23 3.5 8.5 12.23 8.5 23c0 14.62 19.5 29.5 19.5 29.5S47.5 37.62 47.5 23C47.5 12.23 38.77 3.5 28 3.5Z" fill="#63766F" stroke="#FCFEFA" stroke-width="3" stroke-linejoin="round" filter="url(#marker-shadow)"/>
   <path d="M30.5 11.5 19.5 27H27l-1.5 12 11-17H29l1.5-10.5Z" fill="#FCFEFA" stroke="#FCFEFA" stroke-linejoin="round"/>
 </svg>

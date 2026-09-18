@@ -413,7 +413,7 @@ const styles = StyleSheet.create({
     width: 54,
     height: 54,
     borderRadius: 27,
-    backgroundColor: "rgba(31, 169, 113, 0.18)",
+    backgroundColor: colors.primary,
   },
 
   userLocationDot: {
