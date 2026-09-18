@@ -1,3 +1,10 @@
+const googleMapsApiKeyAndroid =
+  process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_ANDROID ??
+  process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
+const googleMapsApiKeyIos =
+  process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_IOS ??
+  process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
+
 module.exports = {
   expo: {
     name: "flui-charge-map",
@@ -11,7 +18,7 @@ module.exports = {
     ios: {
       supportsTablet: true,
       config: {
-        googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+        googleMapsApiKey: googleMapsApiKeyIos,
       },
     },
     android: {
@@ -24,7 +31,7 @@ module.exports = {
       predictiveBackGestureEnabled: false,
       config: {
         googleMaps: {
-          apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+          apiKey: googleMapsApiKeyAndroid,
         },
       },
     },
@@ -34,12 +41,7 @@ module.exports = {
     },
     plugins: [
       "expo-router",
-      [
-        "expo-location",
-        {
-          googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
-        },
-      ],
+      "expo-location",
       [
         "expo-splash-screen",
         {
