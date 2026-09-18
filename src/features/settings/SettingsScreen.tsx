@@ -18,7 +18,7 @@ import {
 } from "../../components";
 import { useAppPreferences } from "../../context/PreferencesContext";
 import type { AppearanceMode, FontSizePreference } from "../../types";
-import { createSettingsStyles } from "./styles";
+import { createSettingsStyles } from "./SettingsScreen.styles";
 
 const FEEDBACK_DURATION = 1500;
 

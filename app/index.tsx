@@ -1,1 +1,1 @@
-export { default } from '../src/screens/SplashScreen';
+export { default } from '../src/features/startup/SplashScreen';

@@ -22,7 +22,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { PressableScale, ScreenTransition } from "../../components";
 import { useAppPreferences } from "../../context/PreferencesContext";
 import { fluiStorage } from "../../storage";
-import { createOnboardingStyles } from "./styles";
+import { createOnboardingStyles } from "./OnboardingScreen.styles";
 
 type OnboardingStep = {
   title: string;

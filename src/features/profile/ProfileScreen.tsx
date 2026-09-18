@@ -27,7 +27,7 @@ import { chargingStations } from "../../data";
 import { PressableScale, ScreenTransition } from "../../components";
 import { useFluiStorage } from "../../hooks/useFluiStorage";
 import { useAppPreferences } from "../../context/PreferencesContext";
-import { createProfileStyles } from "./styles";
+import { createProfileStyles } from "./ProfileScreen.styles";
 
 type ProfileTab = "favorites" | "history";
 type Station = (typeof chargingStations)[number];
@@ -521,7 +521,7 @@ export default function ProfileScreen() {
                 <Search size={21} color={theme.primary} strokeWidth={2.1} />,
                 "Filtros",
                 "Refinar busca",
-                "/filters" as Href,
+                "/search" as Href,
               )}
             </View>
           </View>

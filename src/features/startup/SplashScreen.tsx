@@ -6,7 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { fluiStorage } from "../../storage";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
-import baseStyles from "./styles";
+import baseStyles from "./SplashScreen.styles";
 
 const SPLASH_DURATION = 2800;
 
