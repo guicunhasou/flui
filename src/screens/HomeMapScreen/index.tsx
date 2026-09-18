@@ -21,8 +21,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import MapView, {
   Marker,
   PROVIDER_GOOGLE,
+  type MapViewHandle,
   type Region,
-} from "react-native-maps";
+} from "../../components/MapSurface";
 import Svg, { Circle, G, Path, SvgXml } from "react-native-svg";
 import { router, type Href, useLocalSearchParams } from "expo-router";
 import {
@@ -56,6 +57,7 @@ import {
 } from "../../components";
 import baseStyles, { colors as baseColors } from "./styles";
 import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
+import { useReducedMotion } from "../../hooks/useReducedMotion";
 import { useAppPreferences } from "../../context/PreferencesContext";
 
 const FEEDBACK_DURATION = 1500;
@@ -371,6 +373,11 @@ const parseRouteFilters = (param: unknown): StationFilters => {
         "onlyOpenNow",
         defaultFilters.onlyOpenNow,
       ),
+      onlyAvailableChargers: readBoolean(
+        parsedRecord,
+        "onlyAvailableChargers",
+        defaultFilters.onlyAvailableChargers,
+      ),
       onlyOpen24h: readBoolean(
         parsedRecord,
         "onlyOpen24h",
@@ -391,6 +398,7 @@ const hasActiveFilters = (filters: StationFilters) => {
     filters.distance.maxKm !== defaultFilters.distance.maxKm ||
     filters.rating.minRating > 0 ||
     filters.onlyOpenNow ||
+    filters.onlyAvailableChargers ||
     filters.onlyOpen24h
   );
 };
@@ -415,6 +423,7 @@ const combinarFiltrosRapidos = (
     distance: filters.distance,
     rating: filters.rating,
     onlyOpenNow: filters.onlyOpenNow || filtrosRapidos.openNow,
+    onlyAvailableChargers: filters.onlyAvailableChargers,
     onlyOpen24h: filters.onlyOpen24h,
   };
 };
@@ -682,12 +691,6 @@ const getStationAmenities = (station: Station) => {
     .filter(Boolean);
 };
 
-const stationIsOpenNow = (station: Station) => {
-  const status = getRawStationStatus(station);
-
-  return status === "available" || status === "busy";
-};
-
 const stationHasAvailableCharger = (station: Station) => {
   const connectors = readArray(station, "connectors");
 
@@ -773,6 +776,7 @@ export default function HomeMapScreen() {
     baseColors,
   );
   const { userPreferences, updateBatteryPercent } = useAppPreferences();
+  const reduceMotionEnabled = useReducedMotion();
   const batteryPercent = userPreferences.batteryPercent;
   const vehicleRangeKm = userPreferences.vehicleRangeKm;
   const [seletorBateriaAberto, setSeletorBateriaAberto] = useState(false);
@@ -792,7 +796,7 @@ export default function HomeMapScreen() {
   const routeParams = useLocalSearchParams();
   const filtersParam = routeParams.filters;
   const queryParam = routeParams.query;
-  const mapRef = useRef<MapView | null>(null);
+  const mapRef = useRef<MapViewHandle | null>(null);
   const currentMapRegionRef = useRef<Region | null>(null);
   const sheetTranslateY = useRef(new Animated.Value(0)).current;
   const quickFiltersProgress = useRef(new Animated.Value(0)).current;
@@ -866,17 +870,22 @@ export default function HomeMapScreen() {
       quickFiltersProgress.stopAnimation();
       setAtalhosRapidosAbertos(shouldOpen);
 
+      if (reduceMotionEnabled) {
+        quickFiltersProgress.setValue(nextProgress);
+        return;
+      }
+
       Animated.timing(quickFiltersProgress, {
         toValue: nextProgress,
         duration: 220,
         useNativeDriver: false,
       }).start();
     },
-    [quickFiltersProgress],
+    [quickFiltersProgress, reduceMotionEnabled],
   );
 
   useEffect(() => {
-    if (hasInteractedWithQuickFilters) {
+    if (hasInteractedWithQuickFilters || reduceMotionEnabled) {
       quickFiltersHintTranslateY.stopAnimation();
       quickFiltersHintTranslateY.setValue(0);
       return;
@@ -911,10 +920,11 @@ export default function HomeMapScreen() {
     atalhosRapidosAbertos,
     hasInteractedWithQuickFilters,
     quickFiltersHintTranslateY,
+    reduceMotionEnabled,
   ]);
 
   useEffect(() => {
-    if (hasInteractedWithSheet) {
+    if (hasInteractedWithSheet || reduceMotionEnabled) {
       sheetHintTranslateY.stopAnimation();
       sheetHintTranslateY.setValue(0);
       return;
@@ -945,7 +955,12 @@ export default function HomeMapScreen() {
       hintAnimation.stop();
       sheetHintTranslateY.setValue(0);
     };
-  }, [hasInteractedWithSheet, isSheetCollapsed, sheetHintTranslateY]);
+  }, [
+    hasInteractedWithSheet,
+    isSheetCollapsed,
+    reduceMotionEnabled,
+    sheetHintTranslateY,
+  ]);
 
   const appliedFilters = useMemo(() => {
     return parseRouteFilters(filtersParam);
@@ -1129,8 +1144,8 @@ export default function HomeMapScreen() {
       return;
     }
 
-    mapRef.current?.animateToRegion(mapRegion, 450);
-  }, [mapRegion]);
+    mapRef.current?.animateToRegion(mapRegion, reduceMotionEnabled ? 0 : 450);
+  }, [mapRegion, reduceMotionEnabled]);
 
   const ajusteInicialDeCentralizacaoRef = useRef(false);
 
@@ -1157,13 +1172,17 @@ export default function HomeMapScreen() {
     );
 
     currentMapRegionRef.current = regiaoCentralizada;
-    mapRef.current?.animateToRegion(regiaoCentralizada, 400);
+    mapRef.current?.animateToRegion(
+      regiaoCentralizada,
+      reduceMotionEnabled ? 0 : 400,
+    );
   }, [
     fracaoDeDeslocamentoVertical,
     hasFiltersApplied,
     hasSearchTerm,
     localizacaoUsuario,
     mapAreaHeight,
+    reduceMotionEnabled,
     sheetHeight,
   ]);
 
@@ -1186,7 +1205,10 @@ export default function HomeMapScreen() {
     };
 
     currentMapRegionRef.current = nextRegion;
-    mapRef.current?.animateToRegion(nextRegion, 240);
+    mapRef.current?.animateToRegion(
+      nextRegion,
+      reduceMotionEnabled ? 0 : 240,
+    );
   };
 
   const sheetTitle = hasNoResults
@@ -1206,6 +1228,13 @@ export default function HomeMapScreen() {
     (destino: number) => {
       sheetPositionRef.current = destino;
 
+      sheetTranslateY.stopAnimation();
+
+      if (reduceMotionEnabled) {
+        sheetTranslateY.setValue(destino);
+        return;
+      }
+
       Animated.spring(sheetTranslateY, {
         toValue: destino,
         useNativeDriver: true,
@@ -1213,7 +1242,7 @@ export default function HomeMapScreen() {
         tension: 58,
       }).start();
     },
-    [sheetTranslateY],
+    [reduceMotionEnabled, sheetTranslateY],
   );
 
   const alternarModalDePontos = useCallback(
@@ -1359,7 +1388,7 @@ export default function HomeMapScreen() {
         true,
         fracaoDeDeslocamentoVertical,
       ),
-      500,
+      reduceMotionEnabled ? 0 : 500,
     );
 
     showLocationFeedback("Localização centralizada na FIAP");

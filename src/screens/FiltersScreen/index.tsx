@@ -41,7 +41,6 @@ import {
   Amenity,
   ConnectorType,
   StationFilters,
-  StationStatus,
 } from "../../types";
 import { styles as baseStyles } from "./styles";
 import { LoadingOverlay, ScreenTransition } from "../../components";
@@ -261,11 +260,9 @@ export default function FiltersScreen() {
   }
 
   function handleToggleAvailableChargers() {
-    const availableStatus: StationStatus = "available";
-
     setFilters((currentFilters) => ({
       ...currentFilters,
-      statuses: toggleArrayValue(currentFilters.statuses, availableStatus),
+      onlyAvailableChargers: !currentFilters.onlyAvailableChargers,
     }));
   }
 
@@ -493,7 +490,7 @@ export default function FiltersScreen() {
                 colors={colors}
                 label="Carregadores livres"
                 Icone={BatteryCharging}
-                selected={filters.statuses.includes("available")}
+                selected={filters.onlyAvailableChargers}
                 onPress={handleToggleAvailableChargers}
                 size="large"
               />

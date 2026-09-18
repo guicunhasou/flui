@@ -49,6 +49,7 @@ const defaultUserPreferences: UserPreferences = {
     distance: { ...defaultFilters.distance },
     rating: { ...defaultFilters.rating },
     onlyOpenNow: defaultFilters.onlyOpenNow,
+    onlyAvailableChargers: defaultFilters.onlyAvailableChargers,
     onlyOpen24h: defaultFilters.onlyOpen24h,
   },
   hasSeenOnboarding: false,

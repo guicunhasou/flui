@@ -93,6 +93,7 @@ export const defaultFilters: StationFilters = {
     minRating: 0,
   },
   onlyOpenNow: false,
+  onlyAvailableChargers: false,
   onlyOpen24h: false,
 };
 

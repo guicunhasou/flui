@@ -49,6 +49,7 @@ function createDefaultUserPreferences(): UserPreferences {
       distance: { ...defaultFilters.distance },
       rating: { ...defaultFilters.rating },
       onlyOpenNow: defaultFilters.onlyOpenNow,
+      onlyAvailableChargers: defaultFilters.onlyAvailableChargers,
       onlyOpen24h: defaultFilters.onlyOpen24h,
     },
     hasSeenOnboarding: false,
@@ -135,6 +136,9 @@ function normalizeUserPreferences(
         ...(savedFilters?.rating ?? {}),
       },
       onlyOpenNow: savedFilters?.onlyOpenNow ?? base.savedFilters.onlyOpenNow,
+      onlyAvailableChargers:
+        savedFilters?.onlyAvailableChargers ??
+        base.savedFilters.onlyAvailableChargers,
       onlyOpen24h: savedFilters?.onlyOpen24h ?? base.savedFilters.onlyOpen24h,
     },
   };

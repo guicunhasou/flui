@@ -20,6 +20,7 @@ export type StationFilters = {
   distance: DistanceFilter;
   rating: RatingFilter;
   onlyOpenNow: boolean;
+  onlyAvailableChargers: boolean;
   onlyOpen24h: boolean;
 };
 
