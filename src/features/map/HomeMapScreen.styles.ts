@@ -58,6 +58,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
 
+  headerActions: {
+    flex: 1,
+    justifyContent: "flex-end",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2,
+  },
+
   profileButton: {
     width: 46,
     height: 46,
@@ -76,31 +84,83 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
 
-  batteryPill: {
-    height: 40,
-    paddingHorizontal: 8,
-    paddingRight: 14,
-    borderRadius: 20,
+  vehicleButton: {
+    maxWidth: 190,
+    height: 46,
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "flex-end",
     gap: 8,
-    backgroundColor: colors.white,
-    borderWidth: 1.5,
-    ...softShadow,
   },
 
-  batteryPillIconWrap: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
+  vehicleInfo: {
+    flexShrink: 1,
+    alignItems: "flex-end",
+    gap: 1,
+  },
+
+  vehicleImage: {
+    width: 60,
+    height: 40,
+  },
+
+  vehicleBatteryPill: {
+    minHeight: 20,
+    paddingHorizontal: 7,
+    borderRadius: 10,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    gap: 5,
+    backgroundColor: colors.white,
+    borderWidth: 1,
   },
 
-  batteryPillText: {
-    color: colors.primary,
-    fontSize: 14,
-    fontWeight: "800",
+  vehicleBatteryIconRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  vehicleBatteryIcon: {
+    width: 20,
+    height: 10,
+    padding: 1,
+    overflow: "hidden",
+    borderWidth: 1.4,
+    borderRadius: 3,
+  },
+
+  vehicleBatteryLevel: {
+    height: "100%",
+    borderRadius: 1,
+  },
+
+  vehicleBatteryCap: {
+    width: 2,
+    height: 5,
+    marginLeft: 1,
+    borderTopRightRadius: 1,
+    borderBottomRightRadius: 1,
+  },
+
+  vehicleBatteryText: {
+    fontSize: 10,
+    fontWeight: "900",
+  },
+
+  vehicleBatterySource: {
+    maxWidth: 116,
+    color: colors.textLight,
+    fontSize: 9,
+    lineHeight: 11,
+    fontWeight: "700",
+  },
+
+  vehicleBatteryUpdatedAt: {
+    color: colors.textLight,
+    fontSize: 8,
+    lineHeight: 9,
+    fontWeight: "600",
   },
 
   batterySheetOverlay: {
@@ -318,12 +378,27 @@ const styles = StyleSheet.create({
 
   realMapMarker: {
     width: 44,
-    height: 44,
-    borderRadius: 22,
+    height: 56,
+    alignItems: "center",
+  },
+
+  realMapMarkerBody: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 3,
     borderColor: colors.white,
+    ...shadow,
+  },
+
+  realMapMarkerTip: {
+    width: 14,
+    height: 14,
+    marginTop: -8,
+    borderRadius: 3,
+    transform: [{ rotate: "45deg" }],
   },
 
   userLocationMarker: {
@@ -641,9 +716,9 @@ const styles = StyleSheet.create({
   },
 
   pointCard: {
-    marginTop: 14,
-    padding: 16,
-    borderRadius: 20,
+    marginTop: 10,
+    padding: 13,
+    borderRadius: 17,
     backgroundColor: colors.white,
     borderWidth: 1,
     borderColor: colors.background,
@@ -656,6 +731,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+  },
+
+  pointCardTags: {
+    flex: 1,
+    marginRight: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 6,
   },
 
   pointBadge: {
@@ -678,7 +762,7 @@ const styles = StyleSheet.create({
   },
 
   pointStationName: {
-    marginTop: 10,
+    marginTop: 8,
     color: colors.text,
     fontSize: 17,
     fontWeight: "800",
@@ -693,11 +777,11 @@ const styles = StyleSheet.create({
   },
 
   pointInlineMetaRow: {
-    marginTop: 10,
+    marginTop: 8,
     flexDirection: "row",
     alignItems: "center",
     flexWrap: "wrap",
-    gap: 14,
+    gap: 12,
   },
 
   statusDot: {
@@ -721,17 +805,16 @@ const styles = StyleSheet.create({
 
   pointAutonomiaChip: {
     alignSelf: "flex-start",
-    marginTop: 12,
-    height: 26,
-    paddingHorizontal: 10,
-    borderRadius: 13,
+    height: 22,
+    paddingHorizontal: 8,
+    borderRadius: 11,
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
   },
 
   pointAutonomiaChipText: {
-    fontSize: 11.5,
+    fontSize: 10,
     fontWeight: "800",
     letterSpacing: -0.1,
   },

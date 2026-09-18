@@ -24,7 +24,7 @@ import MapView, {
   type MapViewHandle,
   type Region,
 } from "../../components/MapSurface";
-import Svg, { Circle, G, Path, SvgXml } from "react-native-svg";
+import { SvgXml } from "react-native-svg";
 import { router, type Href, useLocalSearchParams } from "expo-router";
 import {
   BatteryFull,
@@ -78,102 +78,12 @@ const logoFluiXml = `
 `;
 
 const imagemPerfilUsuario = require("../../assets/user/profile1.webp");
-
-const MARKER_ICON_CANVAS_SIZE = 44;
-const MARKER_ICON_BORDER_COLOR = "#FCFEFA";
-const USER_LOCATION_ICON_CANVAS_SIZE = 54;
-const USER_LOCATION_ICON_KEY = "user-location";
-
-const plugIconPaths = [
-  "M12 22v-5",
-  "M15 8V2",
-  "M17 8a1 1 0 0 1 1 1v4a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1z",
-  "M9 8V2",
-];
-
-type GeradorDeIconeDeMarcadorProps = {
-  markerKey: string;
-  tamanhoCanvas: number;
-  onPronto: (markerKey: string, uri: string) => void;
-  children: React.ReactNode;
-};
-
-const GeradorDeIconeDeMarcador = ({
-  markerKey,
-  tamanhoCanvas,
-  onPronto,
-  children,
-}: GeradorDeIconeDeMarcadorProps) => {
-  const svgRef = useRef<Svg | null>(null);
-
-  const capturarIcone = useCallback(() => {
-    requestAnimationFrame(() => {
-      svgRef.current?.toDataURL((base64) => {
-        onPronto(markerKey, `data:image/png;base64,${base64}`);
-      });
-    });
-  }, [markerKey, onPronto]);
-
-  return (
-    <View
-      pointerEvents="none"
-      style={{ position: "absolute", top: -9999, left: -9999 }}
-    >
-      <Svg
-        ref={svgRef}
-        width={tamanhoCanvas}
-        height={tamanhoCanvas}
-        viewBox={`0 0 ${tamanhoCanvas} ${tamanhoCanvas}`}
-        onLayout={capturarIcone}
-      >
-        {children}
-      </Svg>
-    </View>
-  );
-};
-
-const ConteudoIconeEstacao = ({ cor }: { cor: string }) => (
-  <>
-    <Circle
-      cx={MARKER_ICON_CANVAS_SIZE / 2}
-      cy={MARKER_ICON_CANVAS_SIZE / 2}
-      r={MARKER_ICON_CANVAS_SIZE / 2 - 3}
-      fill={cor}
-      stroke={MARKER_ICON_BORDER_COLOR}
-      strokeWidth={3}
-    />
-    <G
-      transform="translate(12, 12) scale(0.8333)"
-      fill="none"
-      stroke={MARKER_ICON_BORDER_COLOR}
-      strokeWidth={2.4}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      {plugIconPaths.map((d) => (
-        <Path key={d} d={d} />
-      ))}
-    </G>
-  </>
-);
-
-const ConteudoIconeLocalizacaoUsuario = ({ cor }: { cor: string }) => {
-  const centro = USER_LOCATION_ICON_CANVAS_SIZE / 2;
-
-  return (
-    <>
-      <Circle cx={centro} cy={centro} r={centro} fill="rgba(31, 169, 113, 0.18)" />
-      <Circle
-        cx={centro}
-        cy={centro}
-        r={12}
-        fill={cor}
-        stroke={MARKER_ICON_BORDER_COLOR}
-        strokeWidth={5}
-      />
-    </>
-  );
-};
+const imagemCarroUsuario = require("../../assets/user/car1.webp");
+const iconeMarcadorVerde = require("../../assets/map/marker-green.png");
+const iconeMarcadorAmarelo = require("../../assets/map/marker-yellow.png");
+const iconeMarcadorVermelho = require("../../assets/map/marker-red.png");
+const iconeMarcadorCinza = require("../../assets/map/marker-gray.png");
+const iconeLocalizacaoUsuario = require("../../assets/map/user-location.png");
 
 const criarLogoFluiXml = (corPrincipal: string, corPonto: string) => {
   return logoFluiXml
@@ -577,6 +487,24 @@ const getStationMarkerColor = (station: Station, colorSet: MapColorTokens) => {
   return colorSet.green ?? colorSet.success ?? colorSet.primary;
 };
 
+const getStationMarkerIcon = (station: Station) => {
+  const status = getRawStationStatus(station);
+
+  if (status === "busy") {
+    return iconeMarcadorAmarelo;
+  }
+
+  if (status === "maintenance") {
+    return iconeMarcadorVermelho;
+  }
+
+  if (status === "unavailable") {
+    return iconeMarcadorCinza;
+  }
+
+  return iconeMarcadorVerde;
+};
+
 const NIVEIS_DE_BATERIA_VEICULO = [20, 40, 60, 80, 100];
 
 function obterIconeDeBateriaAtual(percentual: number) {
@@ -592,7 +520,7 @@ function obterIconeDeBateriaAtual(percentual: number) {
 }
 
 function obterCorDeBateriaAtual(percentual: number, colorSet: MapColorTokens) {
-  if (percentual >= 60) {
+  if (percentual >= 50) {
     return colorSet.green ?? colorSet.success ?? colorSet.primary;
   }
 
@@ -780,6 +708,8 @@ export default function HomeMapScreen() {
   const batteryPercent = userPreferences.batteryPercent;
   const vehicleRangeKm = userPreferences.vehicleRangeKm;
   const [seletorBateriaAberto, setSeletorBateriaAberto] = useState(false);
+  const [bateriaInformadaManualmente, setBateriaInformadaManualmente] =
+    useState(false);
   const { width: larguraJanela, height: alturaJanela } =
     useWindowDimensions();
   const isTelaLarga = larguraJanela >= TABLET_BREAKPOINT;
@@ -806,15 +736,11 @@ export default function HomeMapScreen() {
   const [localizacaoUsuario, setLocalizacaoUsuario] =
     useState<UserLocation | null>(LOCALIZACAO_DEMO_FIAP);
   const [isLocatingUser, setIsLocatingUser] = useState(false);
-  const [rastrearAlteracoesDosMarcadores, setRastrearAlteracoesDosMarcadores] =
-    useState(true);
-  const [iconesDeMarcadorPorCor, setIconesDeMarcadorPorCor] = useState<
-    Record<string, string>
-  >({});
   const [isSheetCollapsed, setIsSheetCollapsed] = useState(false);
   const [painelTotalmenteOculto, setPainelTotalmenteOculto] = useState(false);
   const [sheetHeight, setSheetHeight] = useState(0);
   const [mapAreaHeight, setMapAreaHeight] = useState(0);
+  const [alturaCardPonto, setAlturaCardPonto] = useState<number | null>(null);
   const [atalhosRapidosAbertos, setAtalhosRapidosAbertos] = useState(false);
   const [hasInteractedWithQuickFilters, setHasInteractedWithQuickFilters] =
     useState(false);
@@ -1021,39 +947,6 @@ export default function HomeMapScreen() {
     );
   }, [filtrosDoMapa, filtrosRapidos, searchTerm]);
 
-  useEffect(() => {
-    setRastrearAlteracoesDosMarcadores(true);
-
-    const timeoutId = setTimeout(() => {
-      setRastrearAlteracoesDosMarcadores(false);
-    }, 700);
-
-    return () => clearTimeout(timeoutId);
-  }, [visibleStations.length]);
-
-  const coresDosMarcadores = useMemo(() => {
-    const cores = new Set<string>();
-
-    visibleStations.forEach((item) => {
-      cores.add(getStationMarkerColor(item.station, colors));
-    });
-
-    return Array.from(cores);
-  }, [colors, visibleStations]);
-
-  const iconeLocalizacaoUsuarioUri =
-    iconesDeMarcadorPorCor[USER_LOCATION_ICON_KEY];
-
-  const registrarIconeDeMarcador = useCallback((cor: string, uri: string) => {
-    setIconesDeMarcadorPorCor((atual) => {
-      if (atual[cor] === uri) {
-        return atual;
-      }
-
-      return { ...atual, [cor]: uri };
-    });
-  }, []);
-
   const estacoesRecomendadas = useMemo(() => {
     return visibleStations.filter((item) => {
       return (
@@ -1218,10 +1111,14 @@ export default function HomeMapScreen() {
   const IconeBateriaAtual = obterIconeDeBateriaAtual(batteryPercent);
   const corBateriaAtual = obterCorDeBateriaAtual(batteryPercent, colors);
   const autonomiaAtualKm = Math.round((vehicleRangeKm * batteryPercent) / 100);
+  const alturaListaComDoisCards = alturaCardPonto
+    ? alturaCardPonto * 2 + 22
+    : Math.min(alturaMaximaListaPontos, 250);
 
-  const selecionarNivelDeBateria = (percentual: number) => {
+  const selecionarNivelDeBateria = async (percentual: number) => {
     setSeletorBateriaAberto(false);
-    void updateBatteryPercent(percentual);
+    await updateBatteryPercent(percentual);
+    setBateriaInformadaManualmente(true);
   };
 
   const moverPainelDePontosPara = useCallback(
@@ -1416,39 +1313,86 @@ export default function HomeMapScreen() {
           <View style={styles.header}>
             <SvgXml xml={logoFluiDoTema} width={76} height={36} />
 
-            <PressableScale
-              accessibilityRole="button"
-              accessibilityLabel={`Bateria do veículo: ${batteryPercent} por cento, cerca de ${autonomiaAtualKm} quilômetros de autonomia`}
-              accessibilityHint="Toque para ajustar o nível de bateria e ver o alcance nos pontos."
-              style={[
-                styles.batteryPill,
-                { borderColor: corBateriaAtual + "55" },
-              ]}
-              onPress={() => setSeletorBateriaAberto(true)}
-            >
-              <View
-                style={[
-                  styles.batteryPillIconWrap,
-                  { backgroundColor: corBateriaAtual + "1F" },
-                ]}
+            <View style={styles.headerActions}>
+              <PressableScale
+                accessibilityRole="button"
+                accessibilityLabel={`Bateria do veículo: ${batteryPercent} por cento, cerca de ${autonomiaAtualKm} quilômetros de autonomia`}
+                accessibilityHint="Toque para ajustar o nível de bateria e ver o alcance nos pontos."
+                style={styles.vehicleButton}
+                onPress={() => setSeletorBateriaAberto(true)}
               >
-                <IconeBateriaAtual size={14} color={corBateriaAtual} strokeWidth={2.6} />
-              </View>
-              <Text style={styles.batteryPillText}>{batteryPercent}%</Text>
-            </PressableScale>
+                <View style={styles.vehicleInfo}>
+                  <View
+                    style={[
+                      styles.vehicleBatteryPill,
+                      { borderColor: corBateriaAtual + "55" },
+                    ]}
+                  >
+                    <View style={styles.vehicleBatteryIconRow}>
+                      <View
+                        style={[
+                          styles.vehicleBatteryIcon,
+                          { borderColor: corBateriaAtual },
+                        ]}
+                      >
+                        <View
+                          style={[
+                            styles.vehicleBatteryLevel,
+                            {
+                              width: `${batteryPercent}%`,
+                              backgroundColor: corBateriaAtual,
+                            },
+                          ]}
+                        />
+                      </View>
+                      <View
+                        style={[
+                          styles.vehicleBatteryCap,
+                          { backgroundColor: corBateriaAtual },
+                        ]}
+                      />
+                    </View>
 
-            <PressableScale
-              accessibilityRole="button"
-              accessibilityLabel="Abrir perfil"
-              style={styles.profileButton}
-              onPress={openProfile}
-            >
-              <Image
-                source={imagemPerfilUsuario}
-                style={styles.profileImage}
-                resizeMode="cover"
-              />
-            </PressableScale>
+                    <Text
+                      style={[
+                        styles.vehicleBatteryText,
+                        { color: corBateriaAtual },
+                      ]}
+                    >
+                      {batteryPercent}%
+                    </Text>
+                  </View>
+
+                  <Text style={styles.vehicleBatterySource} numberOfLines={1}>
+                    {bateriaInformadaManualmente
+                      ? "Informado manualmente"
+                      : "Atualizado pelo veículo"}
+                  </Text>
+                  <Text style={styles.vehicleBatteryUpdatedAt}>
+                    {bateriaInformadaManualmente ? "agora" : "há 1 min."}
+                  </Text>
+                </View>
+
+                <Image
+                  source={imagemCarroUsuario}
+                  style={styles.vehicleImage}
+                  resizeMode="cover"
+                />
+              </PressableScale>
+
+              <PressableScale
+                accessibilityRole="button"
+                accessibilityLabel="Abrir perfil"
+                style={styles.profileButton}
+                onPress={openProfile}
+              >
+                <Image
+                  source={imagemPerfilUsuario}
+                  style={styles.profileImage}
+                  resizeMode="cover"
+                />
+              </PressableScale>
+            </View>
           </View>
 
           <View style={styles.searchBar}>
@@ -1547,29 +1491,6 @@ export default function HomeMapScreen() {
             setMapAreaHeight(event.nativeEvent.layout.height);
           }}
         >
-          {coresDosMarcadores
-            .filter((cor) => !iconesDeMarcadorPorCor[cor])
-            .map((cor) => (
-              <GeradorDeIconeDeMarcador
-                key={cor}
-                markerKey={cor}
-                tamanhoCanvas={MARKER_ICON_CANVAS_SIZE}
-                onPronto={registrarIconeDeMarcador}
-              >
-                <ConteudoIconeEstacao cor={cor} />
-              </GeradorDeIconeDeMarcador>
-            ))}
-
-          {localizacaoUsuario && !iconesDeMarcadorPorCor[USER_LOCATION_ICON_KEY] ? (
-            <GeradorDeIconeDeMarcador
-              markerKey={USER_LOCATION_ICON_KEY}
-              tamanhoCanvas={USER_LOCATION_ICON_CANVAS_SIZE}
-              onPronto={registrarIconeDeMarcador}
-            >
-              <ConteudoIconeLocalizacaoUsuario cor={colors.primary} />
-            </GeradorDeIconeDeMarcador>
-          ) : null}
-
           <MapView
             ref={mapRef}
             style={styles.realMap}
@@ -1588,6 +1509,7 @@ export default function HomeMapScreen() {
           >
             {localizacaoUsuario ? (
               <Marker
+                key="user-location"
                 coordinate={{
                   latitude: localizacaoUsuario.latitude,
                   longitude: localizacaoUsuario.longitude,
@@ -1595,31 +1517,14 @@ export default function HomeMapScreen() {
                 title="Você na FIAP"
                 description="Localização simulada para demonstração."
                 anchor={{ x: 0.5, y: 0.5 }}
-                icon={
-                  iconeLocalizacaoUsuarioUri
-                    ? { uri: iconeLocalizacaoUsuarioUri }
-                    : undefined
-                }
-                tracksViewChanges={
-                  iconeLocalizacaoUsuarioUri
-                    ? false
-                    : rastrearAlteracoesDosMarcadores
-                }
-              >
-                {iconeLocalizacaoUsuarioUri ? null : (
-                  <View collapsable={false} style={styles.userLocationMarker}>
-                    <View style={styles.userLocationPulse} />
-                    <View style={styles.userLocationDot} />
-                  </View>
-                )}
-              </Marker>
+                icon={iconeLocalizacaoUsuario}
+                tracksViewChanges={false}
+              />
             ) : null}
 
             {visibleStations.map((item) => {
               const stationId = getStationId(item.station, item.index);
-              const markerColor = getStationMarkerColor(item.station, colors);
-              const markerContentColor = "#FCFEFA";
-              const markerIconUri = iconesDeMarcadorPorCor[markerColor];
+              const markerIcon = getStationMarkerIcon(item.station);
 
               return (
                 <Marker
@@ -1631,35 +1536,14 @@ export default function HomeMapScreen() {
                   title={getStationName(item.station)}
                   description={`${getStationStatus(item.station)} • ${getStationPower(item.station)}`}
                   onPress={() => openStationDetails(stationId)}
-                  anchor={{ x: 0.5, y: 0.5 }}
+                  anchor={{ x: 0.5, y: 0.92 }}
                   accessible
                   accessibilityRole="button"
                   accessibilityLabel={`Abrir ficha de ${getStationNameById(stationId)}`}
                   accessibilityHint="Mostra detalhes, disponibilidade e comodidades do ponto."
-                  icon={markerIconUri ? { uri: markerIconUri } : undefined}
-                  tracksViewChanges={
-                    markerIconUri ? false : rastrearAlteracoesDosMarcadores
-                  }
-                >
-                  {markerIconUri ? null : (
-                    <View
-                      collapsable={false}
-                      style={[
-                        styles.realMapMarker,
-                        {
-                          backgroundColor: markerColor,
-                          borderColor: markerContentColor,
-                        },
-                      ]}
-                    >
-                      <Plug
-                        size={19}
-                        color={markerContentColor}
-                        strokeWidth={2.4}
-                      />
-                    </View>
-                  )}
-                </Marker>
+                  icon={markerIcon}
+                  tracksViewChanges={false}
+                />
               );
             })}
           </MapView>
@@ -1795,13 +1679,13 @@ export default function HomeMapScreen() {
               <ScrollView
                 style={[
                   styles.pointsScroll,
-                  { maxHeight: alturaMaximaListaPontos },
+                  { height: alturaListaComDoisCards },
                 ]}
                 contentContainerStyle={styles.pointsScrollContent}
-                showsVerticalScrollIndicator={points.length > 3}
+                showsVerticalScrollIndicator={points.length > 2}
                 nestedScrollEnabled
               >
-                {points.map((point) => {
+                {points.map((point, pointIndex) => {
                   const CriterioIcon = point.criterioIcon;
                   const IconeAlcance = obterIconeDoAlcance(point.alcance.nivel);
                   const corAlcance = obterCorDoAlcance(
@@ -1826,17 +1710,54 @@ export default function HomeMapScreen() {
                       accessibilityHint="Abre a ficha detalhada do ponto de recarga."
                       style={styles.pointCard}
                       onPress={() => openStationDetails(point.stationId)}
+                      onLayout={
+                        pointIndex === 0
+                          ? (event) => {
+                              const proximaAltura = Math.ceil(
+                                event.nativeEvent.layout.height,
+                              );
+
+                              if (proximaAltura !== alturaCardPonto) {
+                                setAlturaCardPonto(proximaAltura);
+                              }
+                            }
+                          : undefined
+                      }
                     >
                       <View style={styles.pointCardTopRow}>
-                        <View style={styles.pointBadge}>
-                          <CriterioIcon
-                            size={12}
-                            color={colors.primary}
-                            strokeWidth={2.4}
-                          />
-                          <Text style={styles.pointBadgeText}>
-                            {point.criterioLabel}
-                          </Text>
+                        <View style={styles.pointCardTags}>
+                          <View style={styles.pointBadge}>
+                            <CriterioIcon
+                              size={12}
+                              color={colors.primary}
+                              strokeWidth={2.4}
+                            />
+                            <Text style={styles.pointBadgeText}>
+                              {point.criterioLabel}
+                            </Text>
+                          </View>
+
+                          <View
+                            style={[
+                              styles.pointAutonomiaChip,
+                              { backgroundColor: corFundoAlcance },
+                            ]}
+                          >
+                            <IconeAlcance
+                              size={12}
+                              color={corAlcance}
+                              strokeWidth={2.4}
+                            />
+
+                            <Text
+                              style={[
+                                styles.pointAutonomiaChipText,
+                                { color: corAlcance },
+                              ]}
+                            >
+                              {textoAlcance}
+                            </Text>
+                          </View>
                         </View>
 
                         <ChevronRight
@@ -1846,10 +1767,12 @@ export default function HomeMapScreen() {
                         />
                       </View>
 
-                      <Text style={styles.pointStationName}>
+                      <Text style={styles.pointStationName} numberOfLines={1}>
                         {point.nomeEstacao}
                       </Text>
-                      <Text style={styles.pointAddress}>{point.address}</Text>
+                      <Text style={styles.pointAddress} numberOfLines={1}>
+                        {point.address}
+                      </Text>
 
                       <View style={styles.pointInlineMetaRow}>
                         <View style={styles.metaRow}>
@@ -1883,27 +1806,6 @@ export default function HomeMapScreen() {
                         </View>
                       </View>
 
-                      <View
-                        style={[
-                          styles.pointAutonomiaChip,
-                          { backgroundColor: corFundoAlcance },
-                        ]}
-                      >
-                        <IconeAlcance
-                          size={13}
-                          color={corAlcance}
-                          strokeWidth={2.4}
-                        />
-
-                        <Text
-                          style={[
-                            styles.pointAutonomiaChipText,
-                            { color: corAlcance },
-                          ]}
-                        >
-                          {textoAlcance}
-                        </Text>
-                      </View>
                     </PressableScale>
                   );
                 })}
@@ -2008,7 +1910,7 @@ export default function HomeMapScreen() {
                             }
                           : null,
                       ]}
-                      onPress={() => selecionarNivelDeBateria(percentual)}
+                      onPress={() => void selecionarNivelDeBateria(percentual)}
                     >
                       <OpcaoIcone
                         size={18}
