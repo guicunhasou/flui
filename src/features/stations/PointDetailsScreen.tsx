@@ -828,22 +828,7 @@ export default function PointDetailsScreen() {
           </View>
 
           <View style={styles.section}>
-            <View style={styles.reviewHeader}>
-              <Text style={styles.sectionTitle}>Avaliações de usuários</Text>
-
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Avaliar este ponto"
-                accessibilityHint="Abre a tela de avaliação do ponto de recarga."
-                style={({ pressed, hovered }: PressableVisualState) => [
-                  hovered && !pressed ? styles.hoverFeedback : null,
-                  pressed ? styles.inlineButtonPressed : null,
-                ]}
-                onPress={handleOpenReview}
-              >
-                <Text style={styles.seeAllText}>Avaliar</Text>
-              </Pressable>
-            </View>
+            <Text style={styles.sectionTitle}>Avaliações de usuários</Text>
 
             <View style={styles.ratingPanel}>
               <View style={styles.ratingPanelLeft}>
@@ -902,6 +887,31 @@ export default function PointDetailsScreen() {
                 </View>
               </View>
             </View>
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={
+                userStationReview
+                  ? "Editar minha avaliação deste ponto"
+                  : "Avaliar este ponto"
+              }
+              accessibilityHint="Abre a tela de avaliação do ponto de recarga."
+              accessibilityState={{ disabled: isLoadingAction }}
+              disabled={isLoadingAction}
+              style={({ pressed, hovered }: PressableVisualState) => [
+                styles.reviewCtaButton,
+                hovered && !pressed ? styles.hoverFeedback : null,
+                pressed ? styles.buttonPressed : null,
+              ]}
+              onPress={handleOpenReview}
+            >
+              <Star size={18} color={colors.white} strokeWidth={2.4} />
+              <Text style={styles.reviewCtaText}>
+                {userStationReview
+                  ? "Editar minha avaliação"
+                  : "Avaliar este ponto"}
+              </Text>
+            </Pressable>
 
             {stationReviews.length > 0 ? (
               <View style={styles.userReviewsList}>

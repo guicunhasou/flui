@@ -576,7 +576,7 @@ export const styles = StyleSheet.create({
   ratingPanel: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 14,
   },
 
   ratingPanelLeft: {
@@ -663,6 +663,25 @@ export const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "700",
     textAlign: "right",
+  },
+
+  reviewCtaButton: {
+    minHeight: 48,
+    marginBottom: 18,
+    paddingHorizontal: 18,
+    borderRadius: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 9,
+    backgroundColor: colors.primary,
+  },
+
+  reviewCtaText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: "900",
+    letterSpacing: -0.1,
   },
 
   userReviewsList: {
