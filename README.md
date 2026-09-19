@@ -26,6 +26,13 @@ Projeto desenvolvido para o **Enterprise Challenge — Charge Map Cup**, parceri
 
 ---
 
+## 🎓 Entrega da Etapa 2
+
+- 🎥 [Assistir ao pitch do projeto](https://youtu.be/rMu57QWk3h4)
+- 📄 [Visualizar o PDF da entrega](docs/entrega/flui-charge-map-cup-entrega.pdf)
+
+---
+
 ## ⚡ O desafio
 
 A mobilidade elétrica está crescendo no Brasil, mas encontrar um bom ponto de recarga ainda pode ser uma tarefa incerta.
