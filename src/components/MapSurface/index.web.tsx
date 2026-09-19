@@ -1,4 +1,10 @@
-import React, { forwardRef, useImperativeHandle, useMemo, useState } from "react";
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useState,
+} from "react";
 import { Pressable, StyleSheet, Text, View, type ViewProps } from "react-native";
 
 export type Region = {
@@ -22,6 +28,7 @@ type MapViewProps = ViewProps & {
   toolbarEnabled?: boolean;
   loadingEnabled?: boolean;
   customMapStyle?: unknown[];
+  onMapReady?: () => void;
   onRegionChangeComplete?: (region: Region) => void;
 };
 
@@ -47,6 +54,7 @@ const MapSurface = forwardRef<MapViewHandle, MapViewProps>(
     {
       initialRegion,
       children,
+      onMapReady,
       onRegionChangeComplete,
       style,
       provider: _provider,
@@ -61,6 +69,10 @@ const MapSurface = forwardRef<MapViewHandle, MapViewProps>(
     ref,
   ) {
     const [region, setRegion] = useState(initialRegion);
+
+    useEffect(() => {
+      onMapReady?.();
+    }, [onMapReady]);
 
     useImperativeHandle(
       ref,
