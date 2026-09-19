@@ -42,6 +42,7 @@ import {
   SlidersHorizontal,
   Star,
   Toilet,
+  X,
   Zap,
 } from "lucide-react-native";
 
@@ -59,12 +60,17 @@ import baseStyles, { colors as baseColors } from "./HomeMapScreen.styles";
 import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
 import { useAppPreferences } from "../../context/PreferencesContext";
+import { FluiAssistantSheet } from "../assistant/FluiAssistantSheet";
+import { FluiAiIcon } from "../assistant/FluiAiIcon";
 
 const FEEDBACK_DURATION = 1500;
 const SHEET_VISIBLE_HANDLE = 30;
 const SHEET_OCULTO_MARGEM_EXTRA = 40;
 const QUICK_FILTERS_CONTENT_HEIGHT = 56;
 const HANDLE_HINT_DISTANCE = 4;
+const ASSISTANT_LABEL_DURATION = 5000;
+const ASSISTANT_SHEET_GAP = 4;
+const ASSISTANT_HIDDEN_BOTTOM = 20;
 
 const chevronControleBaixoXml = `<svg width="28" height="12" viewBox="0 0 28 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 4.25L14 8.25L22 4.25" stroke="#BECAC5" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
@@ -504,7 +510,7 @@ const getStationMarkerIcon = (station: Station) => {
   return iconeMarcadorVerde;
 };
 
-const NIVEIS_DE_BATERIA_VEICULO = [20, 40, 60, 80, 100];
+const PASSO_AJUSTE_BATERIA = 5;
 
 function obterIconeDeBateriaAtual(percentual: number) {
   if (percentual >= 60) {
@@ -707,6 +713,7 @@ export default function HomeMapScreen() {
   const batteryPercent = userPreferences.batteryPercent;
   const vehicleRangeKm = userPreferences.vehicleRangeKm;
   const [seletorBateriaAberto, setSeletorBateriaAberto] = useState(false);
+  const [bateriaEmEdicao, setBateriaEmEdicao] = useState(batteryPercent);
   const [bateriaInformadaManualmente, setBateriaInformadaManualmente] =
     useState(false);
   const { width: larguraJanela, height: alturaJanela } =
@@ -732,6 +739,7 @@ export default function HomeMapScreen() {
   const quickFiltersHintTranslateY = useRef(new Animated.Value(0)).current;
   const sheetHintTranslateY = useRef(new Animated.Value(0)).current;
   const userLocationPulseProgress = useRef(new Animated.Value(0)).current;
+  const assistantLabelProgress = useRef(new Animated.Value(1)).current;
   const sheetPositionRef = useRef(0);
   const [localizacaoUsuario, setLocalizacaoUsuario] =
     useState<UserLocation | null>(LOCALIZACAO_DEMO_FIAP);
@@ -757,6 +765,8 @@ export default function HomeMapScreen() {
   );
   const [controleMapaAtivo, setControleMapaAtivo] =
     useState<ControleMapaAtivo>(null);
+  const [assistenteFluiAberto, setAssistenteFluiAberto] = useState(false);
+  const [mapaPronto, setMapaPronto] = useState(false);
 
   const mapFeedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -790,9 +800,35 @@ export default function HomeMapScreen() {
     outputRange: [0.34, 0.1],
   });
 
+  const larguraBotaoAssistente = assistantLabelProgress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [52, 120],
+  });
+  const larguraRotuloAssistente = assistantLabelProgress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 66],
+  });
+
   const sheetCollapsedTranslateY = useMemo(() => {
     return Math.max(sheetHeight - SHEET_VISIBLE_HANDLE, 0);
   }, [sheetHeight]);
+
+  const deslocamentoVerticalBotaoAssistente = sheetTranslateY.interpolate({
+    inputRange: [
+      0,
+      Math.max(sheetCollapsedTranslateY, 1),
+      Math.max(sheetHeight + SHEET_OCULTO_MARGEM_EXTRA, 2),
+    ],
+    outputRange: [
+      0,
+      sheetCollapsedTranslateY,
+      Math.max(
+        sheetHeight + ASSISTANT_SHEET_GAP - ASSISTANT_HIDDEN_BOTTOM,
+        0,
+      ),
+    ],
+    extrapolate: "clamp",
+  });
 
   useEffect(() => {
     setSearchTerm(routeSearchTerm);
@@ -827,6 +863,28 @@ export default function HomeMapScreen() {
       userLocationPulseProgress.setValue(0);
     };
   }, [reduceMotionEnabled, userLocationPulseProgress]);
+
+  useEffect(() => {
+    assistantLabelProgress.setValue(1);
+
+    const labelTimeout = setTimeout(() => {
+      if (reduceMotionEnabled) {
+        assistantLabelProgress.setValue(0);
+        return;
+      }
+
+      Animated.timing(assistantLabelProgress, {
+        toValue: 0,
+        duration: 260,
+        useNativeDriver: false,
+      }).start();
+    }, ASSISTANT_LABEL_DURATION);
+
+    return () => {
+      clearTimeout(labelTimeout);
+      assistantLabelProgress.stopAnimation();
+    };
+  }, [assistantLabelProgress, reduceMotionEnabled]);
 
 
   const animarAtalhosRapidos = useCallback(
@@ -1087,7 +1145,7 @@ export default function HomeMapScreen() {
       return;
     }
 
-    if (mapAreaHeight <= 0 || sheetHeight <= 0) {
+    if (!mapaPronto || mapAreaHeight <= 0 || sheetHeight <= 0) {
       return;
     }
 
@@ -1115,6 +1173,7 @@ export default function HomeMapScreen() {
     hasSearchTerm,
     localizacaoUsuario,
     mapAreaHeight,
+    mapaPronto,
     reduceMotionEnabled,
     sheetHeight,
   ]);
@@ -1151,14 +1210,38 @@ export default function HomeMapScreen() {
   const IconeBateriaAtual = obterIconeDeBateriaAtual(batteryPercent);
   const corBateriaAtual = obterCorDeBateriaAtual(batteryPercent, colors);
   const autonomiaAtualKm = Math.round((vehicleRangeKm * batteryPercent) / 100);
+  const IconeBateriaEmEdicao = obterIconeDeBateriaAtual(bateriaEmEdicao);
+  const corBateriaEmEdicao = obterCorDeBateriaAtual(bateriaEmEdicao, colors);
+  const autonomiaEmEdicaoKm = Math.round(
+    (vehicleRangeKm * bateriaEmEdicao) / 100,
+  );
   const alturaListaComDoisCards = alturaCardPonto
-    ? alturaCardPonto * 2 + 22
+    ? alturaCardPonto * 2
     : Math.min(alturaMaximaListaPontos, 250);
 
-  const selecionarNivelDeBateria = async (percentual: number) => {
+  const abrirSeletorDeBateria = useCallback(() => {
+    setBateriaEmEdicao(batteryPercent);
+    setSeletorBateriaAberto(true);
+  }, [batteryPercent]);
+
+  const cancelarEdicaoDeBateria = useCallback(() => {
+    setBateriaEmEdicao(batteryPercent);
     setSeletorBateriaAberto(false);
-    await updateBatteryPercent(percentual);
-    setBateriaInformadaManualmente(true);
+  }, [batteryPercent]);
+
+  const ajustarNivelDeBateria = (variacao: number) => {
+    setBateriaEmEdicao((percentualAtual) =>
+      Math.max(0, Math.min(100, percentualAtual + variacao)),
+    );
+  };
+
+  const definirNivelDeBateria = async () => {
+    if (bateriaEmEdicao !== batteryPercent) {
+      await updateBatteryPercent(bateriaEmEdicao);
+      setBateriaInformadaManualmente(true);
+    }
+
+    setSeletorBateriaAberto(false);
   };
 
   const moverPainelDePontosPara = useCallback(
@@ -1359,7 +1442,7 @@ export default function HomeMapScreen() {
                 accessibilityLabel={`Bateria do veículo: ${batteryPercent} por cento, cerca de ${autonomiaAtualKm} quilômetros de autonomia`}
                 accessibilityHint="Toque para ajustar o nível de bateria e ver o alcance nos pontos."
                 style={styles.vehicleButton}
-                onPress={() => setSeletorBateriaAberto(true)}
+                onPress={abrirSeletorDeBateria}
               >
                 <View style={styles.vehicleInfo}>
                   <View
@@ -1536,6 +1619,7 @@ export default function HomeMapScreen() {
             style={styles.realMap}
             provider={PROVIDER_GOOGLE}
             initialRegion={mapRegion}
+            onMapReady={() => setMapaPronto(true)}
             showsUserLocation={false}
             showsMyLocationButton={false}
             showsCompass={false}
@@ -1588,7 +1672,7 @@ export default function HomeMapScreen() {
                   title={getStationName(item.station)}
                   description={`${getStationStatus(item.station)} • ${getStationPower(item.station)}`}
                   onPress={() => openStationDetails(stationId)}
-                  anchor={{ x: 0.5, y: 0.92 }}
+                  anchor={{ x: 0.5, y: 0.87 }}
                   accessible
                   accessibilityRole="button"
                   accessibilityLabel={`Abrir ficha de ${getStationNameById(stationId)}`}
@@ -1673,6 +1757,51 @@ export default function HomeMapScreen() {
 
           <Animated.View
             style={[
+              styles.fluiAssistantFloating,
+              {
+                right: margemHorizontalSheet,
+                bottom: sheetHeight + ASSISTANT_SHEET_GAP,
+                transform: [
+                  { translateY: deslocamentoVerticalBotaoAssistente },
+                ],
+              },
+            ]}
+          >
+            <Animated.View
+              style={[
+                styles.fluiAssistantAnimatedButton,
+                { width: larguraBotaoAssistente },
+              ]}
+            >
+              <PressableScale
+                accessibilityRole="button"
+                accessibilityLabel="Abrir assistente Flui IA"
+                accessibilityHint="Abre opções de recomendação simulada para encontrar um ponto de recarga."
+                pressedScale={0.95}
+                style={styles.fluiAssistantButton}
+                onPress={() => setAssistenteFluiAberto(true)}
+              >
+                <FluiAiIcon color={colors.white} size={21} />
+                <Animated.View
+                  style={{
+                    width: larguraRotuloAssistente,
+                    opacity: assistantLabelProgress,
+                    overflow: "hidden",
+                  }}
+                >
+                  <Text
+                    style={styles.fluiAssistantButtonText}
+                    numberOfLines={1}
+                  >
+                    Flui IA
+                  </Text>
+                </Animated.View>
+              </PressableScale>
+            </Animated.View>
+          </Animated.View>
+
+          <Animated.View
+            style={[
               styles.bottomSheet,
               {
                 left: margemHorizontalSheet,
@@ -1680,33 +1809,36 @@ export default function HomeMapScreen() {
                 transform: [{ translateY: sheetTranslateY }],
               },
             ]}
-            onLayout={(event) => {
-              setSheetHeight(event.nativeEvent.layout.height);
-            }}
           >
-            <PressableScale
-              accessibilityRole="button"
-              accessibilityLabel="Minimizar melhores escolhas para ver o mapa inteiro"
-              accessibilityHint="Esconde completamente o painel, deixando só um atalho para trazê-lo de volta."
-              hitSlop={{ top: 10, right: 44, bottom: 10, left: 44 }}
-              pressedScale={0.94}
-              style={styles.sheetHandleArea}
-              onPress={() => {
-                setHasInteractedWithSheet(true);
-                ocultarPainelDePontosCompletamente();
+            <View
+              style={styles.bottomSheetCard}
+              onLayout={(event) => {
+                setSheetHeight(event.nativeEvent.layout.height);
               }}
             >
-              <Animated.View
-                style={{ transform: [{ translateY: sheetHintTranslateY }] }}
+              <PressableScale
+                accessibilityRole="button"
+                accessibilityLabel="Minimizar melhores escolhas para ver o mapa inteiro"
+                accessibilityHint="Esconde completamente o painel, deixando só um atalho para trazê-lo de volta."
+                hitSlop={{ top: 10, right: 44, bottom: 10, left: 44 }}
+                pressedScale={0.94}
+                style={styles.sheetHandleArea}
+                onPress={() => {
+                  setHasInteractedWithSheet(true);
+                  ocultarPainelDePontosCompletamente();
+                }}
               >
-                <View style={styles.sheetChevronButton}>
-                  {renderizarChevronDeControle(isSheetCollapsed)}
-                </View>
-              </Animated.View>
-            </PressableScale>
-            <View style={styles.sheetHeader}>
-              <Text style={styles.sheetTitle}>{sheetTitle}</Text>
-            </View>
+                <Animated.View
+                  style={{ transform: [{ translateY: sheetHintTranslateY }] }}
+                >
+                  <View style={styles.sheetChevronButton}>
+                    {renderizarChevronDeControle(isSheetCollapsed)}
+                  </View>
+                </Animated.View>
+              </PressableScale>
+              <View style={styles.sheetHeader}>
+                <Text style={styles.sheetTitle}>{sheetTitle}</Text>
+              </View>
 
             {hasNoResults ? (
               <View style={styles.emptyCard}>
@@ -1862,7 +1994,8 @@ export default function HomeMapScreen() {
                   );
                 })}
               </ScrollView>
-            )}
+              )}
+            </View>
           </Animated.View>
 
           {painelTotalmenteOculto ? (
@@ -1886,6 +2019,16 @@ export default function HomeMapScreen() {
             </View>
           ) : null}
         </View>
+
+        <FluiAssistantSheet
+          visible={assistenteFluiAberto}
+          stations={chargingStations}
+          batteryPercent={batteryPercent}
+          vehicleRangeKm={vehicleRangeKm}
+          onClose={() => setAssistenteFluiAberto(false)}
+          onSelectStation={openStationDetails}
+        />
+
         <LoadingOverlay
           visible={isOpeningDetails}
           message="Abrindo detalhes..."
@@ -1906,22 +2049,20 @@ export default function HomeMapScreen() {
               accessibilityRole="button"
               accessibilityLabel="Fechar seletor de bateria"
               style={styles.batterySheetBackdrop}
-              onPress={() => setSeletorBateriaAberto(false)}
+              onPress={cancelarEdicaoDeBateria}
             />
 
             <View style={styles.batterySheetCard}>
-              <View style={styles.batterySheetHandle} />
-
               <View style={styles.batterySheetHeaderRow}>
                 <View
                   style={[
                     styles.batterySheetPreviewIcon,
-                    { backgroundColor: corBateriaAtual + "1F" },
+                    { backgroundColor: corBateriaEmEdicao + "1F" },
                   ]}
                 >
-                  <IconeBateriaAtual
+                  <IconeBateriaEmEdicao
                     size={26}
-                    color={corBateriaAtual}
+                    color={corBateriaEmEdicao}
                     strokeWidth={2.4}
                   />
                 </View>
@@ -1931,59 +2072,90 @@ export default function HomeMapScreen() {
                     Bateria do veículo
                   </Text>
                   <Text style={styles.batterySheetSubtitle}>
-                    ≈{autonomiaAtualKm} km de autonomia agora
+                    ≈{autonomiaEmEdicaoKm} km de autonomia
                   </Text>
                 </View>
+
+                <PressableScale
+                  accessibilityRole="button"
+                  accessibilityLabel="Fechar sem definir a carga"
+                  accessibilityHint="Descarta a carga selecionada e fecha este painel."
+                  pressedScale={0.92}
+                  style={styles.batterySheetCloseButton}
+                  onPress={cancelarEdicaoDeBateria}
+                >
+                  <X size={21} color={colors.textMuted} strokeWidth={2.3} />
+                </PressableScale>
               </View>
 
-              <View style={styles.batterySheetOptionsRow}>
-                {NIVEIS_DE_BATERIA_VEICULO.map((percentual) => {
-                  const OpcaoIcone = obterIconeDeBateriaAtual(percentual);
-                  const corOpcao = obterCorDeBateriaAtual(percentual, colors);
-                  const selecionado = percentual === batteryPercent;
-                  const kmDaOpcao = Math.round(
-                    (vehicleRangeKm * percentual) / 100,
-                  );
+              <View style={styles.batteryStepperRow}>
+                <PressableScale
+                  accessibilityRole="button"
+                  accessibilityLabel="Diminuir bateria em 5 por cento"
+                  accessibilityState={{ disabled: bateriaEmEdicao === 0 }}
+                  pressedScale={0.92}
+                  style={[
+                    styles.batteryStepperButton,
+                    bateriaEmEdicao === 0
+                      ? styles.batteryStepperButtonDisabled
+                      : null,
+                  ]}
+                  onPress={() => ajustarNivelDeBateria(-PASSO_AJUSTE_BATERIA)}
+                  disabled={bateriaEmEdicao === 0}
+                >
+                  <Text style={styles.batteryStepperButtonText}>−</Text>
+                </PressableScale>
 
-                  return (
-                    <PressableScale
-                      key={percentual}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Definir bateria em ${percentual} por cento, cerca de ${kmDaOpcao} quilômetros`}
-                      accessibilityState={{ selected: selecionado }}
-                      pressedScale={0.92}
-                      style={[
-                        styles.batterySheetOption,
-                        { borderColor: corOpcao },
-                        selecionado
-                          ? {
-                              backgroundColor: corOpcao,
-                              borderColor: corOpcao,
-                            }
-                          : null,
-                      ]}
-                      onPress={() => void selecionarNivelDeBateria(percentual)}
-                    >
-                      <OpcaoIcone
-                        size={18}
-                        color={selecionado ? colors.white : corOpcao}
-                        strokeWidth={2.4}
-                      />
+                <View
+                  accessibilityRole="text"
+                  accessibilityLabel={`Bateria selecionada em ${bateriaEmEdicao} por cento, cerca de ${autonomiaEmEdicaoKm} quilômetros`}
+                  style={styles.batteryStepperValue}
+                >
+                  <Text
+                    style={[
+                      styles.batteryStepperPercent,
+                      { color: corBateriaEmEdicao },
+                    ]}
+                  >
+                    {bateriaEmEdicao}%
+                  </Text>
+                  <Text style={styles.batteryStepperRange}>
+                    ≈{autonomiaEmEdicaoKm} km
+                  </Text>
+                </View>
 
-                      <Text
-                        style={[
-                          styles.batterySheetOptionText,
-                          selecionado
-                            ? styles.batterySheetOptionTextActive
-                            : { color: corOpcao },
-                        ]}
-                      >
-                        {percentual}%
-                      </Text>
-                    </PressableScale>
-                  );
-                })}
+                <PressableScale
+                  accessibilityRole="button"
+                  accessibilityLabel="Aumentar bateria em 5 por cento"
+                  accessibilityState={{ disabled: bateriaEmEdicao === 100 }}
+                  pressedScale={0.92}
+                  style={[
+                    styles.batteryStepperButton,
+                    bateriaEmEdicao === 100
+                      ? styles.batteryStepperButtonDisabled
+                      : null,
+                  ]}
+                  onPress={() => ajustarNivelDeBateria(PASSO_AJUSTE_BATERIA)}
+                  disabled={bateriaEmEdicao === 100}
+                >
+                  <Text style={styles.batteryStepperButtonText}>+</Text>
+                </PressableScale>
               </View>
+
+              <Text style={styles.batterySheetSafetyHint}>
+                Ajuste manualmente apenas com o veículo parado.
+              </Text>
+
+              <PressableScale
+                accessibilityRole="button"
+                accessibilityLabel="Definir carga da bateria"
+                style={styles.batterySheetDoneButton}
+                onPress={() => void definirNivelDeBateria()}
+              >
+                <Text style={styles.batterySheetDoneButtonText}>
+                  Definir carga
+                </Text>
+              </PressableScale>
             </View>
           </View>
         ) : null}

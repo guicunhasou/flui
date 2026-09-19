@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
 
   batterySheetCard: {
     paddingHorizontal: 22,
-    paddingTop: 12,
+    paddingTop: 20,
     paddingBottom: 36,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
@@ -188,15 +188,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 20,
     elevation: 10,
-  },
-
-  batterySheetHandle: {
-    width: 40,
-    height: 4,
-    marginBottom: 18,
-    borderRadius: 2,
-    alignSelf: "center",
-    backgroundColor: colors.border,
   },
 
   batterySheetHeaderRow: {
@@ -217,6 +208,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
+  batterySheetCloseButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+
   batterySheetTitle: {
     color: colors.text,
     fontSize: 18,
@@ -231,33 +233,78 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
-  batterySheetOptionsRow: {
+  batteryStepperRow: {
     marginTop: 20,
     flexDirection: "row",
-    flexWrap: "wrap",
     justifyContent: "center",
-    gap: 10,
+    alignItems: "center",
+    gap: 16,
   },
 
-  batterySheetOption: {
-    width: 58,
-    height: 66,
+  batteryStepperButton: {
+    width: 64,
+    height: 56,
     borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
     backgroundColor: colors.white,
     borderWidth: 1.5,
+    borderColor: colors.primarySoftStrong,
     ...softShadow,
   },
 
-  batterySheetOptionText: {
-    fontSize: 13.5,
+  batteryStepperButtonDisabled: {
+    opacity: 0.35,
+  },
+
+  batteryStepperButtonText: {
+    color: colors.primary,
+    fontSize: 30,
+    lineHeight: 32,
     fontWeight: "800",
   },
 
-  batterySheetOptionTextActive: {
+  batteryStepperValue: {
+    minWidth: 104,
+    alignItems: "center",
+  },
+
+  batteryStepperPercent: {
+    fontSize: 32,
+    lineHeight: 36,
+    fontWeight: "900",
+    letterSpacing: -0.8,
+  },
+
+  batteryStepperRange: {
+    marginTop: 2,
+    color: colors.textMuted,
+    fontSize: 12,
+    fontWeight: "700",
+  },
+
+  batterySheetSafetyHint: {
+    marginTop: 14,
+    color: colors.textMuted,
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+
+  batterySheetDoneButton: {
+    height: 48,
+    marginTop: 14,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.primary,
+  },
+
+  batterySheetDoneButtonText: {
     color: colors.white,
+    fontSize: 14,
+    fontWeight: "800",
   },
 
   searchBar: {
@@ -402,8 +449,8 @@ const styles = StyleSheet.create({
   },
 
   userLocationMarker: {
-    width: 54,
-    height: 54,
+    width: 72,
+    height: 72,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -572,14 +619,53 @@ const styles = StyleSheet.create({
     lineHeight: 31,
   },
 
+  fluiAssistantButton: {
+    width: "100%",
+    minHeight: 52,
+    paddingHorizontal: 8,
+    borderRadius: 26,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.primary,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    zIndex: 14,
+    ...shadow,
+    elevation: 12,
+  },
+
+  fluiAssistantAnimatedButton: {
+    height: 52,
+    overflow: "visible",
+  },
+
+  fluiAssistantButtonText: {
+    paddingLeft: 8,
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: "900",
+  },
+
   bottomSheet: {
     position: "absolute",
     left: 16,
     right: 16,
     bottom: 0,
+    zIndex: 8,
+  },
+
+  fluiAssistantFloating: {
+    position: "absolute",
+    height: 52,
+    alignItems: "flex-end",
+    zIndex: 16,
+  },
+
+  bottomSheetCard: {
     paddingHorizontal: 18,
     paddingTop: 18,
-    paddingBottom: 20,
+    paddingBottom: 2,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     backgroundColor: colors.background,
@@ -587,7 +673,6 @@ const styles = StyleSheet.create({
     borderLeftWidth: 1,
     borderRightWidth: 1,
     borderColor: colors.border,
-    zIndex: 8,
     shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: -8 },
     shadowOpacity: 0.08,
@@ -623,7 +708,9 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 20,
+    height: 52,
     alignItems: "center",
+    justifyContent: "center",
     zIndex: 15,
   },
 
@@ -712,7 +799,7 @@ const styles = StyleSheet.create({
   },
 
   pointsScrollContent: {
-    paddingBottom: 2,
+    paddingBottom: 0,
   },
 
   pointCard: {
