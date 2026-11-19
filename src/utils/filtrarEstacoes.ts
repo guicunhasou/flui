@@ -1,9 +1,11 @@
 import { ChargingStation, StationFilters } from "../types";
+import { isStationOpenAt } from "./stationHours";
 
 type FiltrarEstacoesParams = {
   estacoes: ChargingStation[];
   filtros: StationFilters;
   termoBusca?: string;
+  agora?: Date;
 };
 
 function normalizarTexto(texto: string) {
@@ -41,12 +43,6 @@ function obterTextoBuscavel(estacao: ChargingStation) {
   );
 }
 
-function pontoTemCarregadorLivre(estacao: ChargingStation) {
-  return estacao.connectors.some(
-    (connector) => connector.availableChargers > 0,
-  );
-}
-
 export function pontoEstaAbertoAgora(
   estacao: ChargingStation,
   agora = new Date(),
@@ -54,6 +50,8 @@ export function pontoEstaAbertoAgora(
   if (estacao.status === "unavailable" || estacao.status === "maintenance") {
     return false;
   }
+
+  if (estacao.openingSchedule) return isStationOpenAt(estacao, agora);
 
   const horarioNormalizado = normalizarTexto(estacao.openingHours);
 
@@ -138,17 +136,15 @@ function atendeComodidades(estacao: ChargingStation, filtros: StationFilters) {
   );
 }
 
-function atendeAbertoAgora(estacao: ChargingStation, filtros: StationFilters) {
-  return !filtros.onlyOpenNow || pontoEstaAbertoAgora(estacao);
-}
-
-function atendeCarregadoresLivres(
+export function pontoTemRecargaDisponivel(
   estacao: ChargingStation,
-  filtros: StationFilters,
+  agora = new Date(),
+  tipos: StationFilters["connectorTypes"] = [],
 ) {
-  return (
-    !filtros.onlyAvailableChargers || pontoTemCarregadorLivre(estacao)
-  );
+  return estacao.status === "available" && pontoEstaAbertoAgora(estacao, agora)
+    && estacao.connectors.some((connector) =>
+      connector.availableChargers > 0 && (!tipos.length || tipos.includes(connector.type)),
+    );
 }
 
 function atendeFuncionamento24h(estacao: ChargingStation, filtros: StationFilters) {
@@ -163,6 +159,7 @@ export function filtrarEstacoes({
   estacoes,
   filtros,
   termoBusca = "",
+  agora = new Date(),
 }: FiltrarEstacoesParams) {
   return estacoes.filter((estacao) => {
     const atendePotencia = estacao.powerKw >= filtros.power.minKw;
@@ -174,8 +171,8 @@ export function filtrarEstacoes({
       atendeConectores(estacao, filtros) &&
       atendeStatus(estacao, filtros) &&
       atendeComodidades(estacao, filtros) &&
-      atendeAbertoAgora(estacao, filtros) &&
-      atendeCarregadoresLivres(estacao, filtros) &&
+      (!filtros.onlyOpenNow || pontoEstaAbertoAgora(estacao, agora)) &&
+      (!filtros.onlyAvailableChargers || pontoTemRecargaDisponivel(estacao, agora, filtros.connectorTypes)) &&
       atendeFuncionamento24h(estacao, filtros) &&
       atendePotencia &&
       atendeDistancia &&

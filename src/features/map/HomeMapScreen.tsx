@@ -33,10 +33,8 @@ import {
   BatteryWarning,
   ChevronRight,
   Clock3,
-  Coffee,
   Crosshair,
   Maximize2,
-  Navigation,
   Plug,
   Search,
   SlidersHorizontal,
@@ -49,7 +47,7 @@ import {
 import { chargingStations } from "../../data";
 import { defaultFilters } from "../../data/filterOptions";
 import { StationFilters } from "../../types";
-import { filtrarEstacoes } from "../../utils/filtrarEstacoes";
+import { filtrarEstacoes, pontoEstaAbertoAgora, pontoTemRecargaDisponivel } from "../../utils/filtrarEstacoes";
 import { avaliarAlcance } from "../../utils/autonomia";
 import {
   LoadingOverlay,
@@ -161,19 +159,8 @@ const filtrosRapidosIniciais: FiltrosRapidos = {
   restroom: false,
 };
 
-const pointLabels = [
-  { id: "near", title: "Mais próximo", icon: Navigation },
-  { id: "best", title: "Melhor avaliado", icon: Star },
-  { id: "comfort", title: "Mais confortável", icon: Coffee },
-  { id: "fast", title: "Carga rápida", icon: Zap },
-  { id: "open", title: "Recomendado", icon: Clock3 },
-];
-
 type Station = (typeof chargingStations)[number];
 
-const isRecord = (value: unknown): value is Record<string, unknown> => {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-};
 type MapColorTokens = typeof baseColors & {
   dangerBorder?: string;
   success?: string;
@@ -390,6 +377,10 @@ const getStationStatus = (station: Station) => {
     return "Indisponível";
   }
 
+  if (!pontoEstaAbertoAgora(station)) {
+    return "Fechado agora";
+  }
+
   if (status.includes("busy") || status.includes("ocup")) {
     return "Ocupado agora";
   }
@@ -477,16 +468,16 @@ const limitarValor = (value: number, min: number, max: number) => {
 const getStationMarkerColor = (station: Station, colorSet: MapColorTokens) => {
   const status = getRawStationStatus(station);
 
-  if (status === "busy") {
-    return colorSet.yellowDark;
-  }
-
   if (status === "maintenance") {
     return colorSet.dangerBorder ?? colorSet.yellowDark;
   }
 
-  if (status === "unavailable") {
+  if (status === "unavailable" || !pontoEstaAbertoAgora(station)) {
     return colorSet.textLight;
+  }
+
+  if (status === "busy") {
+    return colorSet.yellowDark;
   }
 
   return colorSet.green ?? colorSet.success ?? colorSet.primary;
@@ -495,16 +486,16 @@ const getStationMarkerColor = (station: Station, colorSet: MapColorTokens) => {
 const getStationMarkerIcon = (station: Station) => {
   const status = getRawStationStatus(station);
 
-  if (status === "busy") {
-    return iconeMarcadorAmarelo;
-  }
-
   if (status === "maintenance") {
     return iconeMarcadorVermelho;
   }
 
-  if (status === "unavailable") {
+  if (status === "unavailable" || !pontoEstaAbertoAgora(station)) {
     return iconeMarcadorCinza;
+  }
+
+  if (status === "busy") {
+    return iconeMarcadorAmarelo;
   }
 
   return iconeMarcadorVerde;
@@ -624,26 +615,13 @@ const getStationAmenities = (station: Station) => {
     .filter(Boolean);
 };
 
-const stationHasAvailableCharger = (station: Station) => {
-  const connectors = readArray(station, "connectors");
-
-  return connectors.some((connector) => {
-    if (!isRecord(connector)) {
-      return false;
-    }
-
-    return readNumber(connector, "availableChargers") > 0;
-  });
-};
-
-
 const calcularPontuacaoDosFiltrosRapidos = (
   station: Station,
   filtrosRapidos: FiltrosRapidos,
 ) => {
   let pontuacao = 0;
 
-  if (filtrosRapidos.openNow && stationHasAvailableCharger(station)) {
+  if (filtrosRapidos.openNow && pontoEstaAbertoAgora(station)) {
     pontuacao += 80;
   }
 
@@ -714,8 +692,6 @@ export default function HomeMapScreen() {
   const vehicleRangeKm = userPreferences.vehicleRangeKm;
   const [seletorBateriaAberto, setSeletorBateriaAberto] = useState(false);
   const [bateriaEmEdicao, setBateriaEmEdicao] = useState(batteryPercent);
-  const [bateriaInformadaManualmente, setBateriaInformadaManualmente] =
-    useState(false);
   const { width: larguraJanela, height: alturaJanela } =
     useWindowDimensions();
   const isTelaLarga = larguraJanela >= TABLET_BREAKPOINT;
@@ -1045,25 +1021,16 @@ export default function HomeMapScreen() {
     );
   }, [filtrosDoMapa, filtrosRapidos, searchTerm]);
 
-  const estacoesRecomendadas = useMemo(() => {
-    return visibleStations.filter((item) => {
-      return (
-        getRawStationStatus(item.station) === "available" &&
-        stationHasAvailableCharger(item.station)
-      );
-    });
-  }, [visibleStations]);
-
   const points = useMemo(() => {
-    return estacoesRecomendadas.map((item, cardIndex) => {
-      const label = pointLabels[cardIndex];
-      const cardId = label?.id ?? `station-${cardIndex}`;
+    const agora = new Date();
+    return visibleStations.map((item) => {
+      const stationId = getStationId(item.station, item.index);
+      const recargaDisponivel = pontoTemRecargaDisponivel(item.station, agora, filtrosDoMapa.connectorTypes);
 
       return {
-        id: cardId,
-        stationId: getStationId(item.station, item.index),
-        criterioLabel: label?.title ?? "Recomendado",
-        criterioIcon: label?.icon ?? Zap,
+        stationId,
+        criterioLabel: recargaDisponivel ? "Com vagas no catálogo" : "Recarga não confirmada",
+        recargaDisponivel,
         nomeEstacao: getStationName(item.station),
         address: getStationAddress(item.station),
         status: getStationStatus(item.station),
@@ -1076,10 +1043,10 @@ export default function HomeMapScreen() {
           batteryPercent,
         ),
       };
-    });
-  }, [batteryPercent, colors, estacoesRecomendadas, vehicleRangeKm]);
+    }).sort((a, b) => Number(b.recargaDisponivel) - Number(a.recargaDisponivel));
+  }, [batteryPercent, colors, filtrosDoMapa.connectorTypes, visibleStations, vehicleRangeKm]);
 
-  const hasNoResults = estacoesRecomendadas.length === 0;
+  const hasNoResults = visibleStations.length === 0;
   const hasSearchTerm = searchTerm.trim().length > 0;
 
   const fracaoDeDeslocamentoVertical = useMemo(() => {
@@ -1204,10 +1171,9 @@ export default function HomeMapScreen() {
   };
 
   const sheetTitle = hasNoResults
-    ? "Nenhum ponto disponível"
-    : "Melhores escolhas";
+    ? "Nenhum ponto encontrado"
+    : "Pontos de recarga";
 
-  const IconeBateriaAtual = obterIconeDeBateriaAtual(batteryPercent);
   const corBateriaAtual = obterCorDeBateriaAtual(batteryPercent, colors);
   const autonomiaAtualKm = Math.round((vehicleRangeKm * batteryPercent) / 100);
   const IconeBateriaEmEdicao = obterIconeDeBateriaAtual(bateriaEmEdicao);
@@ -1238,7 +1204,6 @@ export default function HomeMapScreen() {
   const definirNivelDeBateria = async () => {
     if (bateriaEmEdicao !== batteryPercent) {
       await updateBatteryPercent(bateriaEmEdicao);
-      setBateriaInformadaManualmente(true);
     }
 
     setSeletorBateriaAberto(false);
@@ -1439,7 +1404,7 @@ export default function HomeMapScreen() {
             <View style={styles.headerActions}>
               <PressableScale
                 accessibilityRole="button"
-                accessibilityLabel={`Bateria do veículo: ${batteryPercent} por cento, cerca de ${autonomiaAtualKm} quilômetros de autonomia`}
+                accessibilityLabel={`Bateria da simulação: ${batteryPercent} por cento, cerca de ${autonomiaAtualKm} quilômetros de autonomia estimada`}
                 accessibilityHint="Toque para ajustar o nível de bateria e ver o alcance nos pontos."
                 style={styles.vehicleButton}
                 onPress={abrirSeletorDeBateria}
@@ -1487,12 +1452,7 @@ export default function HomeMapScreen() {
                   </View>
 
                   <Text style={styles.vehicleBatterySource} numberOfLines={1}>
-                    {bateriaInformadaManualmente
-                      ? "Informado manualmente"
-                      : "Atualizado pelo veículo"}
-                  </Text>
-                  <Text style={styles.vehicleBatteryUpdatedAt}>
-                    {bateriaInformadaManualmente ? "agora" : "há 1 min."}
+                    Carga de simulação
                   </Text>
                 </View>
 
@@ -1870,7 +1830,6 @@ export default function HomeMapScreen() {
                 nestedScrollEnabled
               >
                 {points.map((point, pointIndex) => {
-                  const CriterioIcon = point.criterioIcon;
                   const IconeAlcance = obterIconeDoAlcance(point.alcance.nivel);
                   const corAlcance = obterCorDoAlcance(
                     point.alcance.nivel,
@@ -1888,7 +1847,7 @@ export default function HomeMapScreen() {
 
                   return (
                     <PressableScale
-                      key={`${point.id}-${point.stationId}`}
+                      key={point.stationId}
                       accessibilityRole="button"
                       accessibilityLabel={`${point.nomeEstacao}. ${point.criterioLabel}. ${point.address}. ${point.status}. Nota ${point.rating}. ${point.power}. ${legendaAlcance}.`}
                       accessibilityHint="Abre a ficha detalhada do ponto de recarga."
@@ -1911,7 +1870,7 @@ export default function HomeMapScreen() {
                       <View style={styles.pointCardTopRow}>
                         <View style={styles.pointCardTags}>
                           <View style={styles.pointBadge}>
-                            <CriterioIcon
+                            <Zap
                               size={12}
                               color={colors.primary}
                               strokeWidth={2.4}
@@ -2005,8 +1964,8 @@ export default function HomeMapScreen() {
             >
               <PressableScale
                 accessibilityRole="button"
-                accessibilityLabel="Mostrar melhores escolhas"
-                accessibilityHint="Traz de volta a lista de pontos recomendados."
+                accessibilityLabel="Mostrar pontos de recarga"
+                accessibilityHint="Traz de volta a lista de pontos encontrados."
                 pressedScale={0.94}
                 style={styles.restaurarPainelPill}
                 onPress={() => alternarModalDePontos(false)}
@@ -2069,7 +2028,7 @@ export default function HomeMapScreen() {
 
                 <View style={styles.batterySheetHeaderText}>
                   <Text style={styles.batterySheetTitle}>
-                    Bateria do veículo
+                    Bateria da simulação
                   </Text>
                   <Text style={styles.batterySheetSubtitle}>
                     ≈{autonomiaEmEdicaoKm} km de autonomia

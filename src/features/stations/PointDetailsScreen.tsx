@@ -55,6 +55,7 @@ import { useAppPreferences } from "../../context/PreferencesContext";
 import { getStationImageSource } from "../../assets/stations";
 import { triggerImpact, type PressableVisualState } from "../../utils/interaction";
 import { avaliarAlcance } from "../../utils/autonomia";
+import { pontoEstaAbertoAgora, pontoTemRecargaDisponivel } from "../../utils/filtrarEstacoes";
 
 const imagemPerfilUsuario = require("../../assets/user/profile1.webp");
 
@@ -85,7 +86,14 @@ function formatAddress(station: Station) {
     .join(", ");
 }
 
-function getStatusInfo(status: Station["status"]): StatusInfo {
+function getStatusInfo(status: Station["status"], abertoAgora: boolean): StatusInfo {
+  if (!abertoAgora && (status === "available" || status === "busy")) {
+    return {
+      label: "Fechado agora",
+      description: "Fora do horário de funcionamento do catálogo.",
+    };
+  }
+
   if (status === "available") {
     return {
       label: "Aberto agora",
@@ -451,7 +459,10 @@ export default function PointDetailsScreen() {
     );
   }
 
-  const statusInfo = getStatusInfo(station.status);
+  const agora = new Date();
+  const abertoAgora = pontoEstaAbertoAgora(station, agora);
+  const recargaDisponivel = pontoTemRecargaDisponivel(station, agora);
+  const statusInfo = getStatusInfo(station.status, abertoAgora);
 
   const availableChargers = station.connectors.reduce(
     (total, connector) => total + connector.availableChargers,
@@ -478,14 +489,12 @@ export default function PointDetailsScreen() {
     userPreferences.batteryPercent,
   );
   const tempoEstimadoCarga = calcularTempoEstimadoCarga(station.powerKw);
-  const recomendacaoDoPonto = montarTextoDeRecomendacao(
-    station,
-    availableChargers,
-  );
-  const orientacaoDeEspera = montarOrientacaoDeEspera(
-    station.status,
-    availableChargers,
-  );
+  const recomendacaoDoPonto = abertoAgora
+    ? montarTextoDeRecomendacao(station, recargaDisponivel ? availableChargers : 0)
+    : "Confirme o funcionamento antes de ir";
+  const orientacaoDeEspera = abertoAgora
+    ? montarOrientacaoDeEspera(station.status, recargaDisponivel ? availableChargers : 0)
+    : "Indisponível";
   const perfilDoPonto = montarPerfilDoPonto(station);
   const userStationReview = sentReviews.find(
     (review) => review.stationId === station.id,
@@ -512,13 +521,13 @@ export default function PointDetailsScreen() {
     ? [userReviewCard, ...(station.reviews ?? [])]
     : (station.reviews ?? []);
   const statusColor =
-    station.status === "available"
-      ? colors.success
-      : station.status === "busy"
-        ? colors.yellowDark
-        : station.status === "maintenance"
-          ? colors.dangerBorder
-          : colors.textLight;
+    station.status === "maintenance"
+      ? colors.dangerBorder
+      : !abertoAgora
+        ? colors.textLight
+        : station.status === "busy"
+          ? colors.yellowDark
+          : colors.success;
 
   const IconeAlcance = obterIconeDeAlcance(avaliacaoAlcance.nivel);
   const textoAlcance = montarTextoDeAlcance(avaliacaoAlcance);
@@ -642,7 +651,9 @@ export default function PointDetailsScreen() {
             </View>
 
             <Text style={styles.availableText}>
-              {availableChargers} de {totalChargers} carregadores disponíveis
+              {recargaDisponivel
+                ? `${availableChargers} de ${totalChargers} carregadores livres no catálogo`
+                : `${totalChargers} carregadores cadastrados · recarga não confirmada`}
             </Text>
           </View>
 
@@ -792,8 +803,9 @@ export default function PointDetailsScreen() {
                     <Text style={styles.connectorName}>{connector.label}</Text>
 
                     <Text style={styles.connectorDescription}>
-                      {connector.powerKw} kW · {connector.availableChargers} de{" "}
-                      {connector.totalChargers} disponíveis
+                      {connector.powerKw} kW · {recargaDisponivel
+                        ? `${connector.availableChargers} de ${connector.totalChargers} livres no catálogo`
+                        : `${connector.totalChargers} cadastrados`}
                     </Text>
                   </View>
                 </View>
