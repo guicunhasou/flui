@@ -7,7 +7,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { router, type Href } from "expo-router";
+import { router, useLocalSearchParams, type Href } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   AlarmClock,
@@ -31,11 +31,13 @@ import {
   Zap,
 } from "lucide-react-native";
 
-import { chargingStations } from "../../data";
+import { useAppPreferences } from "../../context/PreferencesContext";
+import { useCurrentTime } from "../../hooks/useCurrentTime";
 import {
   amenityOptions,
   connectorOptions,
   defaultFilters,
+  distanceOptions,
 } from "../../data/filterOptions";
 import {
   Amenity,
@@ -47,6 +49,7 @@ import { LoadingOverlay, ScreenTransition } from "../../components";
 import { colors as baseColors } from "../../theme/colors";
 import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
 import { filtrarEstacoes } from "../../utils/filtrarEstacoes";
+import { parseStationFiltersParam } from "../../utils/stationFilterParams";
 import { triggerImpact, type PressableVisualState } from "../../utils/interaction";
 
 type IconeFiltro = typeof Search;
@@ -59,19 +62,6 @@ type ChipProps = {
   selected: boolean;
   onPress: () => void;
   size?: "small" | "medium" | "large";
-};
-
-const initialFilters: StationFilters = {
-  ...defaultFilters,
-  power: {
-    ...defaultFilters.power,
-  },
-  distance: {
-    ...defaultFilters.distance,
-  },
-  rating: {
-    ...defaultFilters.rating,
-  },
 };
 
 const visibleConnectorOptions = connectorOptions
@@ -110,7 +100,6 @@ const visibleAmenityOptions = amenityOptions
 
 const powerOptions = [22, 50, 100, 150, 250];
 const ratingOptions = [4, 4.5];
-const distanceOptions = [0.5, 1, 5];
 const sugestoesRapidas = [
   "Paulista",
   "Vila Mariana",
@@ -208,18 +197,22 @@ function Chip({
 }
 
 export default function SearchFiltersScreen() {
+  const { demoStations, demoOrigin } = useAppPreferences();
+  const now = useCurrentTime();
   const { styles, colors, isDarkMode } = useTelaComPreferencias(
     baseStyles,
     baseColors,
   );
-  const [filters, setFilters] = useState<StationFilters>(initialFilters);
-  const [termoBusca, setTermoBusca] = useState("");
+  const { filters: initialFilters, query } = useLocalSearchParams<{ filters?: string; query?: string }>();
+  const [filters, setFilters] = useState(() => parseStationFiltersParam(initialFilters));
+  const [termoBusca, setTermoBusca] = useState(() => typeof query === "string" ? query : "");
   const [isApplying, setIsApplying] = useState(false);
 
   const pontosEncontrados = filtrarEstacoes({
-    estacoes: chargingStations,
+    estacoes: demoStations,
     filtros: filters,
     termoBusca,
+    agora: now,
   });
   const textoBotaoMapa =
     pontosEncontrados.length === 1
@@ -313,7 +306,7 @@ export default function SearchFiltersScreen() {
 
     setTimeout(() => {
       setIsApplying(false);
-      router.replace(route);
+      router.dismissTo(route);
     }, 420);
   }
 
@@ -330,7 +323,7 @@ export default function SearchFiltersScreen() {
               hovered && !pressed ? styles.hoverFeedback : null,
               pressed ? styles.buttonPressed : null,
             ]}
-            onPress={() => router.replace("/map" as Href)}
+            onPress={() => { if (router.canGoBack()) router.back(); else router.replace("/map" as Href); }}
           >
             <ArrowLeft color={colors.primaryDark} size={22} strokeWidth={2.3} />
           </Pressable>
@@ -562,6 +555,9 @@ export default function SearchFiltersScreen() {
               <Text style={styles.sectionTitle}>Raio de busca</Text>
             </View>
 
+            <Text style={styles.distanceDescription}>
+              Em linha reta desde {demoOrigin.nome}, origem do cenário. Sem cálculo de percurso.
+            </Text>
             <View style={styles.chipRow}>
               {distanceOptions.map((distance) => (
                 <Chip

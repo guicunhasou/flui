@@ -1,3 +1,6 @@
+import { normalizeSpeechVoiceId } from "../features/assistant/speechVoices";
+import { normalizeBatteryData } from "../utils/batteryData";
+import { normalizarConfiguracaoDemonstrativa } from "../utils/demonstracao";
 import { defaultFilters } from "../data/filterOptions";
 import {
   CreateLocalReviewInput,
@@ -54,9 +57,13 @@ function createDefaultUserPreferences(): UserPreferences {
     },
     hasSeenOnboarding: false,
     appearanceMode: "light",
+    highContrast: false,
+    reduceMotion: false,
+    hapticsEnabled: true,
+  speechVoiceId: null,
     fontSize: "default",
-    vehicleRangeKm: 400,
-    batteryPercent: 70,
+    ...normalizarConfiguracaoDemonstrativa(),
+    ...normalizeBatteryData(),
   };
 }
 
@@ -104,18 +111,15 @@ function normalizeUserPreferences(
     appearanceMode: isAppearanceMode(preferences.appearanceMode)
       ? preferences.appearanceMode
       : base.appearanceMode,
+    highContrast: preferences.highContrast === true,
+    reduceMotion: preferences.reduceMotion === true,
+    hapticsEnabled: typeof preferences.hapticsEnabled === "boolean" ? preferences.hapticsEnabled : base.hapticsEnabled,
+    speechVoiceId: normalizeSpeechVoiceId(preferences.speechVoiceId),
     fontSize: isFontSizePreference(preferences.fontSize)
       ? preferences.fontSize
       : base.fontSize,
-    vehicleRangeKm:
-      typeof preferences.vehicleRangeKm === "number" &&
-      preferences.vehicleRangeKm > 0
-        ? preferences.vehicleRangeKm
-        : base.vehicleRangeKm,
-    batteryPercent:
-      typeof preferences.batteryPercent === "number"
-        ? Math.min(100, Math.max(0, preferences.batteryPercent))
-        : base.batteryPercent,
+    ...normalizarConfiguracaoDemonstrativa(preferences),
+    ...normalizeBatteryData(preferences),
     savedFilters: {
       ...base.savedFilters,
       ...(savedFilters ?? {}),

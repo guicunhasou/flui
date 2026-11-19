@@ -1,7 +1,7 @@
+import { OfflineImage as Image } from "../../offline/OfflineImage";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
-  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -27,6 +27,12 @@ import {
 } from "lucide-react-native";
 
 import { chargingStations } from "../../data";
+import { identificacaoDados } from "../../data/identificacaoDados";
+import { useAppPreferences } from "../../context/PreferencesContext";
+import { useCurrentTime } from "../../hooks/useCurrentTime";
+import { isStationOpenAt } from "../../utils/stationHours";
+import { formatarDistanciaDemonstrativa } from "../../utils/demonstracao";
+import { getStationStatusInfo, getStationChargerCountLabel } from "../stations/stationPresentation";
 import { LoadingOverlay, ScreenTransition } from "../../components";
 import { useFluiStorage } from "../../hooks/useFluiStorage";
 import {
@@ -97,22 +103,6 @@ function formatAddress(station: (typeof chargingStations)[number]) {
     .join(", ");
 }
 
-function getStatusLabel(status: (typeof chargingStations)[number]["status"]) {
-  if (status === "available") {
-    return "Aberto agora";
-  }
-
-  if (status === "busy") {
-    return "Ocupado agora";
-  }
-
-  if (status === "maintenance") {
-    return "Em manutenção";
-  }
-
-  return "Indisponível";
-}
-
 type StarRatingInputProps = {
   styles: typeof baseStyles;
   colors: typeof baseColors;
@@ -174,10 +164,12 @@ export default function ReviewScreen() {
   }>();
 
   const selectedStationId = normalizeParam(stationId);
+  const { demoStations, demoOrigin } = useAppPreferences();
+  const now = useCurrentTime();
 
   const station = useMemo(() => {
-    return chargingStations.find((item) => item.id === selectedStationId);
-  }, [selectedStationId]);
+    return demoStations.find((item) => item.id === selectedStationId);
+  }, [demoStations, selectedStationId]);
 
   const {
     favoriteStationIds,
@@ -213,6 +205,7 @@ export default function ReviewScreen() {
   const [wouldReturn, setWouldReturn] = useState(true);
   const [recommend, setRecommend] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSuccessFeedbackVisible, setIsSuccessFeedbackVisible] =
     useState(false);
   const [successFeedbackMessage, setSuccessFeedbackMessage] =
@@ -291,10 +284,7 @@ export default function ReviewScreen() {
     );
 
     if (overallRating === 0 || hasEmptyCriterion) {
-      Alert.alert(
-        "Avaliação incompleta",
-        "Preencha a avaliação geral e todos os critérios antes de enviar.",
-      );
+      setSubmitError("Preencha a avaliação geral e todos os critérios antes de salvar.");
 
       return;
     }
@@ -302,6 +292,7 @@ export default function ReviewScreen() {
     try {
       isSubmitLockedRef.current = true;
       setIsSubmitting(true);
+      setSubmitError(null);
 
       const feedbackMessage = existingReview
         ? "Avaliação atualizada"
@@ -341,10 +332,7 @@ export default function ReviewScreen() {
     } catch {
       setIsSuccessFeedbackVisible(false);
 
-      Alert.alert(
-        "Erro ao enviar avaliação",
-        "Não foi possível salvar sua avaliação agora. Tente novamente em alguns instantes.",
-      );
+      setSubmitError("Não foi possível salvar sua avaliação agora. Tente novamente.");
     } finally {
       isSubmitLockedRef.current = false;
       setIsSubmitting(false);
@@ -419,7 +407,9 @@ export default function ReviewScreen() {
   const commentLength = comment.length;
   const maxCommentLength = 200;
   const statusColor =
-    station.status === "available"
+    !isStationOpenAt(station, now)
+      ? colors.textMuted
+      : station.status === "available"
       ? colors.success
       : station.status === "busy"
         ? colors.yellowDark
@@ -494,7 +484,7 @@ export default function ReviewScreen() {
                   />
 
                   <Text style={styles.statusText}>
-                    {getStatusLabel(station.status)}
+                    {getStationStatusInfo(station, now).label}
                   </Text>
                 </View>
               </View>
@@ -525,6 +515,8 @@ export default function ReviewScreen() {
               </Pressable>
             </View>
 
+            <Text style={styles.subtitle}>{identificacaoDados.catalogo.aviso}</Text>
+
             <View style={styles.formCard}>
               <Text style={styles.title}>
                 {isEditingReview
@@ -535,8 +527,10 @@ export default function ReviewScreen() {
               <Text style={styles.subtitle}>
                 {isEditingReview
                   ? "Você já avaliou este ponto. Ajuste sua nota ou comentário quando quiser."
-                  : "Sua opinião ajuda outros motoristas e melhora a rede."}
+                  : "Registre sua avaliação neste dispositivo."}
               </Text>
+
+              <Text style={styles.subtitle}>{identificacaoDados.avaliacoesLocais.aviso}</Text>
 
               <View style={styles.overallCard}>
                 <View style={styles.overallIconCircle}>
@@ -806,14 +800,13 @@ export default function ReviewScreen() {
                 <Text style={styles.summaryQuality}>Excelente</Text>
 
                 <Text style={styles.summaryReviews}>
-                  Baseado em {station.reviewCount} avaliações
+                  {station.reviewCount} avaliações demonstrativas
                 </Text>
               </View>
 
               <View style={styles.summaryDetails}>
                 <Text style={styles.summaryDetailText}>
-                  {availableChargers} de {totalChargers} carregadores
-                  disponíveis
+                  {getStationChargerCountLabel(station, availableChargers, totalChargers, now)}
                 </Text>
 
                 <Text style={styles.summaryDetailText}>
@@ -821,17 +814,22 @@ export default function ReviewScreen() {
                 </Text>
 
                 <Text style={styles.summaryDetailText}>
-                  {station.distanceKm} km de distância
+                  {formatarDistanciaDemonstrativa(station.distanceKm)} em linha reta desde {demoOrigin.nome}
                 </Text>
               </View>
             </View>
           </ScrollView>
 
           <SafeAreaView edges={["bottom"]} style={styles.bottomActions}>
+            {submitError ? (
+              <Text accessibilityRole="alert" accessibilityLiveRegion="assertive" style={styles.submitError}>
+                {submitError}
+              </Text>
+            ) : null}
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={
-                isEditingReview ? "Editar avaliação" : "Enviar avaliação"
+                isEditingReview ? "Salvar alterações" : "Salvar avaliação"
               }
               accessibilityState={{
                 disabled:
@@ -854,8 +852,8 @@ export default function ReviewScreen() {
                 {isSubmitting
                   ? "Salvando..."
                   : isEditingReview
-                    ? "Editar avaliação"
-                    : "Enviar avaliação"}
+                    ? "Salvar alterações"
+                    : "Salvar avaliação"}
               </Text>
 
             </Pressable>
@@ -863,7 +861,7 @@ export default function ReviewScreen() {
 
           <LoadingOverlay
             visible={isSubmitting}
-            message="Enviando avaliação..."
+            message="Salvando avaliação..."
           />
 
           {isSuccessFeedbackVisible ? (

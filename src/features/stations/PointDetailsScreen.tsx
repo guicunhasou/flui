@@ -1,21 +1,14 @@
-import React, { useCallback, useMemo, useState } from "react";
-import {
-  Alert,
-  Image,
-  Linking,
-  StatusBar,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import { presentationImages } from "../presentation/presentationImages";
+import { OfflineImage as Image } from "../../offline/OfflineImage";
+import { ConnectionNotice } from "../../components/ConnectionNotice";
+import { useConnectivity } from "../../context/ConnectivityContext";
+import { prepareExternalRoute } from "../../utils/externalRoute";
 import {
   router,
-  type Href,
   useFocusEffect,
   useLocalSearchParams,
+  type Href,
 } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
 import {
   AlarmClock,
   ArrowLeft,
@@ -23,54 +16,75 @@ import {
   BatteryFull,
   BatteryLow,
   BatteryWarning,
-  Clock3,
+  CircleParking,
   Coffee,
   Gauge,
   Heart,
   Navigation2,
-  CircleParking,
   Plug,
   ShieldCheck,
   ShoppingCart,
   Star,
-  Tag,
-  Timer,
   Toilet,
   Utensils,
   Warehouse,
   Wifi,
   Zap,
+  X,
+  TriangleAlert,
 } from "lucide-react-native";
-
-import { chargingStations } from "../../data";
-import { styles as baseStyles } from "./PointDetailsScreen.styles";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Alert,
+  Modal,
+  Pressable,
+  ScrollView,
+  StatusBar,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { getStationImageSource } from "../../assets/stations";
 import {
   LoadingOverlay,
   ScreenTransition,
   StationVisualCover,
 } from "../../components";
+import { useAppPreferences } from "../../context/PreferencesContext";
+import { chargingStations } from "../../data";
+import { identificacaoDados } from "../../data/identificacaoDados";
+import { useCurrentTime } from "../../hooks/useCurrentTime";
 import { useFluiStorage } from "../../hooks/useFluiStorage";
 import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
-import { useAppPreferences } from "../../context/PreferencesContext";
-import { getStationImageSource } from "../../assets/stations";
-import { triggerImpact, type PressableVisualState } from "../../utils/interaction";
 import { avaliarAlcance } from "../../utils/autonomia";
-import { pontoEstaAbertoAgora, pontoTemRecargaDisponivel } from "../../utils/filtrarEstacoes";
+import { formatarDistanciaDemonstrativa } from "../../utils/demonstracao";
+import {
+  triggerImpact,
+  type PressableVisualState,
+} from "../../utils/interaction";
+import { isStationOpenAt } from "../../utils/stationHours";
+import { readTripStopContext } from "../../utils/tripStopContext";
+import {
+  RoutingModalPermission,
+  RoutingModalRoutes,
+} from "./components/RoutingModal";
+import { shouldStackStationCards } from "./stationLayout";
+import { styles as baseStyles } from "./PointDetailsScreen.styles";
+import {
+  getStationArrivalPresentation,
+  getStationChargerCountLabel,
+  getStationRecommendation,
+  getStationStatusInfo,
+  getWaitingLevel,
+} from "./stationPresentation";
+import type { LocationObject } from "expo-location";
 
-const imagemPerfilUsuario = require("../../assets/user/profile1.webp");
 
 type Station = (typeof chargingStations)[number];
 
-type StatusInfo = {
-  label: string;
-  description: string;
-};
-
-type RouteProvider = "google" | "waze";
-
 type ReviewCardData = NonNullable<Station["reviews"]>[number];
 
-const nomeMotorista = "Caio Duarte";
 
 function normalizeParam(value?: string | string[]) {
   if (Array.isArray(value)) {
@@ -84,41 +98,6 @@ function formatAddress(station: Station) {
   return [station.address, station.neighborhood, station.city, station.state]
     .filter(Boolean)
     .join(", ");
-}
-
-function getStatusInfo(status: Station["status"], abertoAgora: boolean): StatusInfo {
-  if (!abertoAgora && (status === "available" || status === "busy")) {
-    return {
-      label: "Fechado agora",
-      description: "Fora do horário de funcionamento do catálogo.",
-    };
-  }
-
-  if (status === "available") {
-    return {
-      label: "Aberto agora",
-      description: "Carregadores disponíveis neste momento",
-    };
-  }
-
-  if (status === "busy") {
-    return {
-      label: "Ocupado agora",
-      description: "Alta procura no momento",
-    };
-  }
-
-  if (status === "maintenance") {
-    return {
-      label: "Em manutenção",
-      description: "Ponto temporariamente indisponível",
-    };
-  }
-
-  return {
-    label: "Status indisponível",
-    description: "Não foi possível consultar a disponibilidade",
-  };
 }
 
 function getAmenityLabel(amenity: string) {
@@ -171,20 +150,9 @@ function getUserInitials(userName: string) {
   const nameParts = userName.trim().split(/\s+/);
   const firstInitial = nameParts[0]?.[0] ?? "";
   const lastInitial =
-    nameParts.length > 1 ? nameParts[nameParts.length - 1]?.[0] ?? "" : "";
+    nameParts.length > 1 ? (nameParts[nameParts.length - 1]?.[0] ?? "") : "";
 
   return `${firstInitial}${lastInitial}`.toUpperCase();
-}
-
-function getRouteUrl(station: Station, provider: RouteProvider) {
-  const latitude = station.latitude;
-  const longitude = station.longitude;
-
-  if (provider === "waze") {
-    return `https://www.waze.com/ul?ll=${latitude},${longitude}&navigate=yes`;
-  }
-
-  return `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&travelmode=driving`;
 }
 
 function calcularTempoEstimadoCarga(powerKw: number) {
@@ -199,69 +167,9 @@ function calcularTempoEstimadoCarga(powerKw: number) {
   return "1h30 ou mais";
 }
 
-function montarTextoDeRecomendacao(
-  station: Station,
-  carregadoresDisponiveis: number,
+function obterIconeDeAlcance(
+  nivel: ReturnType<typeof avaliarAlcance>["nivel"],
 ) {
-  if (station.status === "maintenance") {
-    return "Evite este ponto por enquanto";
-  }
-
-  if (carregadoresDisponiveis > 0 && station.powerKw >= 120) {
-    return "Boa escolha para uma parada rápida";
-  }
-
-  if (carregadoresDisponiveis > 0) {
-    return "Boa opção para recarregar com conforto";
-  }
-
-  return "Verifique a fila antes de ir";
-}
-
-function montarOrientacaoDeEspera(
-  status: Station["status"],
-  carregadoresDisponiveis: number,
-) {
-  if (status === "maintenance") {
-    return "Indisponível";
-  }
-
-  if (carregadoresDisponiveis > 1) {
-    return "Baixa";
-  }
-
-  if (carregadoresDisponiveis === 1) {
-    return "Moderada";
-  }
-
-  return "Alta";
-}
-
-function montarPerfilDoPonto(station: Station) {
-  if (station.powerKw >= 120) {
-    return "Carga rápida";
-  }
-
-  if (station.amenities.length >= 4) {
-    return "Parada confortável";
-  }
-
-  return "Recarga essencial";
-}
-
-function montarTextoDeAlcance(avaliacao: ReturnType<typeof avaliarAlcance>) {
-  if (avaliacao.nivel === "foraDeAlcance") {
-    return `Autonomia insuficiente para este trajeto — faltam ${avaliacao.kmFaltantes} km`;
-  }
-
-  if (avaliacao.nivel === "apertado") {
-    return `Autonomia limitada — chegada estimada com ${avaliacao.bateriaAoChegarPercent}% de bateria`;
-  }
-
-  return `Autonomia confortável — chegada estimada com ${avaliacao.bateriaAoChegarPercent}% de bateria`;
-}
-
-function obterIconeDeAlcance(nivel: ReturnType<typeof avaliarAlcance>["nivel"]) {
   if (nivel === "foraDeAlcance") {
     return BatteryWarning;
   }
@@ -274,38 +182,64 @@ function obterIconeDeAlcance(nivel: ReturnType<typeof avaliarAlcance>["nivel"]) 
 }
 
 export default function PointDetailsScreen() {
-  const { styles, colors, isDarkMode } = useTelaComPreferencias(baseStyles);
-  const { userPreferences } = useAppPreferences();
-  const { stationId } = useLocalSearchParams<{
+  const now = useCurrentTime();
+  const { fontScale: systemFontScale } = useWindowDimensions();
+  const [infoWidth, setInfoWidth] = useState(0);
+  const { styles, colors, isDarkMode, fontScale } = useTelaComPreferencias(baseStyles);
+  const stackInfoCards = shouldStackStationCards(infoWidth, fontScale, systemFontScale);
+  const amenityMinWidth = Math.min(Math.max(120, 110 * fontScale * systemFontScale), Math.max(120, infoWidth - 34));
+  const { userPreferences, demoStations, demoOrigin, presentationState } = useAppPreferences();
+  const scenarioConfig = __DEV__ && presentationState.enabled ? presentationState.config : null;
+  const nomeMotorista = scenarioConfig?.driverName ?? "Caio Duarte";
+  const imagemPerfilUsuario = presentationImages[scenarioConfig?.profileImage ?? "profile1"];
+
+  const { stationId, startRoute, returnTo, tripStop } = useLocalSearchParams<{
     stationId?: string | string[];
+    startRoute?: string | string[];
+    returnTo?: string | string[];
+    tripStop?: string | string[];
   }>();
 
   const selectedStationId = normalizeParam(stationId) ?? "station-01";
 
   const station = useMemo(() => {
-    return chargingStations.find((item) => item.id === selectedStationId);
-  }, [selectedStationId]);
+    return demoStations.find((item) => item.id === selectedStationId);
+  }, [selectedStationId, demoStations]);
 
   const {
     favoriteStationIds,
     sentReviews,
     isLoadingStorage,
+    storageError,
     reloadStorage,
     toggleFavoriteStation,
   } = useFluiStorage();
 
+  const [dismissedWarningKey, setDismissedWarningKey] = useState<string | null>(null);
   const [isLoadingAction, setIsLoadingAction] = useState(false);
+  const { checkConnection } = useConnectivity();
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [isRouteDialogOpen, setIsRouteDialogOpen] = useState(false);
+  const requestedRouteRef = useRef<string | null>(null);
+  const [routeLocation, setRouteLocation] = useState<LocationObject | null>(null);
+  const [modalStep, setModalStep] = useState<"confirmation" | "redirect">("confirmation");
 
   useFocusEffect(
     useCallback(() => {
+      setDismissedWarningKey(null);
       void reloadStorage();
     }, [reloadStorage]),
   );
 
+  const handleNext = (location: LocationObject | null) => {
+    setRouteLocation(location);
+    setModalStep("redirect");
+  };
+
   const isFavorite = station ? favoriteStationIds.includes(station.id) : false;
 
   async function handleToggleFavorite() {
-    if (!station || isLoadingAction || isLoadingStorage) {
+    if (!station || isLoadingAction || isLoadingStorage || !!storageError) {
       return;
     }
 
@@ -340,77 +274,50 @@ export default function PointDetailsScreen() {
     }, 360);
   }
 
-  async function openRouteInExternalApp(provider: RouteProvider) {
-    if (!station) {
-      return;
-    }
-
-    const hasCoordinates =
-      Number.isFinite(station.latitude) && Number.isFinite(station.longitude);
-
-    if (!hasCoordinates) {
-      Alert.alert(
-        "Rota indisponível",
-        "Este ponto ainda não possui coordenadas cadastradas.",
-      );
-
-      return;
-    }
-
-    const url = getRouteUrl(station, provider);
-
+  const handleStartRoute = useCallback(async () => {
+    if (!station || isLoadingAction) return;
+    setIsLoadingAction(true);
+    setConnectionError(null);
     try {
-      setIsLoadingAction(true);
-
-      const canOpen = await Linking.canOpenURL(url);
-
-      if (!canOpen) {
-        Alert.alert(
-          "Não foi possível abrir a rota",
-          "Seu dispositivo não conseguiu abrir o aplicativo de mapas.",
-        );
-
-        return;
-      }
-
-      await Linking.openURL(url);
-    } catch {
-      Alert.alert(
-        "Erro ao abrir rota",
-        "Não foi possível abrir a rota agora. Tente novamente em alguns instantes.",
-      );
+      const blocked = await prepareExternalRoute(checkConnection, () => {
+        setRouteLocation(null);
+        setModalStep("confirmation");
+        setIsRouteDialogOpen(true);
+      });
+      setConnectionError(blocked);
     } finally {
       setIsLoadingAction(false);
     }
-  }
+  }, [station, isLoadingAction, checkConnection]);
 
-  function handleStartRoute() {
-    if (!station || isLoadingAction) {
+  // O atalho da FluIA usa a mesma proteção do botão da ficha, antes de pedir GPS.
+  useEffect(() => {
+    if (normalizeParam(startRoute) !== "1" || !station ||
+        requestedRouteRef.current === station.id) return;
+    requestedRouteRef.current = station.id;
+    void handleStartRoute();
+  }, [startRoute, station, handleStartRoute]);
+
+  const veioDoPlanejador = normalizeParam(returnTo) === "trip-planner";
+  const veioDoMapa = normalizeParam(returnTo) === "map";
+  const contextoDaParada = veioDoPlanejador
+    ? readTripStopContext(normalizeParam(tripStop), selectedStationId)
+    : null;
+  function voltarParaTelaAnterior() {
+    if (veioDoPlanejador) {
+      if (router.canGoBack()) router.back();
+      else router.replace({
+        pathname: "/trip-planner",
+        params: contextoDaParada ? { destinationId: contextoDaParada.destinationId } : {},
+      });
       return;
     }
-
-    Alert.alert(
-      "Abrir rota",
-      `Escolha como deseja navegar até ${station.name}.`,
-      [
-        {
-          text: "Google Maps",
-          onPress: () => openRouteInExternalApp("google"),
-        },
-        {
-          text: "Waze",
-          onPress: () => openRouteInExternalApp("waze"),
-        },
-        {
-          text: "Cancelar",
-          style: "cancel",
-        },
-      ],
-    );
+    voltarAoMapa();
   }
 
   function voltarAoMapa() {
-    router.replace("/map" as Href);
+    if (veioDoMapa && router.canGoBack()) router.back();
+    else router.replace("/map" as Href);
   }
 
   if (!station) {
@@ -452,17 +359,16 @@ export default function PointDetailsScreen() {
             ]}
             onPress={voltarAoMapa}
           >
-            <Text style={styles.secondaryFallbackButtonText}>Voltar ao mapa</Text>
+            <Text style={styles.secondaryFallbackButtonText}>
+              Voltar ao mapa
+            </Text>
           </Pressable>
         </View>
       </SafeAreaView>
     );
   }
 
-  const agora = new Date();
-  const abertoAgora = pontoEstaAbertoAgora(station, agora);
-  const recargaDisponivel = pontoTemRecargaDisponivel(station, agora);
-  const statusInfo = getStatusInfo(station.status, abertoAgora);
+  const statusInfo = getStationStatusInfo(station, now);
 
   const availableChargers = station.connectors.reduce(
     (total, connector) => total + connector.availableChargers,
@@ -474,28 +380,33 @@ export default function PointDetailsScreen() {
     0,
   );
 
+  const hasCatalogReviews = station.reviewCount > 0;
   const connectorLabels = station.connectors
     .map((connector) => connector.label)
     .join(", ");
 
-  const lessBusyText =
-    station.lessBusyPeriods.length > 0
-      ? station.lessBusyPeriods.join(" ou ")
-      : "Sem previsão de menor movimento";
-
-  const avaliacaoAlcance = avaliarAlcance(
-    station.distanceKm,
-    userPreferences.vehicleRangeKm,
-    userPreferences.batteryPercent,
+  const distanciaEstimada = contextoDaParada?.distanceKm ?? station.distanceKm;
+  const cargaInicial = contextoDaParada?.departurePercent ?? userPreferences.batteryPercent;
+  const origemDaEstimativa = contextoDaParada?.origin ?? demoOrigin.nome;
+  const alcance = avaliarAlcance(
+    distanciaEstimada,
+    contextoDaParada?.vehicleRangeKm ?? userPreferences.vehicleRangeKm,
+    cargaInicial,
   );
+  const avaliacaoAlcance = contextoDaParada
+    ? { ...alcance, bateriaAoChegarPercent: contextoDaParada.arrivalPercent }
+    : alcance;
   const tempoEstimadoCarga = calcularTempoEstimadoCarga(station.powerKw);
-  const recomendacaoDoPonto = abertoAgora
-    ? montarTextoDeRecomendacao(station, recargaDisponivel ? availableChargers : 0)
-    : "Confirme o funcionamento antes de ir";
-  const orientacaoDeEspera = abertoAgora
-    ? montarOrientacaoDeEspera(station.status, recargaDisponivel ? availableChargers : 0)
+  const recomendacaoDoPonto = getStationRecommendation(
+    station,
+    availableChargers,
+    now,
+  );
+  const warningKey = `${station.id}:${station.status}:${getStationStatusInfo(station, now).label}:${availableChargers}:${userPreferences.batteryPercent}`;
+  const showWarning = recomendacaoDoPonto === "Evite este ponto por enquanto" && dismissedWarningKey !== warningKey;
+  const orientacaoDeEspera = isStationOpenAt(station, now)
+    ? getWaitingLevel(station.status, availableChargers)
     : "Indisponível";
-  const perfilDoPonto = montarPerfilDoPonto(station);
   const userStationReview = sentReviews.find(
     (review) => review.stationId === station.id,
   );
@@ -522,34 +433,42 @@ export default function PointDetailsScreen() {
     : (station.reviews ?? []);
   const statusColor =
     station.status === "maintenance"
-      ? colors.dangerBorder
-      : !abertoAgora
+      ? colors.dangerText
+      : !isStationOpenAt(station, now)
         ? colors.textLight
-        : station.status === "busy"
-          ? colors.yellowDark
-          : colors.success;
+        : station.status === "available"
+          ? colors.success
+          : station.status === "busy"
+            ? colors.warningText
+            : colors.textLight;
+  const statusBackgroundColor =
+    station.status === "maintenance" ? colors.dangerSoft
+      : !isStationOpenAt(station, now) ? colors.background
+        : station.status === "available" ? colors.successSoft
+          : station.status === "busy" ? colors.warningLight
+            : colors.background;
 
   const IconeAlcance = obterIconeDeAlcance(avaliacaoAlcance.nivel);
-  const textoAlcance = montarTextoDeAlcance(avaliacaoAlcance);
+  const apresentacaoAlcance = getStationArrivalPresentation(
+    station,
+    avaliacaoAlcance,
+    now,
+  );
   const corAlcance =
-    avaliacaoAlcance.nivel === "foraDeAlcance"
-      ? colors.dangerBorder
-      : avaliacaoAlcance.nivel === "apertado"
-        ? colors.yellowDark
-        : colors.success;
-  const corFundoAlcance =
-    avaliacaoAlcance.nivel === "foraDeAlcance"
-      ? colors.dangerSoft
-      : avaliacaoAlcance.nivel === "apertado"
-        ? colors.warningLight
-        : colors.successSoft;
+    apresentacaoAlcance.tone === "danger"
+      ? colors.dangerText
+      : apresentacaoAlcance.tone === "warning"
+        ? colors.warningText
+        : apresentacaoAlcance.tone === "success"
+          ? colors.success
+          : colors.textLight;
 
   return (
     <ScreenTransition style={styles.container}>
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, connectionError && styles.scrollContentWithError]}
       >
         <View style={styles.hero}>
           <StationVisualCover
@@ -560,29 +479,30 @@ export default function PointDetailsScreen() {
             status={station.status}
             comodidades={station.amenities}
             imageSource={getStationImageSource(station.imageKey)}
-
             imageUrl={station.imageUrl}
           />
           <SafeAreaView edges={["top"]} style={styles.heroActions}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Voltar ao mapa"
+              accessibilityLabel={veioDoPlanejador ? "Voltar ao planejador" : "Voltar ao mapa"}
               style={({ pressed, hovered }: PressableVisualState) => [
                 styles.iconButton,
                 hovered && !pressed ? styles.hoverFeedback : null,
                 pressed ? styles.iconButtonPressed : null,
               ]}
-              onPress={voltarAoMapa}
+              onPress={voltarParaTelaAnterior}
             >
               <ArrowLeft size={24} color={colors.text} strokeWidth={2.4} />
             </Pressable>
 
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+              accessibilityLabel={
+                isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"
+              }
               accessibilityState={{
                 selected: isFavorite,
-                disabled: isLoadingAction || isLoadingStorage,
+                disabled: isLoadingAction || isLoadingStorage || !!storageError,
               }}
               style={({ pressed, hovered }: PressableVisualState) => [
                 styles.iconButton,
@@ -590,7 +510,7 @@ export default function PointDetailsScreen() {
                 hovered && !pressed ? styles.hoverFeedback : null,
                 pressed ? styles.iconButtonPressed : null,
               ]}
-              disabled={isLoadingAction || isLoadingStorage}
+              disabled={isLoadingAction || isLoadingStorage || !!storageError}
               onPress={handleToggleFavorite}
             >
               <Heart
@@ -608,16 +528,40 @@ export default function PointDetailsScreen() {
 
           <Text style={styles.address}>{formatAddress(station)}</Text>
 
+          {showWarning ? (
+            <View style={styles.riskBanner}>
+              <TriangleAlert accessible={false} size={20} color={colors.dangerText} />
+              <View style={{ flex: 1 }}>
+                <Text accessibilityRole="alert" style={styles.riskTitle}>{recomendacaoDoPonto}</Text>
+                <Text style={styles.riskDescription}>Manutenção indicada no catálogo. Confirme o funcionamento ou escolha outro ponto.</Text>
+              </View>
+              <Pressable accessibilityRole="button" accessibilityLabel="Dispensar aviso desta visita" style={styles.dismissRiskButton} onPress={() => setDismissedWarningKey(warningKey)}>
+                <X size={22} color={colors.dangerText} />
+              </Pressable>
+            </View>
+          ) : null}
+
           <View style={styles.summaryRow}>
+            <View style={styles.statusGroup}>
+              <View
+                accessible={false}
+                style={[styles.statusDot, { backgroundColor: statusColor }]}
+              />
+
+              <Text style={[styles.statusText, { color: statusColor }]}>
+                {statusInfo.label}
+              </Text>
+            </View>
             <View style={styles.ratingGroup}>
               <Star
                 size={19}
                 color={colors.yellowDark}
-                fill={colors.yellowDark}
+                fill={hasCatalogReviews ? colors.yellowDark : "transparent"}
                 strokeWidth={2}
                 style={styles.starIcon}
               />
 
+              {hasCatalogReviews ? <>
               <Text style={styles.ratingValue}>
                 {station.rating.toFixed(1)}
               </Text>
@@ -625,167 +569,118 @@ export default function PointDetailsScreen() {
               <Text style={styles.reviewCount}>
                 ({station.reviewCount} avaliações)
               </Text>
-            </View>
-
-            <View style={styles.statusGroup}>
-              <View
-                accessible={false}
-                style={[
-                  styles.statusDot,
-                  { backgroundColor: statusColor },
-                ]}
-              />
-
-              <Text style={styles.statusText}>{statusInfo.label}</Text>
+              </> : <Text style={styles.reviewCount}>Sem avaliações</Text>}
             </View>
           </View>
 
-          <View style={styles.availableRow}>
+
+          <View style={[styles.availableRow, styles.chargerBanner, { backgroundColor: statusBackgroundColor, borderColor: statusColor }]}>
             <View style={styles.availableIconBox}>
               <Zap
                 size={17}
-                color={colors.primaryBright}
-                fill={colors.primaryBright}
+                color={statusColor}
+                fill={statusColor}
                 strokeWidth={2.2}
               />
             </View>
 
-            <Text style={styles.availableText}>
-              {recargaDisponivel
-                ? `${availableChargers} de ${totalChargers} carregadores livres no catálogo`
-                : `${totalChargers} carregadores cadastrados · recarga não confirmada`}
+            <Text style={[styles.availableText, { color: statusColor }]}>
+              {getStationChargerCountLabel(
+                station,
+                availableChargers,
+                totalChargers,
+                now,
+              )}
             </Text>
           </View>
 
-          <View style={styles.resumoMotoristaCard}>
-            <Text style={styles.resumoEyebrow}>Guia do ponto</Text>
+          {recomendacaoDoPonto !== "Evite este ponto por enquanto" && recomendacaoDoPonto !== "Opção de recarga no catálogo" && !recomendacaoDoPonto.startsWith("Recarga não confirmada") ? (
             <Text style={styles.resumoTitle}>{recomendacaoDoPonto}</Text>
-            <Text style={styles.resumoDescription}>
-              Compare disponibilidade, potência e conforto antes de escolher onde
-              recarregar.
-            </Text>
-
-            <View style={styles.resumoInfoGrid}>
-              <View style={styles.resumoInfoItem}>
-                <View style={styles.resumoInfoLabelRow}>
-                  <Timer size={12} color={colors.textLight} strokeWidth={2.3} />
-                  <Text style={styles.resumoInfoLabel}>Espera</Text>
-                </View>
-                <Text style={styles.resumoInfoValue}>{orientacaoDeEspera}</Text>
-              </View>
-
-              <View style={styles.resumoInfoItem}>
-                <View style={styles.resumoInfoLabelRow}>
-                  <BatteryCharging size={12} color={colors.textLight} strokeWidth={2.3} />
-                  <Text style={styles.resumoInfoLabel}>Tempo</Text>
-                </View>
-                <Text style={styles.resumoInfoValue}>{tempoEstimadoCarga}</Text>
-              </View>
-
-              <View style={styles.resumoInfoItem}>
-                <View style={styles.resumoInfoLabelRow}>
-                  <Tag size={12} color={colors.textLight} strokeWidth={2.3} />
-                  <Text style={styles.resumoInfoLabel}>Perfil</Text>
-                </View>
-                <Text style={styles.resumoInfoValue}>{perfilDoPonto}</Text>
-              </View>
+          ) : null}
+          <View
+            accessible
+            accessibilityLabel={`${apresentacaoAlcance.text} Origem da estimativa: ${origemDaEstimativa}. Carga de saída: ${cargaInicial}%. Espera simulada: ${orientacaoDeEspera}. Recarga estimada: ${tempoEstimadoCarga}. Confirme funcionamento e compatibilidade.`}
+            style={styles.detailCard}
+          >
+            <View style={styles.infoCardHeader}>
+              <IconeAlcance size={20} color={corAlcance} strokeWidth={2.3} />
+              <Text style={styles.infoLabel}>Estimativas</Text>
+            </View>
+            <View style={styles.infoCardBody}>
+              <Text style={[styles.alcanceBannerText, { color: colors.text }]}>
+                Autonomia estimada ≈{Math.round(avaliacaoAlcance.autonomiaAtualKm)} km{"\n"}
+                {avaliacaoAlcance.nivel === "foraDeAlcance"
+                  ? `Fora do alcance · faltam ≈${avaliacaoAlcance.kmFaltantes} km`
+                  : `${avaliacaoAlcance.nivel === "apertado" ? "Autonomia limitada · " : ""}Chegada ≈${avaliacaoAlcance.bateriaAoChegarPercent}%`}
+              </Text>
+              {contextoDaParada ? (
+                <Text style={styles.infoDescription}>Trecho desde {origemDaEstimativa} · saída com {cargaInicial}%</Text>
+              ) : null}
+              <Text style={styles.infoDescription}>Espera simulada: {orientacaoDeEspera}{"\n"}Recarga estimada: {tempoEstimadoCarga}</Text>
+              <Text style={styles.infoDescription}>Confirme funcionamento e compatibilidade antes de ir.</Text>
             </View>
           </View>
 
-          <View
-            style={[
-              styles.alcanceBanner,
-              { backgroundColor: corFundoAlcance, borderColor: corAlcance },
-            ]}
-          >
-            <IconeAlcance size={20} color={corAlcance} strokeWidth={2.3} />
-
-            <Text style={[styles.alcanceBannerText, { color: corAlcance }]}>
-              {textoAlcance}
-            </Text>
-          </View>
-
-          <View style={styles.infoGrid}>
-            <View style={styles.infoRow}>
+          <ConnectionNotice />
+          {storageError ? <View style={{ paddingHorizontal: 20, paddingVertical: 8, backgroundColor: colors.surface }}>
+            <Text accessibilityRole="alert" style={{ color: colors.text }}>{storageError} Seus registros não foram alterados.</Text>
+            <Pressable accessibilityRole="button" accessibilityLabel="Recarregar favoritos e avaliações locais" style={{ minHeight: 44, justifyContent: "center" }} onPress={() => void reloadStorage()}>
+              <Text style={{ color: colors.primary, fontWeight: "700" }}>Tentar novamente</Text>
+            </Pressable>
+          </View> : null}
+          <View style={styles.infoGrid} onLayout={(event) => setInfoWidth(event.nativeEvent.layout.width)}>
+            <View style={[styles.infoRow, stackInfoCards ? { flexDirection: "column" } : null]}>
               <View style={styles.infoCard}>
-                <View style={styles.infoIconBox}>
-                  <Gauge size={20} color={colors.primaryBright} strokeWidth={2.2} />
-                </View>
-
-                <View style={styles.infoTextBox}>
+                <View style={styles.infoCardHeader}>
+                  <Gauge size={20} style={{ flexShrink: 0 }} color={colors.primaryBright} strokeWidth={2.2} />
                   <Text style={styles.infoLabel}>Potência</Text>
+                </View>
+                <View style={styles.infoCardBody}>
                   <Text style={styles.infoValue}>{station.powerKw} kW</Text>
                   <Text style={styles.infoDescription}>Velocidade de carga</Text>
                 </View>
               </View>
-
               <View style={styles.infoCard}>
-                <View style={styles.infoIconBox}>
-                  <Plug size={20} color={colors.primaryBright} strokeWidth={2.2} />
-                </View>
-
-                <View style={styles.infoTextBox}>
+                <View style={styles.infoCardHeader}>
+                  <Plug size={20} style={{ flexShrink: 0 }} color={colors.primaryBright} strokeWidth={2.2} />
                   <Text style={styles.infoLabel}>Conectores</Text>
+                </View>
+                <View style={styles.infoCardBody}>
                   <Text style={styles.infoValue}>{connectorLabels}</Text>
                   <Text style={styles.infoDescription}>Tipos compatíveis</Text>
                 </View>
               </View>
             </View>
-
-            <View style={styles.infoRow}>
+            <View style={[styles.infoRow, stackInfoCards ? { flexDirection: "column" } : null]}>
               <View style={styles.infoCard}>
-                <View style={styles.infoIconBox}>
-                  <AlarmClock
-                    size={20}
-                    color={colors.primaryBright}
-                    strokeWidth={2.2}
-                  />
+                <View style={styles.infoCardHeader}>
+                  <AlarmClock size={20} style={{ flexShrink: 0 }} color={colors.primaryBright} strokeWidth={2.2} />
+                  <Text style={styles.infoLabel}>Horário</Text>
                 </View>
-
-                <View style={styles.infoTextBox}>
-                  <Text style={styles.infoLabel}>Funcionamento</Text>
+                <View style={styles.infoCardBody}>
                   <Text style={styles.infoValue}>{station.openingHours}</Text>
-                  <Text style={styles.infoDescription}>
-                    {statusInfo.description}
-                  </Text>
+                  <Text style={styles.infoDescription}>{statusInfo.description}</Text>
                 </View>
               </View>
-
               <View style={styles.infoCard}>
-                <View style={styles.infoIconBox}>
-                  <Navigation2
-                    size={20}
-                    color={colors.primaryBright}
-                    strokeWidth={2.2}
-                  />
-                </View>
-
-                <View style={styles.infoTextBox}>
+                <View style={styles.infoCardHeader}>
+                  <Navigation2 size={20} style={{ flexShrink: 0 }} color={colors.primaryBright} strokeWidth={2.2} />
                   <Text style={styles.infoLabel}>Distância</Text>
-                  <Text style={styles.infoValue}>{station.distanceKm} km</Text>
-                  <Text style={styles.infoDescription}>Próximo de você</Text>
+                </View>
+                <View style={styles.infoCardBody}>
+                  <Text style={styles.infoValue}>{formatarDistanciaDemonstrativa(distanciaEstimada)}</Text>
+                  <Text style={styles.infoDescription}>Em linha reta desde {origemDaEstimativa}. Não é distância de percurso.</Text>
                 </View>
               </View>
             </View>
           </View>
 
-          <View style={styles.highlightCard}>
-            <View style={styles.highlightIconBox}>
-              <Clock3 size={24} color={colors.yellowDark} strokeWidth={2.2} />
+          <View style={styles.detailCard}>
+            <View style={styles.infoCardHeader}>
+              <Plug size={20} color={colors.primaryBright} />
+              <Text style={styles.infoLabel}>Conectores</Text>
             </View>
-
-            <View style={styles.highlightContent}>
-              <Text style={styles.highlightLabel}>Melhor horário</Text>
-              <Text style={styles.highlightValue}>{lessBusyText}</Text>
-              <Text style={styles.highlightDescription}>
-                Período com menor movimento e espera
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Conectores disponíveis</Text>
-
+            <View style={styles.infoCardBody}>
             {station.connectors.map((connector) => {
               const ConnectorIcon = getConnectorIcon(connector.type);
 
@@ -803,25 +698,34 @@ export default function PointDetailsScreen() {
                     <Text style={styles.connectorName}>{connector.label}</Text>
 
                     <Text style={styles.connectorDescription}>
-                      {connector.powerKw} kW · {recargaDisponivel
-                        ? `${connector.availableChargers} de ${connector.totalChargers} livres no catálogo`
-                        : `${connector.totalChargers} cadastrados`}
+                      {connector.powerKw} kW ·{" "}
+                      {getStationChargerCountLabel(
+                        station,
+                        connector.availableChargers,
+                        connector.totalChargers,
+                        now,
+                      )}
                     </Text>
                   </View>
                 </View>
               );
             })}
+            </View>
           </View>
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Comodidades próximas</Text>
+          <View style={styles.detailCard}>
+            <View style={styles.infoCardHeader}>
+              <Coffee size={20} color={colors.primaryBright} />
+              <Text accessibilityRole="header" style={styles.infoLabel}>Comodidades próximas</Text>
+            </View>
 
+            <View style={styles.infoCardBody}>
             <View style={styles.amenitiesGrid}>
               {station.amenities.map((amenity) => {
                 const IconeComodidade = getAmenityIcon(amenity);
 
                 return (
-                  <View key={amenity} style={styles.amenityItem}>
+                  <View key={amenity} style={[styles.amenityItem, { minWidth: amenityMinWidth }]}>
                     <View style={styles.amenityIconBox}>
                       <IconeComodidade
                         size={18}
@@ -837,13 +741,18 @@ export default function PointDetailsScreen() {
                 );
               })}
             </View>
+            </View>
           </View>
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Avaliações de usuários</Text>
-
-            <View style={styles.ratingPanel}>
-              <View style={styles.ratingPanelLeft}>
+          <View style={styles.detailCard}>
+            <View style={styles.infoCardHeader}>
+              <Star size={20} color={colors.primaryBright} />
+              <Text accessibilityRole="header" style={styles.infoLabel}>Avaliações</Text>
+            </View>
+            <View style={styles.infoCardBody}>
+            {hasCatalogReviews ? <>
+            <View style={[styles.ratingPanel, stackInfoCards ? styles.ratingPanelStacked : null]}>
+              <View style={[styles.ratingPanelLeft, stackInfoCards ? styles.ratingPanelColumn : null]}>
                 <Text style={styles.bigRating}>
                   {station.rating.toFixed(1)}
                 </Text>
@@ -857,48 +766,50 @@ export default function PointDetailsScreen() {
                 </Text>
               </View>
 
-              <View style={styles.ratingPanelRight}>
+              <View style={[styles.ratingPanelRight, stackInfoCards ? styles.ratingPanelColumn : null]}>
                 <View style={styles.ratingLine}>
-                  <Text style={styles.ratingLineLabel}>5 ★</Text>
+                  <Text style={[styles.ratingLineLabel, { width: Math.ceil(32 * fontScale * systemFontScale) }]}>5 ★</Text>
                   <View style={styles.ratingTrack}>
                     <View style={styles.ratingBarLarge} />
                   </View>
-                  <Text style={styles.ratingPercent}>85%</Text>
+                  <Text style={[styles.ratingPercent, { width: Math.ceil(36 * fontScale * systemFontScale) }]}>85%</Text>
                 </View>
 
                 <View style={styles.ratingLine}>
-                  <Text style={styles.ratingLineLabel}>4 ★</Text>
+                  <Text style={[styles.ratingLineLabel, { width: Math.ceil(32 * fontScale * systemFontScale) }]}>4 ★</Text>
                   <View style={styles.ratingTrack}>
                     <View style={styles.ratingBarSmall} />
                   </View>
-                  <Text style={styles.ratingPercent}>10%</Text>
+                  <Text style={[styles.ratingPercent, { width: Math.ceil(36 * fontScale * systemFontScale) }]}>10%</Text>
                 </View>
 
                 <View style={styles.ratingLine}>
-                  <Text style={styles.ratingLineLabel}>3 ★</Text>
+                  <Text style={[styles.ratingLineLabel, { width: Math.ceil(32 * fontScale * systemFontScale) }]}>3 ★</Text>
                   <View style={styles.ratingTrack}>
                     <View style={styles.ratingBarTiny} />
                   </View>
-                  <Text style={styles.ratingPercent}>3%</Text>
+                  <Text style={[styles.ratingPercent, { width: Math.ceil(36 * fontScale * systemFontScale) }]}>3%</Text>
                 </View>
 
                 <View style={styles.ratingLine}>
-                  <Text style={styles.ratingLineLabel}>2 ★</Text>
+                  <Text style={[styles.ratingLineLabel, { width: Math.ceil(32 * fontScale * systemFontScale) }]}>2 ★</Text>
                   <View style={styles.ratingTrack}>
                     <View style={styles.ratingBarMinimal} />
                   </View>
-                  <Text style={styles.ratingPercent}>1%</Text>
+                  <Text style={[styles.ratingPercent, { width: Math.ceil(36 * fontScale * systemFontScale) }]}>1%</Text>
                 </View>
 
                 <View style={styles.ratingLine}>
-                  <Text style={styles.ratingLineLabel}>1 ★</Text>
+                  <Text style={[styles.ratingLineLabel, { width: Math.ceil(32 * fontScale * systemFontScale) }]}>1 ★</Text>
                   <View style={styles.ratingTrack}>
                     <View style={styles.ratingBarMinimal} />
                   </View>
-                  <Text style={styles.ratingPercent}>1%</Text>
+                  <Text style={[styles.ratingPercent, { width: Math.ceil(36 * fontScale * systemFontScale) }]}>1%</Text>
                 </View>
               </View>
             </View>
+
+            </> : <Text style={styles.resumoDescription}>Esta estação ainda não tem avaliações no catálogo.</Text>}
 
             <Pressable
               accessibilityRole="button"
@@ -929,7 +840,7 @@ export default function PointDetailsScreen() {
               <View style={styles.userReviewsList}>
                 {stationReviews.map((review) => (
                   <View key={review.id} style={styles.userReviewCard}>
-                    {review.id.startsWith("local-") ? (
+                    {review === userReviewCard ? (
                       <Image
                         source={imagemPerfilUsuario}
                         style={styles.avatarImage}
@@ -946,6 +857,11 @@ export default function PointDetailsScreen() {
 
                     <View style={styles.userReviewContent}>
                       <Text style={styles.userName}>{review.userName}</Text>
+                      <Text style={styles.userComment}>
+                        {review === userReviewCard
+                          ? identificacaoDados.avaliacoesLocais.rotulo
+                          : identificacaoDados.avaliacoesExemplo.rotulo}
+                      </Text>
 
                       <Text style={styles.userStars}>
                         {getRatingStars(review.rating)}
@@ -967,45 +883,71 @@ export default function PointDetailsScreen() {
                 </Text>
               </View>
             )}
+            </View>
           </View>
+          <Text style={styles.dataOriginLabel} accessibilityLabel={identificacaoDados.catalogo.resumo}>Dados simulados</Text>
         </View>
       </ScrollView>
 
       <SafeAreaView edges={["bottom"]} style={styles.bottomActions}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Ver mapa"
-          accessibilityState={{ disabled: isLoadingAction }}
-          style={({ pressed, hovered }: PressableVisualState) => [
-            styles.secondaryActionButton,
-            hovered && !pressed ? styles.hoverFeedback : null,
-            pressed ? styles.buttonPressed : null,
-          ]}
-          disabled={isLoadingAction}
-          onPress={voltarAoMapa}
-        >
-          <Text style={styles.secondaryActionText}>Ver mapa</Text>
-        </Pressable>
+        {connectionError ? (
+          <Text accessibilityRole="alert" accessibilityLiveRegion="assertive" style={styles.connectionError}>
+            {connectionError}
+          </Text>
+        ) : null}
+        <View style={styles.bottomActionRow}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Ver mapa"
+            accessibilityState={{ disabled: isLoadingAction }}
+            style={({ pressed, hovered }: PressableVisualState) => [
+              styles.secondaryActionButton,
+              hovered && !pressed ? styles.hoverFeedback : null,
+              pressed ? styles.buttonPressed : null,
+            ]}
+            disabled={isLoadingAction}
+            onPress={voltarAoMapa}
+          >
+            <Text style={styles.secondaryActionText}>Ver mapa</Text>
+          </Pressable>
 
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={`Iniciar rota para ${station.name}`}
-          accessibilityHint="Permite escolher Google Maps ou Waze."
-          accessibilityState={{ disabled: isLoadingAction }}
-          style={({ pressed, hovered }: PressableVisualState) => [
-            styles.primaryActionButton,
-            hovered && !pressed ? styles.hoverFeedback : null,
-            pressed ? styles.primaryButtonPressed : null,
-          ]}
-          disabled={isLoadingAction}
-          onPress={() => {
-            triggerImpact();
-            handleStartRoute();
-          }}
-        >
-          <Text style={styles.primaryActionText}>Iniciar rota</Text>
-        </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Iniciar rota para ${station.name}`}
+            accessibilityHint="Mostra o aviso de funcionamento antes de escolher Google Maps ou Waze."
+            accessibilityState={{ disabled: isLoadingAction }}
+            style={({ pressed, hovered }: PressableVisualState) => [
+              styles.primaryActionButton,
+              hovered && !pressed ? styles.hoverFeedback : null,
+              pressed ? styles.primaryButtonPressed : null,
+            ]}
+            disabled={isLoadingAction}
+            onPress={() => {
+              triggerImpact();
+              void handleStartRoute();
+            }}
+          >
+            <Text style={styles.primaryActionText}>Iniciar rota</Text>
+          </Pressable>
+        </View>
       </SafeAreaView>
+
+      <Modal
+        visible={isRouteDialogOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => !isLoadingAction && setIsRouteDialogOpen(false)}
+      >
+        {modalStep === "confirmation" ? (
+          <RoutingModalPermission next={handleNext} onCancel={() => setIsRouteDialogOpen(false)} />
+        ) : (
+          <RoutingModalRoutes
+            station={station}
+            origin={routeLocation?.coords}
+            openDialog={setIsRouteDialogOpen}
+          />
+        )}
+      </Modal>
 
       <LoadingOverlay visible={isLoadingAction} message="Preparando ação..." />
     </ScreenTransition>

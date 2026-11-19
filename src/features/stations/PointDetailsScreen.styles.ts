@@ -11,8 +11,12 @@ export const styles = StyleSheet.create({
     paddingBottom: 120,
   },
 
+  scrollContentWithError: {
+    paddingBottom: 230,
+  },
+
   hero: {
-    height: 290,
+    height: 205,
     backgroundColor: "#10221E",
     overflow: "hidden",
   },
@@ -128,31 +132,43 @@ export const styles = StyleSheet.create({
     backgroundColor: "#FCFEFA",
   },
 
+  riskBanner: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderRadius: 16, borderWidth: 1, borderColor: colors.danger, backgroundColor: "#FBE5E2", marginBottom: 12 },
+  chargerBanner: { paddingHorizontal: 14, paddingVertical: 12, borderWidth: 1, borderRadius: 14 },
+  unconfirmedText: { fontSize: 14, lineHeight: 20, fontWeight: "700" },
+  riskTitle: { color: "#10221E", fontSize: 15, lineHeight: 20, fontWeight: "700", marginBottom: 4 },
+  riskDescription: { color: "#3F554F", fontSize: 13, lineHeight: 18 },
+  dismissRiskButton: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
   stationName: {
     color: "#10221E",
     fontSize: 29,
-    fontWeight: "800",
+    fontWeight: "600",
     letterSpacing: -0.8,
-    marginBottom: 8,
+    marginBottom: 2,
   },
 
   address: {
     color: "#3F554F",
     fontSize: 14,
     lineHeight: 20,
-    marginBottom: 14,
+    marginBottom: 12,
   },
 
   summaryRow: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12,
-    marginBottom: 16,
+    justifyContent: "flex-start",
+    gap: 8,
+    marginBottom: 12,
   },
 
+  dataOriginLabel: { color: "#3F554F", fontSize: 12, lineHeight: 18, marginBottom: 14 },
   ratingGroup: {
+    paddingHorizontal: 10, paddingVertical: 8, borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.primarySoft,
     flexDirection: "row",
+    flexWrap: "wrap",
+    maxWidth: "100%",
+    flexShrink: 1,
     alignItems: "center",
   },
 
@@ -174,11 +190,13 @@ export const styles = StyleSheet.create({
   },
 
   reviewCount: {
+    flexShrink: 1,
     color: "#63766F",
     fontSize: 14,
   },
 
   statusGroup: {
+    maxWidth: "100%", flexShrink: 1, paddingHorizontal: 10, paddingVertical: 8, borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.primarySoft,
     flexDirection: "row",
     alignItems: "center",
   },
@@ -191,6 +209,7 @@ export const styles = StyleSheet.create({
   },
 
   statusText: {
+    flexShrink: 1,
     color: "#1FA971",
     fontSize: 14,
     fontWeight: "700",
@@ -206,7 +225,7 @@ export const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#E8F5EE",
+    backgroundColor: "transparent",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 10,
@@ -219,6 +238,7 @@ export const styles = StyleSheet.create({
   },
 
   availableText: {
+    flex: 1,
     color: "#3F554F",
     fontSize: 16,
     fontWeight: "700",
@@ -246,9 +266,9 @@ export const styles = StyleSheet.create({
   },
 
   alcanceBannerText: {
-    flex: 1,
     fontSize: 14,
-    fontWeight: "800",
+    lineHeight: 21,
+    fontWeight: "600",
     letterSpacing: -0.1,
   },
 
@@ -264,7 +284,7 @@ export const styles = StyleSheet.create({
   resumoTitle: {
     color: "#10221E",
     fontSize: 20,
-    fontWeight: "800",
+    fontWeight: "600",
     lineHeight: 25,
     marginBottom: 6,
   },
@@ -313,27 +333,21 @@ export const styles = StyleSheet.create({
   },
 
   infoGrid: {
-    gap: 14,
-    marginBottom: 14,
+    gap: 16,
+    marginBottom: 18,
   },
 
   infoRow: {
     flexDirection: "row",
-    gap: 12,
+    gap: 14,
   },
 
   infoCard: {
-    flex: 1,
-    minWidth: 0,
-    minHeight: 118,
-    borderRadius: 18,
-    padding: 14,
-    backgroundColor: "#FCFEFA",
-    borderWidth: 1,
-    borderColor: "#DDE8E3",
-    alignItems: "flex-start",
+    flex: 1, minWidth: 0, borderRadius: 18, backgroundColor: "#FCFEFA", borderWidth: 1, borderColor: "#DDE8E3", overflow: "hidden",
   },
-
+  detailCard: { borderRadius: 18, backgroundColor: "#FCFEFA", borderWidth: 1, borderColor: "#DDE8E3", overflow: "hidden", marginBottom: 18 },
+  infoCardHeader: { minHeight: 52, flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: colors.primarySoft, borderBottomWidth: 1, borderBottomColor: colors.border },
+  infoCardBody: { padding: 16, gap: 10 },
   infoIconBox: {
     width: 40,
     height: 40,
@@ -355,16 +369,17 @@ export const styles = StyleSheet.create({
   },
 
   infoLabel: {
-    color: "#3F554F",
-    fontSize: 12,
-    fontWeight: "600",
-    marginBottom: 5,
+    flexShrink: 1,
+    color: "#10221E",
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "800",
   },
 
   infoValue: {
     color: "#10221E",
     fontSize: 17,
-    fontWeight: "800",
+    fontWeight: "600",
     lineHeight: 22,
     marginBottom: 4,
   },
@@ -443,7 +458,7 @@ export const styles = StyleSheet.create({
   sectionTitle: {
     color: "#10221E",
     fontSize: 16,
-    fontWeight: "800",
+    fontWeight: "600",
     marginBottom: 14,
   },
 
@@ -515,7 +530,7 @@ export const styles = StyleSheet.create({
   connectorName: {
     color: "#10221E",
     fontSize: 15,
-    fontWeight: "800",
+    fontWeight: "600",
     marginBottom: 3,
   },
 
@@ -528,12 +543,15 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "center",
-    rowGap: 16,
-    columnGap: 10,
+    rowGap: 20,
+    columnGap: 14,
   },
 
   amenityItem: {
-    width: 92,
+    flexBasis: 120,
+    flexGrow: 1,
+    maxWidth: "100%",
+    paddingHorizontal: 4,
     alignItems: "center",
   },
 
@@ -577,11 +595,24 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 14,
+    gap: 16,
   },
+  ratingPanelStacked: { flexDirection: "column", alignItems: "stretch" },
+  ratingPanelColumn: { width: "100%", flexGrow: 0, flexShrink: 0, flexBasis: "auto" },
 
   ratingPanelLeft: {
     width: 110,
     alignItems: "center",
+  },
+
+  connectionError: {
+    color: colors.text,
+    fontSize: 14,
+    lineHeight: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: colors.warningLight,
+    borderRadius: 12,
   },
 
   bigRating: {
@@ -778,13 +809,60 @@ export const styles = StyleSheet.create({
     backgroundColor: "#FCFEFA",
     borderTopWidth: 1,
     borderTopColor: "#DDE8E3",
+    gap: 8,
+  },
+
+  bottomActionRow: {
     flexDirection: "row",
     gap: 12,
   },
 
+  routeBackdrop: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+    backgroundColor: "rgba(0, 0, 0, 0.55)",
+  },
+  routeDialog: {
+    width: "100%",
+    maxWidth: 440,
+    maxHeight: "90%",
+    flexGrow: 0,
+    borderRadius: 24,
+    backgroundColor: "#FCFEFA",
+  },
+  routeDialogContent: { padding: 24, gap: 12 },
+  routeTitle: {
+    color: "#10221E",
+    fontSize: 20,
+    fontWeight: "600",
+  },
+  routeDescription: {
+    color: "#3F554F",
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  routeAction: {
+    minHeight: 52,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#2B0055",
+  },
+  routeCancelAction: {
+    backgroundColor: "#FCFEFA",
+    borderWidth: 1.5,
+    borderColor: "#2B0055",
+  },
+
   secondaryActionButton: {
     flex: 1,
-    height: 52,
+    minHeight: 52,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
     borderRadius: 18,
     borderWidth: 1.5,
     borderColor: "#2B0055",
@@ -801,7 +879,9 @@ export const styles = StyleSheet.create({
 
   primaryActionButton: {
     flex: 1,
-    height: 52,
+    minHeight: 52,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
     borderRadius: 18,
     backgroundColor: "#2B0055",
     alignItems: "center",

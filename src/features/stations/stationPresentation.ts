@@ -1,5 +1,7 @@
 import type { ChargingStation } from "../../types";
-import { isStationOpenAt } from "../../utils/stationHours";
+import type { AvaliacaoDeAlcance } from "../../utils/autonomia";
+import { getStationOpeningState, isStationOpenAt } from "../../utils/stationHours";
+import { canChargeAt, getUsableConnectors } from "../../utils/stationAvailability";
 
 export type StationStatusInfo = {
   label: string;
@@ -28,10 +30,16 @@ export function getStationStatusInfo(
   if (station.status === "unavailable") {
     return {
       label: "Status indisponível",
-      description: "Não foi possível consultar a disponibilidade",
+      description: "Disponibilidade não confirmada no catálogo local",
     };
   }
 
+  if (getStationOpeningState(station, date) === "unknown") {
+    return {
+      label: "Horário não confirmado",
+      description: "Consulte o funcionamento antes de ir",
+    };
+  }
   if (!isStationOpenAt(station, date)) {
     return {
       label: "Fechado agora",
@@ -42,20 +50,22 @@ export function getStationStatusInfo(
   if (station.status === "available") {
     return {
       label: "Aberto agora",
-      description: "Carregadores disponíveis neste momento",
+      description: canChargeAt(station, date)
+        ? "Disponibilidade de carregadores no catálogo local"
+        : "Sem carregadores utilizáveis nos dados locais",
     };
   }
 
   if (station.status === "busy") {
     return {
       label: "Ocupado agora",
-      description: "Alta procura no momento",
+      description: "Ocupação indicada no catálogo local",
     };
   }
 
   return {
     label: "Status indisponível",
-    description: "Não foi possível consultar a disponibilidade",
+    description: "Disponibilidade não confirmada no catálogo local",
   };
 }
 
@@ -65,6 +75,45 @@ export function formatRatingStars(rating: number) {
   return Array.from({ length: 5 }, (_, index) =>
     index < roundedRating ? "★" : "☆",
   ).join(" ");
+}
+
+export function getStationChargerCountLabel(
+  station: ChargingStation,
+  availableChargers: number,
+  totalChargers: number,
+  date = new Date(),
+) {
+  return canChargeAt(station, date)
+    ? `${availableChargers} de ${totalChargers} carregadores livres`
+    : `${totalChargers} carregadores cadastrados. Recarga não confirmada.`;
+}
+
+export function getStationArrivalPresentation(
+  station: ChargingStation,
+  assessment: AvaliacaoDeAlcance,
+  date = new Date(),
+) {
+  const arrival = assessment.nivel === "foraDeAlcance"
+    ? `Autonomia insuficiente para a distância aproximada — faltam ${assessment.kmFaltantes} km.`
+    : `${assessment.nivel === "apertado" ? "Autonomia limitada — " : ""}Chegada estimada com ${assessment.bateriaAoChegarPercent}% de bateria.`;
+  const tone = assessment.nivel === "foraDeAlcance"
+    ? "danger"
+    : assessment.nivel === "apertado"
+      ? "warning"
+      : canChargeAt(station, date) ? "success" : "neutral";
+
+  return {
+    text: `Autonomia disponível: ≈${Math.round(assessment.autonomiaAtualKm)} km\n${arrival}\nEstimativa em linha reta; confirme o funcionamento antes de ir.`,
+    tone,
+  } as const;
+}
+
+export function getStationRouteNotice(station: ChargingStation, date = new Date()) {
+  const status = getStationStatusInfo(station, date);
+  const availability = canChargeAt(station, date)
+    ? "A abertura e os carregadores livres são simulados."
+    : `${status.description}. A recarga não está confirmada neste ponto.`;
+  return `No catálogo local: ${status.label}. ${availability} Abrir a rota não garante atendimento; confirme o funcionamento e a compatibilidade antes de ir.`;
 }
 
 export function getUserInitials(userName: string) {
@@ -77,16 +126,18 @@ export function getUserInitials(userName: string) {
 }
 
 export function getStationRouteUrl(
-  station: ChargingStation,
+  station: Pick<ChargingStation, "latitude" | "longitude">,
   provider: RouteProvider,
+  origin?: Pick<ChargingStation, "latitude" | "longitude">,
 ) {
   const destination = `${station.latitude},${station.longitude}`;
-
   if (provider === "waze") {
     return `https://www.waze.com/ul?ll=${destination}&navigate=yes`;
   }
-
-  return `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
+  const originString = origin
+    ? `&origin=${origin.latitude},${origin.longitude}`
+    : "";
+  return `https://www.google.com/maps/dir/?api=1${originString}&destination=${destination}&travelmode=driving`;
 }
 
 export function getEstimatedChargingTime(powerKw: number) {
@@ -98,17 +149,26 @@ export function getEstimatedChargingTime(powerKw: number) {
 export function getStationRecommendation(
   station: ChargingStation,
   availableChargers: number,
+  date = new Date(),
 ) {
   if (station.status === "maintenance") {
     return "Evite este ponto por enquanto";
   }
 
-  if (availableChargers > 0 && station.powerKw >= 120) {
-    return "Boa escolha para uma parada rápida";
+  if (!canChargeAt(station, date)) {
+    return "Recarga não confirmada neste ponto";
+  }
+
+  const usablePowerKw = Math.min(
+    station.powerKw,
+    Math.max(...getUsableConnectors(station).map(connector => connector.powerKw)),
+  );
+  if (availableChargers > 0 && usablePowerKw >= 120) {
+    return "Opção com conector rápido";
   }
 
   if (availableChargers > 0) {
-    return "Boa opção para recarregar com conforto";
+    return "Opção de recarga no catálogo";
   }
 
   return "Verifique a fila antes de ir";
@@ -118,7 +178,7 @@ export function getWaitingLevel(
   status: ChargingStation["status"],
   availableChargers: number,
 ) {
-  if (status === "maintenance") return "Indisponível";
+  if (status === "maintenance" || status === "unavailable") return "Indisponível";
   if (availableChargers > 1) return "Baixa";
   if (availableChargers === 1) return "Moderada";
   return "Alta";

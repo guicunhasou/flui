@@ -43,11 +43,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
 
+  searchFeedback: { marginTop: 8, gap: 6 },
+  searchFeedbackText: { color: colors.textMuted, fontSize: 12, marginTop: 6 },
+  searchResetButton: { minHeight: 44, alignSelf: "flex-start", justifyContent: "center", paddingHorizontal: 12, borderRadius: 12, backgroundColor: colors.primary },
+  searchResetText: { color: colors.white, fontSize: 13, fontWeight: "700" },
   topArea: {
     backgroundColor: colors.background,
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === "android" ? 18 : 8,
-    paddingBottom: 14,
+    paddingTop: Platform.OS === "android" ? 18 : 0,
+    paddingBottom: 10,
     zIndex: 10,
   },
 
@@ -86,34 +90,42 @@ const styles = StyleSheet.create({
 
   vehicleButton: {
     maxWidth: 190,
-    height: 46,
+    minHeight: 46,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-end",
     gap: 8,
   },
 
-  vehicleInfo: {
-    flexShrink: 1,
-    alignItems: "flex-end",
-    gap: 1,
+  vehicleVisual: {
+    minWidth: 64,
+    alignItems: "center",
   },
 
   vehicleImage: {
     width: 60,
-    height: 40,
+    height: 32,
+    zIndex: 1,
+    transform: [{ translateY: -4 }],
   },
 
   vehicleBatteryPill: {
-    minHeight: 20,
-    paddingHorizontal: 7,
-    borderRadius: 10,
+    minWidth: 64,
+    minHeight: 46,
+    paddingHorizontal: 2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  vehicleBatterySummary: {
+    position: "absolute",
+    bottom: 2,
+    alignSelf: "center",
+    zIndex: 2,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 5,
-    backgroundColor: colors.white,
-    borderWidth: 1,
   },
 
   vehicleBatteryIconRow: {
@@ -148,21 +160,6 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
 
-  vehicleBatterySource: {
-    maxWidth: 116,
-    color: colors.textLight,
-    fontSize: 9,
-    lineHeight: 11,
-    fontWeight: "700",
-  },
-
-  vehicleBatteryUpdatedAt: {
-    color: colors.textLight,
-    fontSize: 8,
-    lineHeight: 9,
-    fontWeight: "600",
-  },
-
   batterySheetOverlay: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 40,
@@ -174,10 +171,17 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(16, 34, 30, 0.35)",
   },
 
-  batterySheetCard: {
+  batterySheetContent: {
     paddingHorizontal: 22,
     paddingTop: 20,
-    paddingBottom: 36,
+    paddingBottom: 24,
+  },
+
+  batterySheetCard: {
+    width: "100%",
+    maxWidth: 560,
+    alignSelf: "center",
+    flexGrow: 0,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     backgroundColor: colors.background,
@@ -209,8 +213,8 @@ const styles = StyleSheet.create({
   },
 
   batterySheetCloseButton: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
@@ -238,7 +242,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    gap: 16,
+    gap: 8,
   },
 
   batteryStepperButton: {
@@ -265,7 +269,8 @@ const styles = StyleSheet.create({
   },
 
   batteryStepperValue: {
-    minWidth: 104,
+    flex: 1,
+    minWidth: 0,
     alignItems: "center",
   },
 
@@ -293,7 +298,8 @@ const styles = StyleSheet.create({
   },
 
   batterySheetDoneButton: {
-    height: 48,
+    minHeight: 48,
+    paddingVertical: 12,
     marginTop: 14,
     borderRadius: 16,
     alignItems: "center",
@@ -308,7 +314,7 @@ const styles = StyleSheet.create({
   },
 
   searchBar: {
-    height: 58,
+    minHeight: 58,
     marginTop: 14,
     paddingLeft: 18,
     paddingRight: 10,
@@ -323,7 +329,8 @@ const styles = StyleSheet.create({
 
   searchText: {
     flex: 1,
-    marginLeft: 13,
+    marginLeft: 10,
+    minWidth: 0,
     color: colors.textMuted,
     fontSize: 15,
     fontWeight: "500",
@@ -337,8 +344,8 @@ const styles = StyleSheet.create({
   },
 
   filterButton: {
-    width: 42,
-    height: 42,
+    width: 44,
+    height: 44,
     borderRadius: 15,
     alignItems: "center",
     justifyContent: "center",
@@ -349,7 +356,7 @@ const styles = StyleSheet.create({
   },
 
   quickFiltersHandleArea: {
-    minHeight: 2,
+    minHeight: 44,
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 2,
@@ -374,7 +381,8 @@ const styles = StyleSheet.create({
   },
 
   chip: {
-    height: 42,
+    minHeight: 44,
+    paddingVertical: 8,
     marginRight: 4,
     paddingHorizontal: 14,
     borderRadius: 22,
@@ -552,60 +560,75 @@ const styles = StyleSheet.create({
     borderWidth: 5,
   },
 
-  fixedMapControls: {
-    position: "absolute",
-    right: 16,
-    top: 18,
-    width: 52,
-    alignItems: "center",
-    gap: 10,
-    zIndex: 12,
+  leftMapControls: { position: "absolute", left: 16, top: 16, gap: 8, alignItems: "center", zIndex: 12 },
+  fixedMapControls: { position: "absolute", right: 16, top: 16, width: 48, gap: 8, alignItems: "center", zIndex: 12 },
+  recommendationsOverlay: { flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 20 },
+  recommendationsBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(7, 12, 18, 0.62)" },
+  recommendationsPopup: { width: "100%", maxWidth: 560, maxHeight: "100%", borderRadius: 28, overflow: "hidden", backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border },
+  recommendationsHeader: { flexDirection: "row", alignItems: "center", gap: 12, paddingLeft: 18, paddingRight: 10, paddingVertical: 10 },
+  recommendationsClose: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center", backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
+
+  mapControlsCompact: {
+    top: 12,
+    width: "auto",
+    flexDirection: "row",
+  },
+
+  zoomPillCompact: {
+    width: 104,
+    height: 52,
+    flexDirection: "row",
+  },
+
+  zoomDividerCompact: {
+    width: 1,
+    height: 28,
   },
 
   zoomPill: {
-    width: 52,
-    height: 104,
+    width: 48,
+    height: 96,
     borderRadius: 26,
     alignItems: "center",
     overflow: "hidden",
-    backgroundColor: colors.white,
+    backgroundColor: colors.primary,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.primary,
     ...shadow,
   },
 
   zoomPillButton: {
-    width: 52,
-    height: 51,
+    width: 48,
+    height: 47,
     alignItems: "center",
     justifyContent: "center",
   },
 
   zoomPillButtonActive: {
-    backgroundColor: colors.primarySoft,
+    opacity: 0.8,
   },
 
   zoomPillDivider: {
     width: 28,
     height: 1,
-    backgroundColor: colors.border,
+    backgroundColor: colors.white,
+    opacity: 0.35,
   },
 
   mapControlButton: {
-    width: 52,
-    height: 52,
+    width: 48,
+    height: 48,
     borderRadius: 26,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.white,
+    backgroundColor: colors.primary,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.primary,
     ...shadow,
   },
 
   mapControlButtonActive: {
-    backgroundColor: colors.primarySoft,
-    borderColor: colors.primarySoftStrong,
+    opacity: 0.8,
   },
 
   mapControlButtonLoading: {
@@ -613,7 +636,7 @@ const styles = StyleSheet.create({
   },
 
   mapControlText: {
-    color: colors.primary,
+    color: colors.white,
     fontSize: 28,
     fontWeight: "800",
     lineHeight: 31,
@@ -662,10 +685,13 @@ const styles = StyleSheet.create({
     zIndex: 16,
   },
 
-  bottomSheetCard: {
+  bottomSheetContent: {
     paddingHorizontal: 18,
-    paddingTop: 18,
     paddingBottom: 2,
+  },
+
+  bottomSheetCard: {
+    flexGrow: 0,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     backgroundColor: colors.background,
@@ -681,8 +707,8 @@ const styles = StyleSheet.create({
   },
 
   sheetHandleArea: {
-    minHeight: 22,
-    marginTop: -10,
+    minHeight: 44,
+    marginTop: 0,
     marginBottom: 0,
     alignItems: "center",
     justifyContent: "center",
@@ -701,6 +727,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+  },
+
+  simulationBadge: { color: colors.primary, backgroundColor: colors.primarySoft, paddingHorizontal: 8, paddingVertical: 5, borderRadius: 10, fontSize: 11, fontWeight: "700" },
+  originDescription: {
+    color: colors.textLight,
+    fontSize: 12,
+    lineHeight: 17,
+    marginBottom: 10,
   },
 
   restaurarPainelWrapper: {
@@ -739,7 +773,7 @@ const styles = StyleSheet.create({
     flex: 1,
     color: colors.text,
     fontSize: 21,
-    fontWeight: "800",
+    fontWeight: "600",
     letterSpacing: -0.35,
   },
 
@@ -778,7 +812,8 @@ const styles = StyleSheet.create({
   },
 
   emptyButton: {
-    height: 40,
+    minHeight: 44,
+    paddingVertical: 10,
     marginTop: 12,
     paddingHorizontal: 14,
     borderRadius: 14,
@@ -830,8 +865,10 @@ const styles = StyleSheet.create({
   },
 
   pointBadge: {
+    maxWidth: "100%",
     alignSelf: "flex-start",
-    height: 22,
+    minHeight: 22,
+    paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 11,
     flexDirection: "row",
@@ -841,6 +878,7 @@ const styles = StyleSheet.create({
   },
 
   pointBadgeText: {
+    flexShrink: 1,
     color: colors.primary,
     fontSize: 10,
     fontWeight: "800",
@@ -891,8 +929,10 @@ const styles = StyleSheet.create({
   },
 
   pointAutonomiaChip: {
+    maxWidth: "100%",
     alignSelf: "flex-start",
-    height: 22,
+    minHeight: 22,
+    paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 11,
     flexDirection: "row",
@@ -901,6 +941,7 @@ const styles = StyleSheet.create({
   },
 
   pointAutonomiaChipText: {
+    flexShrink: 1,
     fontSize: 10,
     fontWeight: "800",
     letterSpacing: -0.1,

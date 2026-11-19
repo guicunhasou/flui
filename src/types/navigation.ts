@@ -7,7 +7,8 @@ export type AppRoute =
   | "/filters"
   | "/review"
   | "/profile"
-  | "/settings";
+  | "/settings"
+  | "/trip-planner";
 
 export type StationRouteParams = {
   stationId: string;

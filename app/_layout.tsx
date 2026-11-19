@@ -1,3 +1,7 @@
+import { useEffect } from "react";
+import { Platform } from "react-native";
+import { ConnectivityProvider } from "../src/context/ConnectivityContext";
+import { OfflineAssetsProvider } from "../src/offline/OfflineAssetsContext";
 import { Stack } from "expo-router";
 
 import {
@@ -22,9 +26,21 @@ function RootStack() {
 }
 
 export default function Layout() {
+  useEffect(() => {
+    if (Platform.OS === "web" && !__DEV__ && "serviceWorker" in navigator) {
+      // A exportação grava no worker uma versão derivada dos arquivos públicos.
+      void navigator.serviceWorker.register("/offline-worker.js", { scope: "/", updateViaCache: "none" }).catch(() => {
+        // Sem suporte/permissão de cache, a sessão carregada continua utilizável.
+      });
+    }
+  }, []);
   return (
     <PreferencesProvider>
-      <RootStack />
+      <ConnectivityProvider>
+        <OfflineAssetsProvider>
+          <RootStack />
+        </OfflineAssetsProvider>
+      </ConnectivityProvider>
     </PreferencesProvider>
   );
 }

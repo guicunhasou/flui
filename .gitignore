@@ -49,3 +49,9 @@ Expo-Go*.app/
 .validation/
 # Prompts locais usados para gerar imagens fake dos pontos
 src/assets/stations/prompts.md
+
+# Recursos públicos gerados pelo build Web
+/public/canvaskit.wasm
+/public/vendor/fluia-orb-*.png
+/public/vendor/CANVASKIT-LICENSE
+/public/vendor/REACTICX-LICENSE
