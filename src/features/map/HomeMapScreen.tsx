@@ -80,7 +80,7 @@ import { useTelaComPreferencias } from "../../hooks/useTelaComPreferencias";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
 import { useAppPreferences } from "../../context/PreferencesContext";
 import { funcionalidadesExperimentais } from "../../config/funcionalidadesExperimentais";
-import { FluiAssistantSheet } from "../assistant/FluiAssistantSheet";
+import { FluiAssistantSheet, type FluiAssistantHandle } from "../assistant/FluiAssistantSheet";
 import { BatteryEditorModal } from "./BatteryEditorModal";
 import { BatteryLevelControl } from "../../components/BatteryLevelControl";
 import { DraggableMapOrb } from "./DraggableMapOrb";
@@ -583,6 +583,7 @@ export default function HomeMapScreen() {
   const isFocused = useIsFocused();
   const [orbPosition, setOrbPosition] = useState<OrbPosition | null>(null);
   const [orbOrigin, setOrbOrigin] = useState<OrbOrigin>({ x: 195, y: 760, size: MAP_ORB_SIZE });
+  const assistantRef = useRef<FluiAssistantHandle>(null);
   const [quickFiltersVisible, setQuickFiltersVisible] = useState(false);
   const now = useCurrentTime();
   const batteryLabels = getBatterySourceLabels(userPreferences);
@@ -1339,6 +1340,8 @@ export default function HomeMapScreen() {
             active={isFocused && painelTotalmenteOculto} reducedMotion={reduceMotionEnabled}
             onOpen={origin => {
               searchInputRef.current?.blur(); Keyboard.dismiss();
+              // Inicia no próprio toque: navegadores podem exigir ativação direta do usuário.
+              assistantRef.current?.startVoiceMode();
               setOrbOrigin(origin); setAssistenteFluiApresentado(true); setAssistenteFluiAberto(true);
             }}
           /> : null}
@@ -1529,6 +1532,7 @@ export default function HomeMapScreen() {
         </View>
 
         {funcionalidadesExperimentais.fluia ? <FluiAssistantSheet
+          ref={assistantRef}
           visible={assistenteFluiAberto}
           orbOrigin={orbOrigin}
           stations={visibleStations.map(item => item.station)}

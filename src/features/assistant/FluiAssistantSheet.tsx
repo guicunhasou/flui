@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import {
   Animated,
   Easing,
@@ -21,6 +21,8 @@ import {
   ChevronDown,
   Coffee,
   MapPin,
+  Square,
+  Volume2,
   Plug,
   Sparkles,
   Users,
@@ -47,6 +49,14 @@ import { answerMessage, RECOMMENDATION_DISCLAIMER } from "./chatEngine";
 import { summarizeSuggestion } from "./assistantPresentation";
 import { getFluiaScreenTheme, type FluiaScreenTheme } from "./fluiaScreenTheme";
 import { FLUIA_VISUAL_PRESENTATION, getFluiaVisualStatus } from "./fluiaVisualStatus";
+import {
+  canRecognizeSpeech,
+  canSpeakText,
+  speakText,
+  startSpeechInput,
+  stopSpeechOutput,
+  type SpeechSession,
+} from "./browserSpeech";
 
 import {
   tempoDeExibicaoFluia,
@@ -66,6 +76,8 @@ type Props = {
   onSelectStation: (stationId: string) => void;
   onStartRoute: (stationId: string) => void;
 };
+
+export type FluiAssistantHandle = { startVoiceMode: () => void };
 
 const ASSISTANT_THINKING_DURATION = 1800;
 
@@ -98,7 +110,7 @@ const options: {
   },
 ];
 
-export function FluiAssistantSheet({
+export const FluiAssistantSheet = forwardRef<FluiAssistantHandle, Props>(function FluiAssistantSheet({
   visible,
   orbOrigin,
   stations,
@@ -110,7 +122,7 @@ export function FluiAssistantSheet({
   onDismiss,
   onSelectStation,
   onStartRoute,
-}: Props) {
+}: Props, ref) {
   const { theme: baseTheme, fontScale, highContrast, demoOrigin, userPreferences } = useAppPreferences();
   const { status: connectionStatus } = useConnectivity();
   const theme = useMemo(() => getFluiaScreenTheme(baseTheme, highContrast), [baseTheme, highContrast]);
@@ -127,6 +139,16 @@ export function FluiAssistantSheet({
   const thinkingProgress = useRef(new Animated.Value(0)).current;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
+  const [voiceOutputAvailable, setVoiceOutputAvailable] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [voiceModeEnabled, setVoiceModeEnabled] = useState(false);
+  const voiceModeRef = useRef(false);
+  const listenAgainRef = useRef<() => void>(() => {});
+  const [speakingMessageId, setSpeakingMessageId] = useState<number | null>(null);
+  const [voiceFeedback, setVoiceFeedback] = useState("");
+  const speechSessionRef = useRef<SpeechSession | null>(null);
+  const speechRequestRef = useRef(0);
+  const speakNextAnswerRef = useRef(false);
   const [showExplanation, setShowExplanation] = useState(false);
   const [expandedMessageId, setExpandedMessageId] = useState<number | null>(null);
   const [isChatThinking, setIsChatThinking] = useState(false);
@@ -171,8 +193,35 @@ export function FluiAssistantSheet({
     : selectedIntent
       ? recommendation ? "respondendo" : "aviso"
       : fluiaState;
-  const visualStatus = getFluiaVisualStatus(actualState, connectionStatus);
+  const visualStatus = isListening
+    ? "ouvindo"
+    : getFluiaVisualStatus(actualState, connectionStatus, speakingMessageId !== null);
   const statusPresentation = FLUIA_VISUAL_PRESENTATION[visualStatus];
+
+  useEffect(() => {
+    setVoiceOutputAvailable(canSpeakText());
+    return () => {
+      voiceModeRef.current = false;
+      speechSessionRef.current?.stop();
+      speechRequestRef.current += 1;
+      stopSpeechOutput();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!visible) {
+      voiceModeRef.current = false;
+      setVoiceModeEnabled(false);
+      speechSessionRef.current?.stop();
+      speechSessionRef.current = null;
+      speechRequestRef.current += 1;
+      stopSpeechOutput();
+      setIsListening(false);
+      setSpeakingMessageId(null);
+      speakNextAnswerRef.current = false;
+      setVoiceFeedback("");
+    }
+  }, [visible]);
 
   useEffect(() => {
     return () => {
@@ -218,6 +267,15 @@ export function FluiAssistantSheet({
   };
 
   const resetConversation = () => {
+    voiceModeRef.current = false;
+    setVoiceModeEnabled(false);
+    speechSessionRef.current?.stop();
+    speechSessionRef.current = null;
+    setIsListening(false);
+    speechRequestRef.current += 1;
+    stopSpeechOutput();
+    setSpeakingMessageId(null);
+    speakNextAnswerRef.current = false;
     setMessages([]);
     setDraft("");
     setIsChatThinking(false);
@@ -229,7 +287,49 @@ export function FluiAssistantSheet({
     followLatestRef.current = true;
   };
 
+  const stopSpeaking = () => {
+    speechRequestRef.current += 1;
+    stopSpeechOutput();
+    setSpeakingMessageId(null);
+  };
+
+  const stopVoiceMode = () => {
+    voiceModeRef.current = false;
+    setVoiceModeEnabled(false);
+    speechSessionRef.current?.stop();
+    speechSessionRef.current = null;
+    setIsListening(false);
+    speakNextAnswerRef.current = false;
+    stopSpeaking();
+  };
+
+  const playAnswer = (text: string, messageId: number) => {
+    if (!voiceOutputAvailable) {
+      setVoiceFeedback("A leitura em voz alta não está disponível neste navegador.");
+      return;
+    }
+    stopSpeaking();
+    setVoiceFeedback("");
+    const request = speechRequestRef.current;
+    const started = speakText(text, {
+      onEnd: () => {
+        if (speechRequestRef.current !== request) return;
+        setSpeakingMessageId(null);
+        if (voiceModeRef.current) listenAgainRef.current();
+      },
+      onError: () => {
+        if (speechRequestRef.current !== request) return;
+        setSpeakingMessageId(null);
+        setVoiceFeedback("Não foi possível reproduzir a resposta em áudio.");
+        if (voiceModeRef.current) listenAgainRef.current();
+      },
+    }, userPreferences.speechVoiceId);
+    if (started) setSpeakingMessageId(messageId);
+    else if (voiceModeRef.current) listenAgainRef.current();
+  };
+
   const closeAssistant = () => {
+    stopVoiceMode();
     if (stateTimeoutRef.current) {
       clearTimeout(stateTimeoutRef.current);
       stateTimeoutRef.current = null;
@@ -248,6 +348,7 @@ export function FluiAssistantSheet({
   };
 
   const chooseIntent = (intent: FluiAssistantIntent) => {
+    stopSpeaking();
     setShowExplanation(false);
     setSelectedIntent(intent);
     setIsAnalyzing(true);
@@ -260,9 +361,13 @@ export function FluiAssistantSheet({
     );
   };
 
-  const sendMessage = () => {
-    const text = draft.trim();
+  const sendMessage = (overrideText?: string) => {
+    const text = (typeof overrideText === "string" ? overrideText : draft).trim();
     if (!text || chatTimeoutRef.current) return;
+    setVoiceFeedback("");
+    const shouldSpeakAnswer = speakNextAnswerRef.current;
+    speakNextAnswerRef.current = false;
+    stopSpeaking();
     if (analysisTimeoutRef.current) {
       clearTimeout(analysisTimeoutRef.current);
       analysisTimeoutRef.current = null;
@@ -293,10 +398,11 @@ export function FluiAssistantSheet({
           batteryPercent,
           now,
         });
+        const answerId = nextMessageId.current++;
         setMessages((current) => [
           ...current,
           {
-            id: nextMessageId.current++,
+            id: answerId,
             from: "flui",
             text: response.text,
             state: response.state,
@@ -317,10 +423,80 @@ export function FluiAssistantSheet({
         }
         setIsChatThinking(false);
         chatTimeoutRef.current = null;
+        if (shouldSpeakAnswer && voiceModeRef.current) {
+          if (voiceOutputAvailable) playAnswer(response.text, answerId);
+          else listenAgainRef.current();
+        }
       },
       reduceMotionEnabled ? 0 : ASSISTANT_THINKING_DURATION,
     );
   };
+
+  const startListening = () => {
+    if (!voiceModeRef.current || chatTimeoutRef.current || speechSessionRef.current) return;
+    if (!canRecognizeSpeech()) {
+      stopVoiceMode();
+      setVoiceFeedback("Este navegador não oferece reconhecimento de fala.");
+      return;
+    }
+    stopSpeaking();
+    setVoiceFeedback("");
+    Keyboard.dismiss();
+    let received = false;
+    let failed = false;
+    const session = startSpeechInput({
+      onResult: (text) => {
+        if (!voiceModeRef.current) return;
+        received = true;
+        speechSessionRef.current = null;
+        setIsListening(false);
+        speakNextAnswerRef.current = true;
+        sendMessage(text);
+      },
+      onError: (message) => {
+        failed = true;
+        stopVoiceMode();
+        setVoiceFeedback(message);
+      },
+      onEnd: () => {
+        speechSessionRef.current = null;
+        setIsListening(false);
+        if (!received && !failed && voiceModeRef.current) {
+          stopVoiceMode();
+          setVoiceFeedback("Não ouvi nenhuma fala. Toque na Orb para tentar novamente.");
+        }
+      },
+    });
+    speechSessionRef.current = session;
+    if (session) setIsListening(true);
+  };
+  listenAgainRef.current = startListening;
+
+  const startVoiceMode = () => {
+    if (voiceModeRef.current) return;
+    if (chatTimeoutRef.current) {
+      setVoiceFeedback("Aguarde a resposta antes de ativar a escuta.");
+      return;
+    }
+    if (!canRecognizeSpeech()) {
+      setVoiceFeedback("Este navegador não oferece reconhecimento de fala. Você pode digitar sua pergunta.");
+      return;
+    }
+    voiceModeRef.current = true;
+    setVoiceModeEnabled(true);
+    startListening();
+  };
+
+  const toggleVoiceMode = () => {
+    if (voiceModeRef.current) {
+      stopVoiceMode();
+      setVoiceFeedback("");
+    } else {
+      startVoiceMode();
+    }
+  };
+
+  useImperativeHandle(ref, () => ({ startVoiceMode }));
 
   const scrollToLatestMessage = () => {
     if (messages.length > 0) {
@@ -382,9 +558,19 @@ export function FluiAssistantSheet({
             onLayout={() => { if (followLatestRef.current) scrollToLatestMessage(); }}
           >
             <View testID="fluia-orb-fixa" style={styles.hero}>
-              <View testID="fluia-orb-status">
-                <MapEnergyOrb mapVariant size={128} state={actualState} visualStatus={visualStatus} reducedMotion={reduceMotionEnabled} active={visible} />
-              </View>
+              <PressableScale
+                testID="fluia-orb-voz"
+                accessibilityRole="button"
+                accessibilityLabel={voiceModeEnabled ? "Desligar microfone da FluIA" : "Ativar microfone da FluIA"}
+                accessibilityHint="Toque para alternar o modo de escuta por voz."
+                accessibilityState={{ selected: voiceModeEnabled }}
+                onPress={toggleVoiceMode}
+                style={{ width: 128, height: 128, borderRadius: 64, alignItems: "center", justifyContent: "center" }}
+              >
+                <View testID="fluia-orb-status" pointerEvents="none">
+                  <MapEnergyOrb mapVariant size={128} state={actualState} visualStatus={visualStatus} reducedMotion={reduceMotionEnabled} active={visible} />
+                </View>
+              </PressableScale>
             </View>
             <Text testID="fluia-status" accessibilityLiveRegion="polite" style={[styles.heroPrompt, { color: statusPresentation.color }]}>{statusPresentation.label}</Text>
             {isAnalyzing ? (
@@ -551,6 +737,22 @@ export function FluiAssistantSheet({
                   </PressableScale>
                 ) : null}
 
+                {voiceOutputAvailable ? (
+                  <PressableScale
+                    accessibilityRole="button"
+                    accessibilityLabel={speakingMessageId === -1 ? "Parar leitura da recomendação" : "Ouvir recomendação"}
+                    style={styles.voiceReadButton}
+                    onPress={() => speakingMessageId === -1
+                      ? stopSpeaking()
+                      : playAnswer(`${recommendation.primary.name}. ${recommendation.explanation}`, -1)}
+                  >
+                    {speakingMessageId === -1
+                      ? <Square size={16} color={theme.primary} />
+                      : <Volume2 size={16} color={theme.primary} />}
+                    <Text style={styles.voiceReadText}>{speakingMessageId === -1 ? "Parar áudio" : "Ouvir recomendação"}</Text>
+                  </PressableScale>
+                ) : null}
+
                 <PressableScale
                   accessibilityRole="button"
                   accessibilityLabel="Escolher outra necessidade"
@@ -610,6 +812,19 @@ export function FluiAssistantSheet({
                     }
                   >
                     <Text style={styles.bubbleText}>{message.summary && expandedMessageId !== message.id ? message.summary : message.text}</Text>
+                    {message.from === "flui" && voiceOutputAvailable ? (
+                      <PressableScale
+                        accessibilityRole="button"
+                        accessibilityLabel={speakingMessageId === message.id ? "Parar leitura da resposta" : "Ouvir resposta da FluIA"}
+                        style={styles.voiceReadButton}
+                        onPress={() => speakingMessageId === message.id ? stopSpeaking() : playAnswer(message.text, message.id)}
+                      >
+                        {speakingMessageId === message.id
+                          ? <Square size={16} color={theme.primary} />
+                          : <Volume2 size={16} color={theme.primary} />}
+                        <Text style={styles.voiceReadText}>{speakingMessageId === message.id ? "Parar áudio" : "Ouvir resposta"}</Text>
+                      </PressableScale>
+                    ) : null}
                     {message.summary ? (
                       <PressableScale accessibilityRole="button" accessibilityState={{ expanded: expandedMessageId === message.id }} style={styles.chatButton} onPress={() => setExpandedMessageId((current) => current === message.id ? null : message.id)}>
                         <Text style={styles.chatButtonText}>{expandedMessageId === message.id ? "Resumir resposta" : "Ver explicação completa"}</Text>
@@ -642,13 +857,16 @@ export function FluiAssistantSheet({
                 <Text style={styles.secondaryButtonText}>Recolher teclado</Text>
               </PressableScale>
           </View> : null}
+          {voiceFeedback ? (
+            <Text accessibilityLiveRegion="polite" style={styles.voiceFeedback}>{voiceFeedback}</Text>
+          ) : null}
           <View style={styles.inputRow}>
             <TextInput
               value={draft}
               onChangeText={(text) => { setDraft(text); markTyping(); }}
-              onFocus={markTyping}
+              onFocus={() => { if (voiceModeRef.current) stopVoiceMode(); markTyping(); }}
               onBlur={() => setFluiaState((current) => current === "digitando" ? "repouso" : current)}
-              onSubmitEditing={sendMessage}
+              onSubmitEditing={() => { if (voiceModeRef.current) stopVoiceMode(); sendMessage(); }}
               placeholder="Pergunte algo à FluIA"
               placeholderTextColor={theme.textMuted}
               accessibilityLabel="Mensagem para a FluIA"
@@ -662,7 +880,7 @@ export function FluiAssistantSheet({
               accessibilityState={{ disabled: isChatThinking }}
               disabled={isChatThinking}
               style={styles.sendButton}
-              onPress={sendMessage}
+              onPress={() => { if (voiceModeRef.current) stopVoiceMode(); sendMessage(); }}
             >
               <Text style={styles.sendButtonText}>Enviar</Text>
             </PressableScale>
@@ -671,7 +889,7 @@ export function FluiAssistantSheet({
       </KeyboardAvoidingView>
     </OrbAssistantModal>
   );
-}
+});
 
 function Metric({
   styles,
@@ -1010,6 +1228,34 @@ function createStyles(theme: FluiaScreenTheme, fontScale: number) {
     },
     composerTools: { flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-end", gap: 8 },
     composerToolButton: { minHeight: 44, paddingHorizontal: 8, flexDirection: "row", alignItems: "center", gap: 4 },
+    voiceFeedback: {
+      color: theme.textMuted,
+      fontSize: font(12),
+      lineHeight: font(18),
+      paddingHorizontal: 4,
+      marginTop: 6,
+    },
+    voiceReadButton: {
+      alignSelf: "flex-start",
+      minHeight: 40,
+      paddingHorizontal: 8,
+      marginTop: 6,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+    },
+    voiceReadText: { color: theme.primary, fontSize: font(12), fontWeight: "700" },
+    voiceButton: {
+      width: 44,
+      minHeight: 44,
+      borderRadius: 14,
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 1,
+      borderColor: purple.border,
+      backgroundColor: purple.surface,
+    },
+    voiceButtonActive: { backgroundColor: theme.primary },
     inputRow: {
       paddingTop: 10,
       flexDirection: "row",
