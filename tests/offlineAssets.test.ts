@@ -19,14 +19,20 @@ test("manifesto inclui fotos públicas e chunks do Expo, e gera uma versão dete
     const lazyChunk = join(scripts, "EnergyOrbSkia-123.js");
     writeFileSync(lazyChunk, "renderer");
     writeFileSync(join(scripts, "source-map.json"), "{}");
-    for (const category of ["user", "stations"]) {
+    for (const category of ["user", "stations", "map", "onboarding", "images"]) {
       const folder = join(dir, "assets/src/assets", category);
       mkdirSync(folder, { recursive: true });
       writeFileSync(join(folder, category + ".hash.webp"), "imagem");
       writeFileSync(join(folder, "ignorado.txt"), "não é imagem");
     }
     const result = prepareOfflineAssets(dir);
-    assert.deepEqual(result.assets, ["/assets/src/assets/user/user.hash.webp", "/assets/src/assets/stations/stations.hash.webp"]);
+    assert.deepEqual(result.assets, [
+      "/assets/src/assets/user/user.hash.webp",
+      "/assets/src/assets/stations/stations.hash.webp",
+      "/assets/src/assets/map/map.hash.webp",
+      "/assets/src/assets/onboarding/onboarding.hash.webp",
+      "/assets/src/assets/images/images.hash.webp",
+    ]);
     assert.equal(result.version, 2);
     assert.deepEqual(result.scripts, ["/_expo/static/js/web/EnergyOrbSkia-123.js"]);
     assert.deepEqual(JSON.parse(readFileSync(join(dir, "offline-assets.json"), "utf8")), result);

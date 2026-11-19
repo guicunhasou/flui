@@ -14,7 +14,12 @@ function worker() {
   let online = true;
   let serverStatus = 200;
   let quotaExceeded = false;
-  let manifestAssets = ["/assets/src/assets/user/profile1.webp", "/assets/src/assets/stations/station-12.webp"];
+  let manifestAssets = [
+    "/assets/src/assets/user/profile1.webp",
+    "/assets/src/assets/stations/station-12.webp",
+    "/assets/src/assets/map/marker-green.png",
+    "/assets/src/assets/onboarding/1.webp",
+  ];
   let manifestScripts = ["/_expo/static/js/web/EnergyOrbSkia-123.js"];
   const key = (request: string | { url: string }) => new URL(typeof request === "string" ? request : request.url, origin).href;
   const cache = {
@@ -57,7 +62,7 @@ function worker() {
 test("worker prepara páginas e assets locais, sem armazenar serviços externos", async () => {
   const app = worker();
   await app.lifecycle("install");
-  assert.equal(app.entries.size, 25); // páginas, fotos, assets do HTML, Leaflet e Orb
+  assert.equal(app.entries.size, 27); // páginas, fotos, assets do HTML, Leaflet e Orb
   assert.ok(app.entries.has("https://flui.test/loading"));
   assert.ok(app.entries.has("https://flui.test/trip-planner"));
   assert.ok(app.entries.has("https://flui.test/_expo/entry.js"));
@@ -83,6 +88,8 @@ test("worker permite reinício offline e ficha com parâmetros sem rede", async 
   assert.equal((await app.request("/_expo/static/js/web/EnergyOrbSkia-123.js", "cors", "script"))?.status, 200);
   assert.equal((await app.request("/vendor/leaflet.js", "cors", "script"))?.status, 200);
   assert.equal((await app.request("/vendor/leaflet.css", "cors", "style"))?.status, 200);
+  assert.equal((await app.request("/assets/src/assets/map/marker-green.png", "cors", "image"))?.status, 200);
+  assert.equal((await app.request("/assets/src/assets/onboarding/1.webp", "cors", "image"))?.status, 200);
   assert.equal(app.request("https://tile.openstreetmap.org/1/1/1.png", "cors", "image"), undefined);
   assert.equal(app.requests.length, calls);
   assert.equal((await app.request("/not-cached"))?.status, 503);
@@ -121,7 +128,7 @@ test("manifesto não permite cache de fotos externas ou caminhos fora dos assets
   for (const asset of ["https://external.test/photo.webp", "/private/profile.webp", "/assets/src/assets/user/../../profile.webp"]) {
     const app = worker();
     app.setManifestAssets([asset]);
-    await assert.rejects(app.lifecycle("install"), /Foto fora do catálogo local/);
+    await assert.rejects(app.lifecycle("install"), /Imagem fora dos recursos locais do app/);
   }
 });
 

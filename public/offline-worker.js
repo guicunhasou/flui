@@ -29,7 +29,7 @@ self.addEventListener("install", (event) => {
       throw new Error("Manifesto offline inválido.");
     }
     for (const asset of manifest.assets) {
-      if (typeof asset !== "string" || !/^\/assets\/src\/assets\/(?:user|stations)\/[^/]+\.(?:webp|png|jpe?g)$/i.test(asset)) throw new Error("Foto fora do catálogo local.");
+      if (typeof asset !== "string" || !/^\/assets\/src\/assets\/(?:user|stations|map|onboarding|images)\/[\w.@-]+\.(?:webp|png|jpe?g)$/i.test(asset)) throw new Error("Imagem fora dos recursos locais do app.");
       assets.add(new URL(asset, self.location.origin).href);
     }
     for (const script of manifest.scripts) {

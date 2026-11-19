@@ -25,6 +25,7 @@
     "@react-navigation/native": "^7.1.8",
     "@react-navigation/native-stack": "^7.3.16",
     "@shopify/react-native-skia": "2.2.12",
+    "decode-uri-component": "file:vendor/decode-uri-component",
     "expo": "~54.0.37",
     "expo-constants": "~18.0.14",
     "expo-file-system": "19.0.24",
@@ -60,5 +61,11 @@
   "private": true,
   "engines": {
     "node": ">=22"
+  },
+  "overrides": {
+    "decode-uri-component": "$decode-uri-component",
+    "@expo/metro-config": {
+      "postcss": "8.5.23"
+    }
   }
 }
