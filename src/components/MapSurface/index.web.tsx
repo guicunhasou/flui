@@ -1,5 +1,6 @@
 import React, { createContext, forwardRef, useContext, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import GoogleMapSurface, { Marker as GoogleMarker } from "./GoogleMapSurface.web";
 import { Image, Text, View, type ImageSourcePropType, type ViewProps } from "react-native";
 export type Region = { latitude: number; longitude: number; latitudeDelta: number; longitudeDelta: number };
 export type MapViewHandle = { animateToRegion: (region: Region, duration?: number) => void };
@@ -33,7 +34,9 @@ function loadLeaflet() {
 }
 function boundsFor(region: Region) { return [[region.latitude - region.latitudeDelta / 2, region.longitude - region.longitudeDelta / 2], [region.latitude + region.latitudeDelta / 2, region.longitude + region.longitudeDelta / 2]]; }
 type Props = ViewProps & { initialRegion: Region; children?: React.ReactNode; provider?: string; showsUserLocation?: boolean; showsMyLocationButton?: boolean; showsCompass?: boolean; toolbarEnabled?: boolean; loadingEnabled?: boolean; customMapStyle?: unknown[]; onMapReady?: () => void; onRegionChangeComplete?: (region: Region) => void };
-export const PROVIDER_GOOGLE = "web-openstreetmap";
+export const PROVIDER_GOOGLE = "google";
+// A chave Web deve ter restrição de domínio e acesso apenas à Maps JavaScript API.
+const useGoogleMaps = Boolean(process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_WEB?.trim());
 const MapSurface = forwardRef<MapViewHandle, Props>(function MapSurface({ initialRegion, children, onMapReady, onRegionChangeComplete, style, accessibilityLabel }, ref) {
   const element = useRef<HTMLDivElement>(null), mapRef = useRef<WebMap | null>(null);
   const initial = useRef(initialRegion), callbacks = useRef({ onMapReady, onRegionChangeComplete }); callbacks.current = { onMapReady, onRegionChangeComplete };
@@ -70,7 +73,7 @@ const MapSurface = forwardRef<MapViewHandle, Props>(function MapSurface({ initia
   </View>;
 });
 type MarkerProps = { children?: React.ReactNode; coordinate: { latitude: number; longitude: number }; title?: string; description?: string; onPress?: () => void; accessible?: boolean; accessibilityRole?: "button"; accessibilityLabel?: string; accessibilityHint?: string; anchor?: { x: number; y: number }; icon?: ImageSourcePropType; tracksViewChanges?: boolean };
-export function Marker({ children, coordinate, title, onPress, accessibilityLabel, icon }: MarkerProps) {
+function OpenStreetMapMarker({ children, coordinate, title, onPress, accessibilityLabel, icon }: MarkerProps) {
   const context = useContext(MapContext), marker = useRef<WebMarker | null>(null), press = useRef(onPress); press.current = onPress;
   const interactive = Boolean(onPress);
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
@@ -88,4 +91,5 @@ export function Marker({ children, coordinate, title, onPress, accessibilityLabe
   useEffect(() => { marker.current?.setLatLng([coordinate.latitude, coordinate.longitude]); }, [coordinate.latitude, coordinate.longitude]);
   return container ? createPortal(children ?? (icon ? <Image source={icon} style={{ width: 40, height: 40 }} resizeMode="contain" /> : null), container) : null;
 }
-export default MapSurface;
+export const Marker = useGoogleMaps ? GoogleMarker : OpenStreetMapMarker;
+export default useGoogleMaps ? GoogleMapSurface : MapSurface;
