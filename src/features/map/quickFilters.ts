@@ -50,6 +50,46 @@ export function applyQuickFilters(
   };
 }
 
+
+// Os chips rápidos refletem os mesmos critérios editados na tela avançada.
+// Não guardamos um segundo conjunto de filtros para evitar estados divergentes.
+export function quickFiltersFromStationFilters(filters: StationFilters): QuickFilters {
+  return {
+    openNow: filters.onlyOpenNow,
+    ccs2: filters.connectorTypes.includes("ccs2"),
+    fast: filters.power.minKw >= 50,
+    restroom: filters.amenities.includes("restroom"),
+  };
+}
+
+export function toggleQuickStationFilter(
+  filters: StationFilters,
+  filterId: QuickFilterId,
+): StationFilters {
+  const selected = quickFiltersFromStationFilters(filters)[filterId];
+
+  switch (filterId) {
+    case "openNow":
+      return { ...filters, onlyOpenNow: !selected };
+    case "ccs2":
+      return {
+        ...filters,
+        connectorTypes: selected
+          ? filters.connectorTypes.filter((type) => type !== "ccs2")
+          : [...filters.connectorTypes, "ccs2"],
+      };
+    case "fast":
+      return { ...filters, power: { ...filters.power, minKw: selected ? 0 : 50 } };
+    case "restroom":
+      return {
+        ...filters,
+        amenities: selected
+          ? filters.amenities.filter((amenity) => amenity !== "restroom")
+          : [...filters.amenities, "restroom"],
+      };
+  }
+}
+
 export function hasActiveQuickFilters(quickFilters: QuickFilters) {
   return Object.values(quickFilters).some(Boolean);
 }

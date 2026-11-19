@@ -42,7 +42,6 @@ import {
 import {
   Amenity,
   ConnectorType,
-  StationFilters,
 } from "../../types";
 import { styles as baseStyles } from "./SearchFiltersScreen.styles";
 import { LoadingOverlay, ScreenTransition } from "../../components";

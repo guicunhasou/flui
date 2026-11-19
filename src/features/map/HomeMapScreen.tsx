@@ -1,4 +1,10 @@
 import { getMapSearchScope } from "./mapSearchScope";
+import {
+  quickFiltersFromStationFilters,
+  toggleQuickStationFilter,
+  type QuickFilterId,
+  type QuickFilters,
+} from "./quickFilters";
 import { presentationImages } from "../presentation/presentationImages";
 import { OfflineImage as Image } from "../../offline/OfflineImage";
 import { ConnectionNotice } from "../../components/ConnectionNotice";
@@ -56,7 +62,7 @@ import { chargingStations } from "../../data";
 import { defaultFilters } from "../../data/filterOptions";
 import { StationFilters } from "../../types";
 import { filtrarEstacoes } from "../../utils/filtrarEstacoes";
-import { parseStationFiltersParam } from "../../utils/stationFilterParams";
+import { cloneDefaultFilters, parseStationFiltersParam } from "../../utils/stationFilterParams";
 import { avaliarAlcance, calcularAutonomiaAtualKm } from "../../utils/autonomia";
 import { formatarDistanciaDemonstrativa } from "../../utils/demonstracao";
 import { canChargeAt } from "../../utils/stationAvailability";
@@ -151,18 +157,10 @@ const estiloEscuroDoMapa: EstiloMapa = [
   },
 ];
 
-type FiltroRapidoId = "openNow" | "ccs2" | "fast" | "restroom";
-
 type ControleMapaAtivo = "aproximar" | "afastar" | "centralizar" | null;
 
-type FiltrosRapidos = Record<FiltroRapidoId, boolean>;
-
-const filtrosRapidosIniciais: FiltrosRapidos = {
-  openNow: false,
-  ccs2: false,
-  fast: false,
-  restroom: false,
-};
+type FiltroRapidoId = QuickFilterId;
+type FiltrosRapidos = QuickFilters;
 
 type Station = (typeof chargingStations)[number];
 
@@ -224,31 +222,6 @@ const hasActiveFilters = (filters: StationFilters) => {
     filters.onlyAvailableChargers ||
     filters.onlyOpen24h
   );
-};
-
-const combinarFiltrosRapidos = (
-  filters: StationFilters,
-  filtrosRapidos: FiltrosRapidos,
-): StationFilters => {
-  return {
-    connectorTypes: filtrosRapidos.ccs2
-      ? Array.from(new Set([...filters.connectorTypes, "ccs2"]))
-      : filters.connectorTypes,
-    statuses: filters.statuses,
-    amenities: filtrosRapidos.restroom
-      ? Array.from(new Set([...filters.amenities, "restroom"]))
-      : filters.amenities,
-    power: {
-      minKw: filtrosRapidos.fast
-        ? Math.max(filters.power.minKw, 50)
-        : filters.power.minKw,
-    },
-    distance: filters.distance,
-    rating: filters.rating,
-    onlyOpenNow: filters.onlyOpenNow || filtrosRapidos.openNow,
-    onlyAvailableChargers: filters.onlyAvailableChargers,
-    onlyOpen24h: filters.onlyOpen24h,
-  };
 };
 
 const hasFiltrosRapidosAtivos = (filtrosRapidos: FiltrosRapidos) => {
@@ -640,8 +613,9 @@ export default function HomeMapScreen() {
   const [mapAreaHeight, setMapAreaHeight] = useState(0);
   const [mapAreaWidth, setMapAreaWidth] = useState(0);
   const [alturaCardPonto, setAlturaCardPonto] = useState<number | null>(null);
-  const [filtrosRapidos, setFiltrosRapidos] = useState<FiltrosRapidos>(
-    filtrosRapidosIniciais,
+  // Um único estado alimenta o mapa, os chips e a tela de filtros avançados.
+  const [filtrosDoMapa, setFiltrosDoMapa] = useState<StationFilters>(() =>
+    parseStationFiltersParam(filtersParam),
   );
   const [searchTerm, setSearchTerm] = useState(() =>
     getRouteParamAsString(queryParam),
@@ -710,19 +684,21 @@ export default function HomeMapScreen() {
     };
   }, [reduceMotionEnabled, userLocationPulseProgress]);
 
-  const appliedFilters = useMemo(() => {
-    return parseStationFiltersParam(filtersParam);
+  // A aplicação dos filtros avançados chega pelos parâmetros de navegação.
+  // Não reprocessar o parâmetro quando só os chips rápidos mudarem.
+  useEffect(() => {
+    setFiltrosDoMapa(parseStationFiltersParam(filtersParam));
   }, [filtersParam]);
 
-  const filtrosDoMapa = useMemo(() => {
-    return combinarFiltrosRapidos(appliedFilters, filtrosRapidos);
-  }, [appliedFilters, filtrosRapidos]);
+  const filtrosRapidos = useMemo(
+    () => quickFiltersFromStationFilters(filtrosDoMapa),
+    [filtrosDoMapa],
+  );
 
-  const hasFiltersApplied = useMemo(() => {
-    return (
-      hasActiveFilters(filtrosDoMapa) || hasFiltrosRapidosAtivos(filtrosRapidos)
-    );
-  }, [filtrosDoMapa, filtrosRapidos]);
+  const hasFiltersApplied = useMemo(
+    () => hasActiveFilters(filtrosDoMapa),
+    [filtrosDoMapa],
+  );
 
   const filterChips = useMemo(() => {
     return [
@@ -756,7 +732,7 @@ export default function HomeMapScreen() {
   const searchScopeFilters = useMemo(() => getMapSearchScope(filtrosDoMapa, !!getRouteParamAsString(filtersParam).trim()), [filtrosDoMapa, filtersParam]);
   const clearMapSearch = () => {
     setSearchTerm("");
-    setFiltrosRapidos({ ...filtrosRapidosIniciais });
+    setFiltrosDoMapa(cloneDefaultFilters());
     router.setParams({ filters: "", query: "" });
   };
 
@@ -987,10 +963,7 @@ export default function HomeMapScreen() {
   };
 
   const alternarFiltroRapido = (filterId: FiltroRapidoId) => {
-    setFiltrosRapidos((filtrosAtuais) => ({
-      ...filtrosAtuais,
-      [filterId]: !filtrosAtuais[filterId],
-    }));
+    setFiltrosDoMapa((atuais) => toggleQuickStationFilter(atuais, filterId));
   };
 
   const openProfile = () => {
