@@ -55,3 +55,5 @@ src/assets/stations/prompts.md
 /public/vendor/fluia-orb-*.png
 /public/vendor/CANVASKIT-LICENSE
 /public/vendor/REACTICX-LICENSE
+.vercel
+.env*

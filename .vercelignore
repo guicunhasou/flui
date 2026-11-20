@@ -1,0 +1,10 @@
+.env
+.env.*
+.vercel/
+.git/
+node_modules/
+dist/
+.expo/
+.validation/
+*.pem
+*.key

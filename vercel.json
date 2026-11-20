@@ -1,0 +1,6 @@
+{
+  "framework": null,
+  "buildCommand": "npm run export:web:offline",
+  "outputDirectory": "dist",
+  "cleanUrls": true
+}
