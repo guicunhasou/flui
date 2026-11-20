@@ -246,6 +246,13 @@ export const styles = StyleSheet.create({
     gap: spacing.sm,
   },
 
+  distanceDescription: {
+    color: colors.textSecondary,
+    fontSize: typography.sizes.sm,
+    lineHeight: 19,
+    marginBottom: spacing.sm,
+  },
+
   chip: {
     minHeight: 52,
     borderRadius: radius.md,

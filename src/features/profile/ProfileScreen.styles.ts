@@ -212,7 +212,7 @@ export function createProfileStyles(colors: AppTheme, fontScale: number) {
     },
 
     profileActionText: {
-      color: colors.primary,
+      color: colors.warningText,
       fontSize: s(13),
       fontWeight: "800",
     },
@@ -227,8 +227,8 @@ export function createProfileStyles(colors: AppTheme, fontScale: number) {
       alignItems: "center",
       justifyContent: "center",
       gap: 8,
-      backgroundColor: colors.primarySoft,
-      borderColor: colors.primarySoftStrong,
+      backgroundColor: colors.yellow,
+      borderColor: colors.warningText,
       ...softShadow,
     },
 

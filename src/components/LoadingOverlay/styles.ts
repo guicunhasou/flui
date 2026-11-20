@@ -27,7 +27,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderRadius: radius.lg,
-    flexDirection: "row",
+    flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
     gap: spacing.sm,
@@ -71,6 +71,7 @@ export const styles = StyleSheet.create({
 
   message: {
     flexShrink: 1,
+    textAlign: "center",
     color: colors.text,
     fontSize: typography.sizes.sm,
     fontWeight: typography.weights.semibold,

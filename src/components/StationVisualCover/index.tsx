@@ -1,6 +1,6 @@
+import { OfflineImageBackground as ImageBackground } from "../../offline/OfflineImage";
 import React from "react";
 import {
-  ImageBackground,
   type ImageSourcePropType,
   Text,
   View,

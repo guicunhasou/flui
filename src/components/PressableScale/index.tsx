@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import {
   Animated,
   Pressable,
+  Platform,
   PressableProps,
   StyleProp,
   ViewStyle,
@@ -30,6 +31,7 @@ export default function PressableScale({
   haptics = true,
   hapticStyle = Haptics.ImpactFeedbackStyle.Light,
   disabled,
+  accessibilityState,
   ...props
 }: PressableScaleProps) {
   const scale = useRef(new Animated.Value(1)).current;
@@ -89,6 +91,13 @@ export default function PressableScale({
   return (
     <Pressable
       {...props}
+      accessibilityState={accessibilityState}
+      {...(Platform.OS === "web" && accessibilityState ? {
+        "aria-pressed": props.accessibilityRole === "button" ? accessibilityState.selected : undefined,
+        "aria-expanded": accessibilityState.expanded,
+        "aria-busy": accessibilityState.busy,
+        "aria-checked": accessibilityState.checked,
+      } : {})}
       disabled={disabled}
       onHoverIn={(event) => {
         if (!disabled) {

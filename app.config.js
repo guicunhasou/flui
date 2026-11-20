@@ -54,6 +54,10 @@ module.exports = {
         },
       ],
       "expo-font",
+      [
+        "expo-location",
+        { locationWhenInUsePermission: "Permitir que o Flui use sua localização ao escolher a origem." },
+      ],
     ],
     experiments: {
       typedRoutes: true,

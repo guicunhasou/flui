@@ -1,11 +1,11 @@
+import { presentationImages } from "../presentation/presentationImages";
+import { OfflineImage as Image } from "../../offline/OfflineImage";
 import React, {
   useCallback,
-  useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
-import { Image, ScrollView, StatusBar, Text, View } from "react-native";
+import { ScrollView, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, type Href, useFocusEffect } from "expo-router";
 import {
@@ -14,15 +14,13 @@ import {
   ChevronRight,
   Heart,
   History,
-  LogOut,
-  Map as MapIcon,
   MapPin,
-  Search,
   Settings as SettingsIcon,
   Star,
   Zap,
 } from "lucide-react-native";
 
+import { identificacaoDados } from "../../data/identificacaoDados";
 import { chargingStations } from "../../data";
 import { PressableScale, ScreenTransition } from "../../components";
 import { useFluiStorage } from "../../hooks/useFluiStorage";
@@ -32,11 +30,6 @@ import { createProfileStyles } from "./ProfileScreen.styles";
 type ProfileTab = "favorites" | "history";
 type Station = (typeof chargingStations)[number];
 
-const FEEDBACK_DURATION = 1500;
-const nomeMotorista = "Caio Duarte";
-const modeloCarro = "BYD Dolphin Plus";
-const imagemPerfilUsuario = require("../../assets/user/profile1.webp");
-const imagemCarroUsuario = require("../../assets/user/car1.webp");
 
 const toRecord = (value: unknown): Record<string, unknown> => {
   return typeof value === "object" && value !== null
@@ -124,7 +117,12 @@ const formatarDataCurta = (value: unknown) => {
 };
 
 export default function ProfileScreen() {
-  const { theme, fontScale, appearanceMode } = useAppPreferences();
+  const { theme, fontScale, appearanceMode, userPreferences, demoOrigin, presentationState, demoStations } = useAppPreferences();
+
+  const scenarioConfig = __DEV__ && presentationState.enabled ? presentationState.config : null;
+  const nomeMotorista = scenarioConfig?.driverName ?? "Caio Duarte";
+  const imagemPerfilUsuario = presentationImages[scenarioConfig?.profileImage ?? "profile1"];
+  const imagemCarroUsuario = presentationImages[scenarioConfig?.vehicleImage ?? "car1"];
 
   const styles = useMemo(
     () => createProfileStyles(theme, fontScale),
@@ -134,29 +132,16 @@ export default function ProfileScreen() {
   const isDarkMode = appearanceMode === "dark";
 
   const [activeTab, setActiveTab] = useState<ProfileTab>("favorites");
-  const [profileFeedbackMessage, setProfileFeedbackMessage] = useState<
-    string | null
-  >(null);
-
-  const profileFeedbackTimeoutRef = useRef<ReturnType<
-    typeof setTimeout
-  > | null>(null);
-
   const {
     favoriteStationIds,
     sentReviews,
     recentHistory,
     storageError,
+    isLoadingStorage,
     reloadStorage,
   } = useFluiStorage();
 
-  useEffect(() => {
-    return () => {
-      if (profileFeedbackTimeoutRef.current) {
-        clearTimeout(profileFeedbackTimeoutRef.current);
-      }
-    };
-  }, []);
+  const storageCount = (count: number) => count > 0 ? count : isLoadingStorage ? "…" : storageError ? "—" : count;
 
   useFocusEffect(
     useCallback(() => {
@@ -165,8 +150,8 @@ export default function ProfileScreen() {
   );
 
   const stationsById = useMemo(() => {
-    return new Map(chargingStations.map((station) => [station.id, station]));
-  }, []);
+    return new Map(demoStations.map((station) => [station.id, station]));
+  }, [demoStations]);
 
   const favoriteStations = useMemo(() => {
     return favoriteStationIds
@@ -204,22 +189,6 @@ export default function ProfileScreen() {
     router.push(route);
   };
 
-  const abrirRota = (pathname: Href) => {
-    router.push(pathname);
-  };
-
-  const showProfileFeedback = (message: string) => {
-    if (profileFeedbackTimeoutRef.current) {
-      clearTimeout(profileFeedbackTimeoutRef.current);
-    }
-
-    setProfileFeedbackMessage(message);
-
-    profileFeedbackTimeoutRef.current = setTimeout(() => {
-      setProfileFeedbackMessage(null);
-    }, FEEDBACK_DURATION);
-  };
-
   const renderEmptyCard = (
     icon: React.ReactNode,
     title: string,
@@ -233,30 +202,6 @@ export default function ProfileScreen() {
           <Text style={styles.stationName}>{title}</Text>
           <Text style={styles.sectionText}>{description}</Text>
         </View>
-      </View>
-    );
-  };
-
-  const renderShortcutCard = (
-    icon: React.ReactNode,
-    title: string,
-    description: string,
-    route: Href,
-  ) => {
-    return (
-      <View key={title} style={styles.shortcutItem}>
-        <PressableScale
-          accessibilityRole="button"
-          accessibilityLabel={`Abrir ${title.toLowerCase()}`}
-          accessibilityHint={description}
-          style={styles.shortcutCard}
-          onPress={() => abrirRota(route)}
-        >
-          <View style={styles.shortcutIconBox}>{icon}</View>
-
-          <Text style={styles.shortcutTitle}>{title}</Text>
-          <Text style={styles.shortcutText}>{description}</Text>
-        </PressableScale>
       </View>
     );
   };
@@ -421,10 +366,11 @@ export default function ProfileScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.content}
         >
-          <View style={styles.profileHeader}>
+          <View style={styles.profileHeader} accessible accessibilityLabel={`Perfil fictício: ${nomeMotorista}. ${userPreferences.vehicleName}. Autonomia informada: ${userPreferences.vehicleRangeKm} km. Origem da simulação: ${demoOrigin.nome}. Imagens ilustrativas.`}>
             <View style={styles.profileHeroCard}>
               <Image
                 source={imagemCarroUsuario}
+                accessibilityLabel="Imagem ilustrativa de veículo"
                 style={styles.profileHeroImage}
                 resizeMode="cover"
               />
@@ -439,34 +385,31 @@ export default function ProfileScreen() {
             </View>
 
             <Text style={styles.profileName}>{nomeMotorista}</Text>
-            <Text style={styles.profileVehicle}>{modeloCarro}</Text>
+            <Text style={styles.profileVehicle}>{userPreferences.vehicleName}</Text>
           </View>
-
-          {profileFeedbackMessage ? (
-            <View style={styles.feedbackBadge}>
-              <Text style={styles.feedbackText}>{profileFeedbackMessage}</Text>
-            </View>
-          ) : null}
 
           {storageError ? (
             <View style={styles.errorCard}>
-              <Text style={styles.errorText}>{storageError}</Text>
+              <Text accessibilityRole="alert" style={styles.errorText}>{storageError}</Text>
+              <PressableScale accessibilityRole="button" accessibilityLabel="Tentar carregar dados locais novamente" style={{ minHeight: 44, justifyContent: "center", marginTop: 6 }} onPress={() => void reloadStorage()}>
+                <Text style={{ color: theme.primary, fontWeight: "700" }}>Tentar novamente</Text>
+              </PressableScale>
             </View>
           ) : null}
 
           <View style={styles.statsRow}>
             <View style={styles.statCard}>
-              <Text style={styles.statNumber}>{favoriteStations.length}</Text>
+              <Text style={styles.statNumber}>{storageCount(favoriteStations.length)}</Text>
               <Text style={styles.statLabel}>favoritos</Text>
             </View>
 
             <View style={styles.statCard}>
-              <Text style={styles.statNumber}>{recentStations.length}</Text>
+              <Text style={styles.statNumber}>{storageCount(recentStations.length)}</Text>
               <Text style={styles.statLabel}>histórico</Text>
             </View>
 
             <View style={styles.statCard}>
-              <Text style={styles.statNumber}>{reviewedStations.length}</Text>
+              <Text style={styles.statNumber}>{storageCount(reviewedStations.length)}</Text>
               <Text style={styles.statLabel}>avaliações</Text>
             </View>
           </View>
@@ -481,49 +424,13 @@ export default function ProfileScreen() {
               >
                 <SettingsIcon
                   size={19}
-                  color={theme.primary}
+                  color={theme.warningText}
                   strokeWidth={2.1}
                 />
                 <Text style={styles.profileActionText}>Configurações</Text>
               </PressableScale>
             </View>
 
-            <View style={styles.profileActionItem}>
-              <PressableScale
-                accessibilityRole="button"
-                accessibilityLabel="Sair da conta"
-                accessibilityHint="Exibe um aviso visual, sem encerrar a sessão nesta versão."
-                style={styles.logoutButton}
-                onPress={() => showProfileFeedback("Logout apenas visual")}
-              >
-                <LogOut size={19} color={theme.primary} strokeWidth={2.1} />
-                <Text style={styles.profileActionText}>Sair da conta</Text>
-              </PressableScale>
-            </View>
-          </View>
-
-          <View style={styles.quickActionsSection}>
-            <Text style={styles.sectionTitle}>Atalhos úteis</Text>
-            <Text style={styles.sectionText}>
-              Acesse rapidamente as áreas mais importantes antes de escolher
-              onde carregar.
-            </Text>
-
-            <View style={styles.quickActionsGrid}>
-              {renderShortcutCard(
-                <MapIcon size={21} color={theme.primary} strokeWidth={2.1} />,
-                "Mapa",
-                "Ver pontos",
-                "/map" as Href,
-              )}
-
-              {renderShortcutCard(
-                <Search size={21} color={theme.primary} strokeWidth={2.1} />,
-                "Filtros",
-                "Refinar busca",
-                "/search" as Href,
-              )}
-            </View>
           </View>
 
           <View style={styles.segmentedControl}>
@@ -608,23 +515,24 @@ export default function ProfileScreen() {
                       activeTab === "favorites" ? "favorite" : "history",
                     ),
                   )
-                : emptyContent}
+                : isLoadingStorage ? <Text accessibilityLiveRegion="polite" style={styles.sectionText}>Carregando dados salvos…</Text>
+                : storageError ? null : emptyContent}
             </View>
           </View>
 
           {activeTab === "history" ? (
             <View style={styles.reviewsHeader}>
-              <Text style={styles.sectionTitle}>Avaliações enviadas</Text>
+              <Text style={styles.sectionTitle}>Avaliações locais</Text>
 
               <Text style={styles.sectionText}>
-                Seus comentários ajudam a dar mais contexto sobre qualidade,
-                disponibilidade e comodidades.
+                {identificacaoDados.avaliacoesLocais.aviso}
               </Text>
 
               <View style={styles.cardsList}>
                 {reviewedStations.length > 0
                   ? reviewedStations.map(renderReviewCard)
-                  : renderEmptyCard(
+                  : isLoadingStorage ? <Text style={styles.sectionText}>Carregando avaliações salvas…</Text>
+                  : storageError ? null : renderEmptyCard(
                       <Star
                         size={21}
                         color={theme.primary}

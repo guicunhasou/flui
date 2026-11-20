@@ -193,6 +193,8 @@ function transformarMapaDeCores<Cores extends MapaDeCores>(
     yellowDark: theme.yellowDark,
     warning: theme.yellowDark,
     warningLight: theme.yellow,
+    warningText: theme.warningText,
+    dangerText: theme.dangerText,
     danger: theme.dangerBorder,
     dangerSoft: theme.dangerSoft,
     dangerBorder: theme.dangerBorder,

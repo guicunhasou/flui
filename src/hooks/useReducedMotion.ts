@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { AccessibilityInfo } from "react-native";
+import { useAppPreferences } from "../context/PreferencesContext";
 
-export function useReducedMotion() {
+export function useSystemReducedMotion() {
   const [reduceMotionEnabled, setReduceMotionEnabled] = useState(false);
 
   useEffect(() => {
@@ -27,4 +28,10 @@ export function useReducedMotion() {
   }, []);
 
   return reduceMotionEnabled;
+}
+
+export function useReducedMotion() {
+  const systemReducedMotion = useSystemReducedMotion();
+  const { userPreferences, isLoadingPreferences } = useAppPreferences();
+  return isLoadingPreferences || userPreferences.reduceMotion || systemReducedMotion;
 }

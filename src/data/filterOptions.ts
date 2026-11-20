@@ -99,6 +99,6 @@ export const defaultFilters: StationFilters = {
 
 export const powerOptions = [22, 50, 60, 120, 150];
 
-export const distanceOptions = [1, 3, 5, 10, 20];
+export const distanceOptions = [0.5, 1, 3, 5, 10, 20, 50, 200, 1000];
 
 export const ratingOptions = [3, 4, 4.5];

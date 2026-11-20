@@ -6,10 +6,16 @@ export type PressableVisualState = {
   hovered?: boolean;
 };
 
+let hapticsEnabled = true;
+
+export function setHapticsEnabled(enabled: boolean) {
+  hapticsEnabled = enabled;
+}
+
 export function triggerImpact(
   style: Haptics.ImpactFeedbackStyle = Haptics.ImpactFeedbackStyle.Light,
 ) {
-  if (Platform.OS === "web") {
+  if (!hapticsEnabled || Platform.OS === "web") {
     return;
   }
 
@@ -17,7 +23,7 @@ export function triggerImpact(
 }
 
 export function triggerSelection() {
-  if (Platform.OS === "web") {
+  if (!hapticsEnabled || Platform.OS === "web") {
     return;
   }
 

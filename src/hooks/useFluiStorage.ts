@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useAppPreferences } from "../context/PreferencesContext";
+import { presentationActivityStorage } from "../features/presentation/presentationStorage";
+import { useCallback, useEffect, useState, useRef } from 'react';
 
 import { fluiStorage } from '../storage';
 import {
@@ -9,6 +11,12 @@ import {
 } from '../types';
 
 export function useFluiStorage() {
+  const { presentationState, isLoadingPreferences, updateUserPreferences: savePreferences } = useAppPreferences();
+  const presentationEnabled = __DEV__ && presentationState.enabled;
+  const storage = presentationEnabled ? presentationActivityStorage : fluiStorage;
+  const scopeRef = useRef(presentationEnabled);
+  scopeRef.current = presentationEnabled;
+  const [snapshotScope, setSnapshotScope] = useState<boolean | null>(null);
   const [snapshot, setSnapshot] = useState<FluiStorageSnapshot | null>(null);
   const [isLoadingStorage, setIsLoadingStorage] = useState(true);
   const [storageError, setStorageError] = useState<string | null>(null);
@@ -18,29 +26,31 @@ export function useFluiStorage() {
       setStorageError(null);
       setIsLoadingStorage(true);
 
-      const nextSnapshot = await fluiStorage.getSnapshot();
+      const nextSnapshot = await storage.getSnapshot();
 
+      if (scopeRef.current !== presentationEnabled) return nextSnapshot;
       setSnapshot(nextSnapshot);
+      setSnapshotScope(presentationEnabled);
 
       return nextSnapshot;
     } catch {
-      setStorageError('Não foi possível carregar os dados locais.');
+      if (scopeRef.current === presentationEnabled) setStorageError('Não foi possível carregar os dados locais.');
       return null;
     } finally {
-      setIsLoadingStorage(false);
+      if (scopeRef.current === presentationEnabled) setIsLoadingStorage(false);
     }
-  }, []);
+  }, [storage, presentationEnabled]);
 
   useEffect(() => {
     void reloadStorage();
-  }, [reloadStorage]);
+  }, [reloadStorage, storage]);
 
   const toggleFavoriteStation = useCallback(
     async (stationId: string) => {
-      const result = await fluiStorage.toggleFavoriteStationId(stationId);
+      const result = await storage.toggleFavoriteStationId(stationId);
 
       setSnapshot((currentSnapshot) => {
-        if (!currentSnapshot) {
+        if (scopeRef.current !== presentationEnabled || !currentSnapshot) {
           return currentSnapshot;
         }
 
@@ -52,34 +62,34 @@ export function useFluiStorage() {
 
       return result;
     },
-    [],
+    [storage, presentationEnabled],
   );
 
   const addSentReview = useCallback(async (review: CreateLocalReviewInput) => {
-    const createdReview = await fluiStorage.addSentReview(review);
-    const nextSnapshot = await fluiStorage.getSnapshot();
+    const createdReview = await storage.addSentReview(review);
+    const nextSnapshot = await storage.getSnapshot();
 
-    setSnapshot(nextSnapshot);
+    if (scopeRef.current === presentationEnabled) setSnapshot(nextSnapshot);
 
     return createdReview;
-  }, []);
+  }, [storage, presentationEnabled]);
 
   const addRecentHistory = useCallback(
     async (historyItem: CreateRecentHistoryInput) => {
-      const createdHistoryItem = await fluiStorage.addRecentHistory(historyItem);
-      const nextSnapshot = await fluiStorage.getSnapshot();
+      const createdHistoryItem = await storage.addRecentHistory(historyItem);
+      const nextSnapshot = await storage.getSnapshot();
 
-      setSnapshot(nextSnapshot);
+      if (scopeRef.current === presentationEnabled) setSnapshot(nextSnapshot);
 
       return createdHistoryItem;
     },
-    [],
+    [storage, presentationEnabled],
   );
 
   const updateUserPreferences = useCallback(
     async (preferences: Partial<UserPreferences>) => {
       const nextPreferences =
-        await fluiStorage.updateUserPreferences(preferences);
+        await savePreferences(preferences);
 
       setSnapshot((currentSnapshot) => {
         if (!currentSnapshot) {
@@ -94,20 +104,21 @@ export function useFluiStorage() {
 
       return nextPreferences;
     },
-    [],
+    [savePreferences],
   );
 
   const clearLocalData = useCallback(async () => {
-    await fluiStorage.clearAll();
+    await storage.clearAll();
     await reloadStorage();
-  }, [reloadStorage]);
+  }, [reloadStorage, storage]);
 
+  const scopedSnapshot = snapshotScope === presentationEnabled ? snapshot : null;
   return {
-    favoriteStationIds: snapshot?.favoriteStationIds ?? [],
-    sentReviews: snapshot?.sentReviews ?? [],
-    recentHistory: snapshot?.recentHistory ?? [],
-    userPreferences: snapshot?.userPreferences ?? null,
-    isLoadingStorage,
+    favoriteStationIds: scopedSnapshot?.favoriteStationIds ?? [],
+    sentReviews: scopedSnapshot?.sentReviews ?? [],
+    recentHistory: scopedSnapshot?.recentHistory ?? [],
+    userPreferences: scopedSnapshot?.userPreferences ?? null,
+    isLoadingStorage: isLoadingStorage || isLoadingPreferences || (snapshotScope !== presentationEnabled && !storageError),
     storageError,
     reloadStorage,
     toggleFavoriteStation,

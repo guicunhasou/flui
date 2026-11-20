@@ -1,10 +1,12 @@
 import { SentReview } from "./activity";
 import { Amenity, ConnectorType } from "./chargingStation";
 import { StationFilters } from "./filters";
+import type { OrigemDemonstrativaId } from "../data/demonstracao";
 
 export type PreferredRouteApp = "google" | "waze";
 export type AppearanceMode = "light" | "dark";
 export type FontSizePreference = "small" | "default" | "large";
+export type BatterySource = "demo" | "manual" | "unknown";
 
 export type RecentHistoryAction =
   | "viewed_station"
@@ -32,9 +34,17 @@ export type UserPreferences = {
   savedFilters: StationFilters;
   hasSeenOnboarding: boolean;
   appearanceMode: AppearanceMode;
+  highContrast: boolean;
+  reduceMotion: boolean;
+  hapticsEnabled: boolean;
+  speechVoiceId: string | null;
   fontSize: FontSizePreference;
   vehicleRangeKm: number;
+  vehicleName: string;
+  demoOriginId: OrigemDemonstrativaId;
   batteryPercent: number;
+  batterySource: BatterySource;
+  batteryUpdatedAt: string | null;
 };
 
 export type FluiStorageSnapshot = {

@@ -27,4 +27,4 @@ jobs:
         run: npm run check
 
       - name: Validate web export
-        run: npx expo export --platform web --output-dir /tmp/flui-web
+        run: npm run export:web:offline

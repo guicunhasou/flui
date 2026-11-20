@@ -6,6 +6,8 @@ import {
   applyQuickFilters,
   hasActiveQuickFilters,
   rankStationsByQuickFilters,
+  quickFiltersFromStationFilters,
+  toggleQuickStationFilter,
 } from "../src/features/map/quickFilters";
 import { createStation } from "./fixtures";
 
@@ -59,4 +61,64 @@ test("prioriza estações aderentes e usa distância como desempate", () => {
     result.map(({ station }) => station.id),
     ["fast-near", "fast-far", "slow"],
   );
+});
+
+
+test("filtros rápidos refletem seleções feitas na busca avançada", () => {
+  const advanced = {
+    ...defaultFilters,
+    connectorTypes: ["type2", "ccs2"] as typeof defaultFilters.connectorTypes,
+    amenities: ["wifi", "restroom"] as typeof defaultFilters.amenities,
+    power: { minKw: 120 },
+    onlyOpenNow: true,
+  };
+
+  assert.deepEqual(quickFiltersFromStationFilters(advanced), {
+    openNow: true,
+    ccs2: true,
+    fast: true,
+    restroom: true,
+  });
+});
+
+test("desmarcar chips rápidos preserva os demais critérios avançados", () => {
+  const advanced = {
+    ...defaultFilters,
+    connectorTypes: ["type2", "ccs2"] as typeof defaultFilters.connectorTypes,
+    amenities: ["wifi", "restroom"] as typeof defaultFilters.amenities,
+    power: { minKw: 120 },
+    rating: { minRating: 4 },
+    onlyOpenNow: true,
+  };
+
+  const noCcs2 = toggleQuickStationFilter(advanced, "ccs2");
+  assert.deepEqual(noCcs2.connectorTypes, ["type2"]);
+  assert.deepEqual(advanced.connectorTypes, ["type2", "ccs2"]);
+
+  const noRestroom = toggleQuickStationFilter(noCcs2, "restroom");
+  assert.deepEqual(noRestroom.amenities, ["wifi"]);
+
+  const noFast = toggleQuickStationFilter(noRestroom, "fast");
+  assert.equal(noFast.power.minKw, 0);
+  assert.equal(noFast.rating.minRating, 4);
+
+  const noOpenNow = toggleQuickStationFilter(noFast, "openNow");
+  assert.equal(noOpenNow.onlyOpenNow, false);
+  assert.deepEqual(quickFiltersFromStationFilters(noOpenNow), {
+    openNow: false,
+    ccs2: false,
+    fast: false,
+    restroom: false,
+  });
+});
+
+test("um chip rápido ligado chega aos avançados e pode ser removido", () => {
+  const fast = toggleQuickStationFilter(defaultFilters, "fast");
+  assert.equal(fast.power.minKw, 50);
+  assert.equal(quickFiltersFromStationFilters(fast).fast, true);
+  assert.equal(toggleQuickStationFilter(fast, "fast").power.minKw, 0);
+
+  const ccs2 = toggleQuickStationFilter(defaultFilters, "ccs2");
+  assert.deepEqual(ccs2.connectorTypes, ["ccs2"]);
+  assert.deepEqual(toggleQuickStationFilter(ccs2, "ccs2").connectorTypes, []);
 });

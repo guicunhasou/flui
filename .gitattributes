@@ -1,0 +1,2 @@
+# Os arquivos de terceiros mantêm os bytes e finais de linha da origem.
+public/vendor/* -text whitespace=cr-at-eol

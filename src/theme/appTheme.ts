@@ -8,7 +8,7 @@ export const appThemes = {
 
     text: "#10221E",
     textMuted: "#3F554F",
-    textLight: "#63766F",
+    textLight: "#5B6E67",
 
     primary: "#2B0055",
     primarySoft: "#EEF7F1",
@@ -18,6 +18,8 @@ export const appThemes = {
 
     yellow: "#FFF2C7",
     yellowDark: "#F4B942",
+    warningText: "#805500",
+    dangerText: "#AD352D",
 
     border: "#DDE8E3",
     shadow: "#12302A",
@@ -25,7 +27,7 @@ export const appThemes = {
     dangerSoft: "#FBE5E2",
     dangerBorder: "#E9BAB5",
 
-    success: "#1FA971",
+    success: "#137A50",
     successSoft: "#DDF6E8",
   },
 
@@ -46,6 +48,8 @@ export const appThemes = {
 
     yellow: "#4A3D18",
     yellowDark: "#FFD35A",
+    warningText: "#FFD35A",
+    dangerText: "#FFAAA2",
 
     border: "#2E403A",
     shadow: "#080A12",
@@ -58,16 +62,69 @@ export const appThemes = {
   },
 } as const;
 
-export type AppTheme = (typeof appThemes)[AppearanceMode];
+// A preferência de contraste é independente do tema e do tamanho da fonte.
+// Os mesmos tokens atendem às telas existentes, sem uma segunda árvore de estilos.
+export const highContrastThemes = {
+  light: {
+    background: "#FFFFFF",
+    surface: "#FFFFFF",
+    white: "#FFFFFF",
+    text: "#000000",
+    textMuted: "#1F1F1F",
+    textLight: "#333333",
+    primary: "#26004D",
+    primarySoft: "#F3EDF9",
+    primarySoftStrong: "#E4D9EF",
+    selectedCard: "#F3EDF9",
+    onPrimary: "#FFFFFF",
+    yellow: "#FFF0B3",
+    yellowDark: "#704100",
+    warningText: "#633B00",
+    dangerText: "#870C0C",
+    border: "#595959",
+    shadow: "#000000",
+    dangerSoft: "#FFF0F0",
+    dangerBorder: "#870C0C",
+    success: "#005C30",
+    successSoft: "#E8F7EE",
+  },
+  dark: {
+    background: "#000000",
+    surface: "#000000",
+    white: "#000000",
+    text: "#FFFFFF",
+    textMuted: "#F0F0F0",
+    textLight: "#D9D9D9",
+    primary: "#E6D5FF",
+    primarySoft: "#190C29",
+    primarySoftStrong: "#2F174A",
+    selectedCard: "#190C29",
+    onPrimary: "#000000",
+    yellow: "#261B00",
+    yellowDark: "#FFDD66",
+    warningText: "#FFE599",
+    dangerText: "#FFD1D1",
+    border: "#BFBFBF",
+    shadow: "#000000",
+    dangerSoft: "#290A0A",
+    dangerBorder: "#FFB3B3",
+    success: "#8CFFC1",
+    successSoft: "#002B16",
+  },
+} as const satisfies Record<AppearanceMode, Record<keyof typeof appThemes.light, string>>;
+
+export type AppTheme =
+  | (typeof appThemes)[AppearanceMode]
+  | (typeof highContrastThemes)[AppearanceMode];
 
 export const fontScales: Record<FontSizePreference, number> = {
-  small: 0.94,
-  default: 1,
-  large: 1.1,
+  small: 1,
+  default: 1.1,
+  large: 1.25,
 };
 
-export function getAppTheme(appearanceMode: AppearanceMode) {
-  return appThemes[appearanceMode];
+export function getAppTheme(appearanceMode: AppearanceMode, highContrast = false) {
+  return highContrast ? highContrastThemes[appearanceMode] : appThemes[appearanceMode];
 }
 
 export function getFontScale(fontSize: FontSizePreference) {

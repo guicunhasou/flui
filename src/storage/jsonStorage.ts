@@ -1,17 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { readStoredJson } from './readStoredJson';
 
 export async function getJsonItem<T>(key: string, fallback: T): Promise<T> {
-  try {
-    const storedValue = await AsyncStorage.getItem(key);
-
-    if (!storedValue) {
-      return fallback;
-    }
-
-    return JSON.parse(storedValue) as T;
-  } catch {
-    return fallback;
-  }
+  return readStoredJson(() => AsyncStorage.getItem(key), fallback);
 }
 
 export async function setJsonItem<T>(key: string, value: T): Promise<void> {
